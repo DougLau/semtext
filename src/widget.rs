@@ -2,9 +2,12 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Error, Grid, Result};
+use crate::{Cells, Result};
 
 pub trait Widget {
-    /// Render the widget onto a grid
-    fn render(&self, grid: &mut Grid) -> Result<Error>;
+    /// Render the widget
+    fn render(&self, _cells: &mut Cells) -> Result<()> {
+        // default implementation renders nothing
+        Ok(())
+    }
 }

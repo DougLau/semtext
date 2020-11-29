@@ -1,11 +1,11 @@
-// area.rs
+// bbox.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
 use bitflags::bitflags;
 
 bitflags! {
-    /// Area edges
+    /// Edges
     #[derive(Default)]
     pub struct Edge: u8 {
         const NONE = 0x00;
@@ -41,9 +41,9 @@ pub struct Dim {
     pub height: u16,
 }
 
-/// Rectangular area of text grid cells
+/// Bounding box of text grid cells
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Area {
+pub struct BBox {
     /// Position of top-left cell
     pos: Pos,
     /// Dimensions in grid cells
@@ -69,12 +69,12 @@ impl Dim {
     }
 }
 
-impl Area {
-    /// Create a new area
+impl BBox {
+    /// Create a new bounding box
     pub fn new(col: u16, row: u16, width: u16, height: u16) -> Self {
         let pos = Pos::new(col, row);
         let dim = Dim::new(width, height);
-        Area { pos, dim }
+        BBox { pos, dim }
     }
 
     /// Get the left column
@@ -97,7 +97,7 @@ impl Area {
         self.dim.height
     }
 
-    /// Check if the area is empty
+    /// Check if the bounding box is empty
     pub fn is_empty(self) -> bool {
         self.dim.is_empty()
     }
@@ -112,7 +112,7 @@ impl Area {
         self.row() + self.height()
     }
 
-    /// Clip with another area
+    /// Clip with another bounding box
     pub fn clip(self, rhs: Self) -> Self {
         let col = self.col().max(rhs.col());
         let row = self.row().max(rhs.row());
@@ -120,10 +120,10 @@ impl Area {
         let bottom = self.bottom().min(rhs.bottom());
         let width = if right > col { right - col } else { 0 };
         let height = if bottom > row { bottom - row } else { 0 };
-        Area::new(col, row, width, height)
+        BBox::new(col, row, width, height)
     }
 
-    /// Split into two areas starting from a given edge
+    /// Split into two bounding boxes starting from a given edge
     pub fn split(self, edge: Edge, cells: u16) -> (Self, Self) {
         match edge {
             Edge::LEFT => self.split_left(cells),
@@ -188,20 +188,20 @@ impl Area {
 
     /// Trim cells from the given edges
     pub fn trim(self, edge: Edge, cells: u16) -> Self {
-        let mut area = self;
+        let mut bbox = self;
         if edge.contains(Edge::LEFT) {
-            area.trim_left(cells);
+            bbox.trim_left(cells);
         }
         if edge.contains(Edge::RIGHT) {
-            area.trim_right(cells);
+            bbox.trim_right(cells);
         }
         if edge.contains(Edge::TOP) {
-            area.trim_top(cells);
+            bbox.trim_top(cells);
         }
         if edge.contains(Edge::BOTTOM) {
-            area.trim_bottom(cells);
+            bbox.trim_bottom(cells);
         }
-        area
+        bbox
     }
 
     /// Trim cells from left edge
@@ -236,8 +236,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn area_trim() {
-        let area = Area::new(0, 0, 5, 7);
-        assert_eq!(area.trim(Edge::LEFT, 1), Area::new(1, 0, 4, 7));
+    fn bbox_trim() {
+        let bbox = BBox::new(0, 0, 5, 7);
+        assert_eq!(bbox.trim(Edge::LEFT, 1), BBox::new(1, 0, 4, 7));
     }
 }

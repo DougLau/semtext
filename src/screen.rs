@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Area, Dim, Error, Result};
+use crate::{BBox, Dim, Error, Result};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::convert::TryFrom;
@@ -23,7 +23,7 @@ enum GlyphInner<'a> {
 pub struct Glyph<'a> {
     /// Inner glyph value (char or str)
     inner: GlyphInner<'a>,
-    /// Width in grid cells (must be either 1 or 2)
+    /// Width in text cells (must be either 1 or 2)
     width: usize,
 }
 
@@ -31,16 +31,16 @@ pub struct Glyph<'a> {
 pub struct Screen {
     /// Standard Output
     out: Stdout,
-    /// Dimensions of screen in grid cells
+    /// Dimensions of screen in text cells
     dim: Dim,
 }
 
-/// Grid of cells for text on a screen
-pub struct Grid<'a> {
-    /// Screen containing grid
+/// Cells of text on a screen
+pub struct Cells<'a> {
+    /// Screen containing cells
     screen: &'a mut Screen,
-    /// Area of grid
-    area: Area,
+    /// Bounding box of cells
+    bbox: BBox,
 }
 
 impl TryFrom<char> for Glyph<'_> {
@@ -102,9 +102,9 @@ impl Screen {
         Ok(())
     }
 
-    /// Get the total screen Area
-    pub fn area(&self) -> Area {
-        Area::new(0, 0, self.dim.width, self.dim.height)
+    /// Get the screen bounding box
+    pub fn bbox(&self) -> BBox {
+        BBox::new(0, 0, self.dim.width, self.dim.height)
     }
 
     /// Clear the screen (fill with the space character)
@@ -113,10 +113,10 @@ impl Screen {
         Ok(())
     }
 
-    /// Get a grid of cells on screen
-    pub fn grid(&mut self, area: Area) -> Grid {
-        let area = self.area().clip(area);
-        Grid { screen: self, area }
+    /// Get all cells on screen
+    pub fn cells(&mut self, bbox: BBox) -> Cells {
+        let bbox = self.bbox().clip(bbox);
+        Cells { screen: self, bbox }
     }
 
     /// Set a text attribute
@@ -137,8 +137,8 @@ impl Screen {
         Ok(())
     }
 
-    /// Move cursor to a grid cell
-    pub fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
+    /// Move cursor to a cell
+    fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
         queue!(self.out, cursor::MoveTo(col, row))?;
         Ok(())
     }
@@ -149,12 +149,15 @@ impl Screen {
         Ok(())
     }
 
-    /// Print a glyph at the cursor location
-    pub fn print<'a>(&mut self, glyph: Glyph<'a>) -> Result<()> {
-        match glyph.inner {
-            GlyphInner::Char(ch) => queue!(self.out, style::Print(ch))?,
-            GlyphInner::Str(st) => queue!(self.out, style::Print(st))?,
-        }
+    /// Print a char at the cursor location
+    fn print_char(&mut self, ch: char) -> Result<()> {
+        queue!(self.out, style::Print(ch))?;
+        Ok(())
+    }
+
+    /// Print a str at the cursor location
+    fn print_str(&mut self, st: &str) -> Result<()> {
+        queue!(self.out, style::Print(st))?;
         Ok(())
     }
 
@@ -192,20 +195,46 @@ impl Drop for Screen {
     }
 }
 
-impl<'a> Grid<'a> {
-    /// Fill the grid with a glyph
+impl<'a> Cells<'a> {
+    /// Get the width
+    pub fn width(&self) -> u16 {
+        self.bbox.width()
+    }
+
+    /// Get the height
+    pub fn height(&self) -> u16 {
+        self.bbox.height()
+    }
+
+    /// Fill the cells with a glyph
     pub fn fill(&'a mut self, glyph: Glyph<'a>) -> Result<()> {
-        let area = self.area;
-        let fill_width = area.width() / glyph.width() as u16;
-        if area.height() > 0 && fill_width > 0 {
-            self.screen.move_to(area.col(), area.row())?;
-            for row in 0..area.height() {
-                self.screen.move_to(area.col(), area.row() + row)?;
+        let bbox = self.bbox;
+        let fill_width = bbox.width() / glyph.width() as u16;
+        if bbox.height() > 0 && fill_width > 0 {
+            self.move_to(bbox.col(), bbox.row())?;
+            for row in 0..bbox.height() {
+                self.move_to(bbox.col(), bbox.row() + row)?;
                 for _ in 0..fill_width {
-                    self.screen.print(glyph)?;
+                    match glyph.inner {
+                        GlyphInner::Char(ch) => self.screen.print_char(ch)?,
+                        GlyphInner::Str(st) => self.screen.print_str(st)?,
+                    }
                 }
             }
         }
         Ok(())
+    }
+
+    /// Move cursor to a cell
+    pub fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
+        let col = self.bbox.col() + col;
+        let row = self.bbox.row() + row;
+        self.screen.move_to(col, row)
+    }
+
+    /// Print a str at the cursor location
+    pub fn print_str(&mut self, st: &str) -> Result<()> {
+        // FIXME: check width first
+        self.screen.print_str(st)
     }
 }

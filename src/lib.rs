@@ -3,12 +3,14 @@
 // Copyright (c) 2020  Douglas Lau
 //
 
-mod area;
+mod bbox;
 mod error;
+mod label;
 mod screen;
 mod widget;
 
-pub use crate::area::{Area, Dim, Edge, Pos};
+pub use crate::bbox::{BBox, Dim, Edge, Pos};
 pub use crate::error::{Error, Result};
-pub use crate::screen::{Glyph, Grid, Screen};
+pub use crate::label::Label;
+pub use crate::screen::{Cells, Glyph, Screen};
 pub use crate::widget::Widget;
