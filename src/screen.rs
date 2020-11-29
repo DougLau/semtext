@@ -2,18 +2,19 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Area, Dim, Result};
+use crate::{Area, Dim, Error, Result};
 use crossterm::event::Event;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
     LeaveAlternateScreen, SetTitle,
 };
 use crossterm::{cursor, event, queue, style};
+use std::convert::TryFrom;
 use std::io::{Stdout, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// Inner enum for glyphs
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum GlyphInner<'a> {
     /// Character glyph
     Char(char),
@@ -22,9 +23,12 @@ enum GlyphInner<'a> {
 }
 
 /// Printable glyph
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Glyph<'a> {
+    /// Inner glyph value (char or str)
     inner: GlyphInner<'a>,
+    /// Width in grid cells (must be either 1 or 2)
+    width: usize,
 }
 
 /// Terminal screen
@@ -35,31 +39,39 @@ pub struct Screen {
     dim: Dim,
 }
 
-impl From<char> for Glyph<'_> {
-    fn from(c: char) -> Self {
-        let inner = GlyphInner::Char(c);
-        Glyph { inner }
+impl TryFrom<char> for Glyph<'_> {
+    type Error = Error;
+
+    fn try_from(c: char) -> Result<Self> {
+        if let Some(width) = c.width() {
+            if width == 1 || width == 2 {
+                let inner = GlyphInner::Char(c);
+                return Ok(Glyph { inner, width });
+            }
+        }
+        Err(Error::InvalidGlyph())
     }
 }
 
-impl<'a> From<&'a str> for Glyph<'a> {
-    fn from(s: &'a str) -> Self {
-        let inner = GlyphInner::Str(s);
-        Glyph { inner }
+impl<'a> TryFrom<&'a str> for Glyph<'a> {
+    type Error = Error;
+
+    fn try_from(s: &'a str) -> Result<Self> {
+        let width = s.width();
+        if width == 1 || width == 2 {
+            let inner = GlyphInner::Str(s);
+            return Ok(Glyph { inner, width });
+        }
+        Err(Error::InvalidGlyph())
     }
 }
 
 impl<'a> Glyph<'a> {
-    /// Get the glyph width
+    /// Get the glyph width.
+    ///
+    /// The width must be either 1 or 2 (checked on construction).
     fn width(self) -> usize {
-        match self.inner {
-            GlyphInner::Char(c) => {
-                c.width().unwrap_or(0)
-            }
-            GlyphInner::Str(s) => {
-                s.width()
-            }
-        }
+        self.width
     }
 }
 
@@ -88,7 +100,7 @@ impl Screen {
         Area::new(0, 0, self.dim.width, self.dim.height)
     }
 
-    /// Clear the screen to the background color
+    /// Clear the screen (fill with the space character)
     pub fn clear(&mut self) -> Result<()> {
         queue!(self.out, Clear(ClearType::All))?;
         Ok(())
@@ -125,31 +137,22 @@ impl Screen {
     }
 
     /// Print a glyph at the cursor location
-    pub fn print<'a, G>(&mut self, g: G) -> Result<()>
-        where G: Into<Glyph<'a>>,
-    {
-        let glyph = g.into();
-        let width = glyph.width();
-        debug_assert!(width == 1 || width == 2);
+    pub fn print<'a>(&mut self, glyph: Glyph<'a>) -> Result<()> {
         match glyph.inner {
-            GlyphInner::Char(c) => queue!(self.out, style::Print(c))?,
-            GlyphInner::Str(s) => queue!(self.out, style::Print(s))?,
+            GlyphInner::Char(ch) => queue!(self.out, style::Print(ch))?,
+            GlyphInner::Str(st) => queue!(self.out, style::Print(st))?,
         }
         Ok(())
     }
 
     /// Fill an area with a character
-    pub fn fill(&mut self, area: Area, fill: char) -> Result<()> {
-        let glyph = Glyph::from(fill);
-        let width = glyph.width();
-        if width > 0 && width <= 2 {
-            let fill_width = area.width() / width as u16;
-            self.move_to(area.col(), area.row())?;
-            for row in 0..area.height() {
-                self.move_to(area.col(), area.row() + row)?;
-                for _ in 0..fill_width {
-                    self.print(glyph)?;
-                }
+    pub fn fill<'a>(&mut self, area: Area, glyph: Glyph<'a>) -> Result<()> {
+        let fill_width = area.width() / glyph.width() as u16;
+        self.move_to(area.col(), area.row())?;
+        for row in 0..area.height() {
+            self.move_to(area.col(), area.row() + row)?;
+            for _ in 0..fill_width {
+                self.print(glyph)?;
             }
         }
         Ok(())

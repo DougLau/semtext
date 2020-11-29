@@ -12,6 +12,9 @@ pub enum Error {
     /// Crossterm error
     Crossterm(crossterm::ErrorKind),
 
+    /// Invalid glyph
+    InvalidGlyph(),
+
     /// I/O error
     Io(io::Error),
 }
@@ -23,6 +26,7 @@ impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Crossterm(err) => err.fmt(fmt),
+            Error::InvalidGlyph() => write!(fmt, "Invalid glyph"),
             Error::Io(ref err) => err.fmt(fmt),
         }
     }
@@ -32,6 +36,7 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             Error::Crossterm(ref err) => Some(err),
+            Error::InvalidGlyph() => None,
             Error::Io(ref err) => Some(err),
         }
     }
