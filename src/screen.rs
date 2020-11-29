@@ -4,11 +4,7 @@
 //
 use crate::{Area, Dim, Error, Result};
 use crossterm::event::Event;
-use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
-    LeaveAlternateScreen, SetTitle,
-};
-use crossterm::{cursor, event, queue, style};
+use crossterm::{cursor, event, queue, style, terminal};
 use std::convert::TryFrom;
 use std::io::{Stdout, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
@@ -78,20 +74,23 @@ impl<'a> Glyph<'a> {
 impl Screen {
     /// Create a new Screen
     pub fn new() -> Result<Self> {
-        let (width, height) = crossterm::terminal::size()?;
+        let (width, height) = terminal::size()?;
         let dim = Dim::new(width, height);
-        enable_raw_mode()?;
+        terminal::enable_raw_mode()?;
         let mut out = std::io::stdout();
-        queue!(out, EnterAlternateScreen, cursor::Hide)?;
-        Ok(Screen {
+        queue!(
             out,
-            dim,
-        })
+            terminal::EnterAlternateScreen,
+            cursor::Hide,
+            terminal::DisableLineWrap,
+            terminal::Clear(terminal::ClearType::All),
+        )?;
+        Ok(Screen { out, dim })
     }
 
     /// Set the screen title
     pub fn set_title(&mut self, title: &str) -> Result<()> {
-        queue!(self.out, SetTitle(title))?;
+        queue!(self.out, terminal::SetTitle(title))?;
         Ok(())
     }
 
@@ -102,7 +101,7 @@ impl Screen {
 
     /// Clear the screen (fill with the space character)
     pub fn clear(&mut self) -> Result<()> {
-        queue!(self.out, Clear(ClearType::All))?;
+        queue!(self.out, terminal::Clear(terminal::ClearType::All))?;
         Ok(())
     }
 
@@ -172,12 +171,13 @@ impl Screen {
     fn cleanup(&mut self) -> Result<()> {
         queue!(
             self.out,
-            LeaveAlternateScreen,
+            terminal::EnableLineWrap,
+            terminal::LeaveAlternateScreen,
             cursor::Show,
             style::ResetColor,
         )?;
         self.out.flush()?;
-        disable_raw_mode()?;
+        terminal::disable_raw_mode()?;
         Ok(())
     }
 }
