@@ -23,24 +23,42 @@ bitflags! {
     }
 }
 
+/// Text grid cell position
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Pos {
+    /// Column relative to left edge of grid
+    pub col: u16,
+    /// Row relative to top edge of grid
+    pub row: u16,
+}
+
+/// Text grid cell dimensions
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Dim {
+    /// Width in text cells
     pub width: u16,
+    /// Height in text cells
     pub height: u16,
 }
 
-/// Rectangular area of text cells
+/// Rectangular area of text grid cells
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Area {
-    /// Left column
-    col: u16,
-    /// Top row
-    row: u16,
-    /// Size in cells
+    /// Position of top-left cell
+    pos: Pos,
+    /// Dimensions in grid cells
     dim: Dim,
 }
 
+impl Pos {
+    /// Create a new position
+    pub fn new(col: u16, row: u16) -> Self {
+        Self { col, row }
+    }
+}
+
 impl Dim {
+    /// Create a new cell dimension
     pub fn new(width: u16, height: u16) -> Self {
         Self { width, height }
     }
@@ -49,18 +67,19 @@ impl Dim {
 impl Area {
     /// Create a new area
     pub fn new(col: u16, row: u16, width: u16, height: u16) -> Self {
+        let pos = Pos::new(col, row);
         let dim = Dim::new(width, height);
-        Area { col, row, dim }
+        Area { pos, dim }
     }
 
-    /// Get the column
+    /// Get the left column
     pub fn col(self) -> u16 {
-        self.col
+        self.pos.col
     }
 
-    /// Get the row
+    /// Get the top row
     pub fn row(self) -> u16 {
-        self.row
+        self.pos.row
     }
 
     /// Get the width
@@ -72,12 +91,6 @@ impl Area {
     pub fn height(self) -> u16 {
         self.dim.height
     }
-
-/*
-    /// Get the area inside the given border
-    pub fn inset(self, bdr: Border) -> Self {
-        self.trim(bdr.edges, 1)
-    }*/
 
     /// Split into two areas starting from a given edge
     pub fn split(self, edge: Edge, cells: u16) -> (Self, Self) {
@@ -97,7 +110,7 @@ impl Area {
         let mut left = self;
         left.dim.width = self.width().min(width);
         let mut right = self;
-        right.col = self.col + left.width();
+        right.pos.col = self.col() + left.width();
         right.dim.width = self.width() - left.width();
         (left, right)
     }
@@ -106,7 +119,7 @@ impl Area {
     fn split_right(self, width: u16) -> (Self, Self) {
         let mut right = self;
         right.dim.width = self.width().min(width);
-        right.col = self.col + self.width() - right.width();
+        right.pos.col = self.col() + self.width() - right.width();
         let mut left = self;
         left.dim.width = self.width() - right.width();
         (right, left)
@@ -123,7 +136,7 @@ impl Area {
         top.dim.height = self.height().min(height);
         let mut bottom = self;
         bottom.dim.height = self.height() - top.height();
-        bottom.row = self.row + top.height();
+        bottom.pos.row = self.row() + top.height();
         (top, bottom)
     }
 
@@ -131,7 +144,7 @@ impl Area {
     fn split_bottom(self, height: u16) -> (Self, Self) {
         let mut bottom = self;
         bottom.dim.height = self.height().min(height);
-        bottom.row = self.row + self.height() - bottom.height();
+        bottom.pos.row = self.row() + self.height() - bottom.height();
         let mut top = self;
         top.dim.height = self.height() - bottom.height();
         (bottom, top)
@@ -163,7 +176,7 @@ impl Area {
     /// Trim cells from left edge
     fn trim_left(&mut self, cells: u16) {
         let cells = self.width().min(cells);
-        self.col += cells;
+        self.pos.col += cells;
         self.dim.width -= cells;
     }
 
@@ -176,7 +189,7 @@ impl Area {
     /// Trim cells from top edge
     fn trim_top(&mut self, cells: u16) {
         let cells = self.height().min(cells);
-        self.row += cells;
+        self.pos.row += cells;
         self.dim.height -= cells;
     }
 
