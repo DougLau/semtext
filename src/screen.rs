@@ -19,6 +19,19 @@ enum GlyphInner<'a> {
 }
 
 /// Printable glyph
+///
+/// A glyph can be made from a `char` or `&str`:
+///
+/// ```rust
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use semtext::Glyph;
+/// use std::convert::TryFrom;
+///
+/// let glyph_char = Glyph::try_from('🦀')?;
+/// let glyph_str = Glyph::try_from("a\u{308}")?;
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Glyph<'a> {
     /// Inner glyph value (char or str)
