@@ -1,0 +1,13 @@
+[package]
+name = "semtext"
+version = "0.1.0"
+authors = ["Douglas Lau <doug.p.lau@gmail.com>"]
+description = "Terminal UI Library"
+license = "MIT OR Apache-2.0"
+keywords = ["tui", "terminal", "ui"]
+edition = "2018"
+
+[dependencies]
+bitflags = "1.2"
+crossterm = "0.18"
+unicode-width = "0.1"
