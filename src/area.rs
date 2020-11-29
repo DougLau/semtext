@@ -62,6 +62,11 @@ impl Dim {
     pub fn new(width: u16, height: u16) -> Self {
         Self { width, height }
     }
+
+    /// Check if the dimension is empty
+    pub fn is_empty(self) -> bool {
+        self.width == 0 || self.height == 0
+    }
 }
 
 impl Area {
@@ -90,6 +95,32 @@ impl Area {
     /// Get the height
     pub fn height(self) -> u16 {
         self.dim.height
+    }
+
+    /// Check if the area is empty
+    pub fn is_empty(self) -> bool {
+        self.dim.is_empty()
+    }
+
+    /// Get the right column
+    fn right(self) -> u16 {
+        self.col() + self.width()
+    }
+
+    /// Get the bottom row
+    fn bottom(self) -> u16 {
+        self.row() + self.height()
+    }
+
+    /// Clip with another area
+    pub fn clip(self, rhs: Self) -> Self {
+        let col = self.col().max(rhs.col());
+        let row = self.row().max(rhs.row());
+        let right = self.right().min(rhs.right());
+        let bottom = self.bottom().min(rhs.bottom());
+        let width = if right > col { right - col } else { 0 };
+        let height = if bottom > row { bottom - row } else { 0 };
+        Area::new(col, row, width, height)
     }
 
     /// Split into two areas starting from a given edge

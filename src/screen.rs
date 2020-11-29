@@ -31,8 +31,16 @@ pub struct Glyph<'a> {
 pub struct Screen {
     /// Standard Output
     out: Stdout,
-    /// Dimensions of screen in character cells
+    /// Dimensions of screen in grid cells
     dim: Dim,
+}
+
+/// Grid of cells for text on a screen
+pub struct Grid<'a> {
+    /// Screen containing grid
+    screen: &'a mut Screen,
+    /// Area of grid
+    area: Area,
 }
 
 impl TryFrom<char> for Glyph<'_> {
@@ -105,6 +113,12 @@ impl Screen {
         Ok(())
     }
 
+    /// Get a grid of cells on screen
+    pub fn grid(&mut self, area: Area) -> Grid {
+        let area = self.area().clip(area);
+        Grid { screen: self, area }
+    }
+
     /// Set a text attribute
     pub fn set_attribute(&mut self, attr: style::Attribute) -> Result<()> {
         queue!(self.out, style::SetAttribute(attr))?;
@@ -144,19 +158,6 @@ impl Screen {
         Ok(())
     }
 
-    /// Fill an area with a character
-    pub fn fill<'a>(&mut self, area: Area, glyph: Glyph<'a>) -> Result<()> {
-        let fill_width = area.width() / glyph.width() as u16;
-        self.move_to(area.col(), area.row())?;
-        for row in 0..area.height() {
-            self.move_to(area.col(), area.row() + row)?;
-            for _ in 0..fill_width {
-                self.print(glyph)?;
-            }
-        }
-        Ok(())
-    }
-
     /// Wait for input events
     pub fn event(&mut self) -> Result<Event> {
         self.out.flush()?;
@@ -188,5 +189,23 @@ impl Drop for Screen {
             // Is this useful?
             dbg!(err);
         }
+    }
+}
+
+impl<'a> Grid<'a> {
+    /// Fill the grid with a glyph
+    pub fn fill(&'a mut self, glyph: Glyph<'a>) -> Result<()> {
+        let area = self.area;
+        let fill_width = area.width() / glyph.width() as u16;
+        if area.height() > 0 && fill_width > 0 {
+            self.screen.move_to(area.col(), area.row())?;
+            for row in 0..area.height() {
+                self.screen.move_to(area.col(), area.row() + row)?;
+                for _ in 0..fill_width {
+                    self.screen.print(glyph)?;
+                }
+            }
+        }
+        Ok(())
     }
 }
