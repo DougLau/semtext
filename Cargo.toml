@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Douglas Lau <doug.p.lau@gmail.com>"]
 description = "Terminal UI Library"
 license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/semtext"
+homepage = "https://github.com/DougLau/semtext"
+repository = "https://github.com/DougLau/semtext"
+readme = "README.md"
 keywords = ["tui", "terminal", "ui"]
 edition = "2018"
 
