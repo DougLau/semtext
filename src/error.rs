@@ -5,7 +5,7 @@
 use std::fmt;
 use std::io;
 
-/// Error enum
+/// Enum of `semtext` errors
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum Error {
@@ -19,7 +19,7 @@ pub enum Error {
     Io(io::Error),
 }
 
-/// Result type
+/// Result for `semtext` errors
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl fmt::Display for Error {

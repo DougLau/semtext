@@ -5,7 +5,7 @@
 use bitflags::bitflags;
 
 bitflags! {
-    /// Edges
+    /// Edge of a widget or bounding box
     #[derive(Default)]
     pub struct Edge: u8 {
         const NONE = 0x00;
@@ -23,16 +23,16 @@ bitflags! {
     }
 }
 
-/// Text grid cell position
+/// Text cell position
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Pos {
-    /// Column relative to left edge of grid
+    /// Column relative to left edge
     pub col: u16,
-    /// Row relative to top edge of grid
+    /// Row relative to top edge
     pub row: u16,
 }
 
-/// Text grid cell dimensions
+/// Text cell dimensions
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Dim {
     /// Width in text cells
@@ -41,12 +41,12 @@ pub struct Dim {
     pub height: u16,
 }
 
-/// Bounding box of text grid cells
+/// Bounding box of text cells
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BBox {
     /// Position of top-left cell
     pos: Pos,
-    /// Dimensions in grid cells
+    /// Dimensions in text cells
     dim: Dim,
 }
 

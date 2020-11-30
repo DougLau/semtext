@@ -4,6 +4,7 @@
 //
 use crate::{Cells, Result};
 
+/// A component of a user interface
 pub trait Widget {
     /// Render the widget
     fn render(&self, _cells: &mut Cells) -> Result<()> {

@@ -48,7 +48,9 @@ pub struct Screen {
     dim: Dim,
 }
 
-/// Cells of text on a screen
+/// Cells of text
+///
+/// The cells are in a rectangular area of the screen.
 pub struct Cells<'a> {
     /// Screen containing cells
     screen: &'a mut Screen,

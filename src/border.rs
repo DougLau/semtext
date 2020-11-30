@@ -69,7 +69,9 @@ pub enum LineStyle {
     OuterBlock,
 }
 
-/// Border around a widget
+/// Border widget
+///
+/// One or more edges are drawn around a bounding box.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Border {
     /// Normal edges

@@ -5,11 +5,13 @@
 use crate::{Cells, Result, Widget};
 use textwrap::wrap_iter;
 
+/// Text label widget
 pub struct Label {
     txt: String,
 }
 
 impl Label {
+    /// Create a new label widget
     pub fn new(txt: &str) -> Self {
         let txt = txt.to_string();
         Label { txt }
