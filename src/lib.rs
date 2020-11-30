@@ -15,6 +15,7 @@ mod constraints;
 mod error;
 mod label;
 mod screen;
+mod spacer;
 mod widget;
 
 pub use crate::bbox::{BBox, Dim, Edge, Pos};
@@ -23,4 +24,5 @@ pub use crate::constraints::Constraints;
 pub use crate::error::{Error, Result};
 pub use crate::label::Label;
 pub use crate::screen::{Cells, Glyph, Screen};
+pub use crate::spacer::Spacer;
 pub use crate::widget::Widget;

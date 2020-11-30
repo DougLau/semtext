@@ -10,7 +10,7 @@ use std::ops::{Bound, RangeBounds};
 /// Width is constrained by horizontal bounds, height by vertical.
 ///
 /// They can be specified using range syntax.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Constraints {
     /// Horizontal start bound
     horiz_start: Bound<u16>,
