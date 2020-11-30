@@ -245,6 +245,12 @@ impl<'a> Cells<'a> {
         self.screen.move_to(col, row)
     }
 
+    /// Print a char at the cursor location
+    pub fn print_char(&mut self, ch: char) -> Result<()> {
+        // FIXME: check width first
+        self.screen.print_char(ch)
+    }
+
     /// Print a str at the cursor location
     pub fn print_str(&mut self, st: &str) -> Result<()> {
         // FIXME: check width first
