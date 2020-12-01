@@ -15,6 +15,9 @@ pub enum Error {
     /// Invalid glyph
     InvalidGlyph(),
 
+    /// Invalid layout grid
+    InvalidGrid(),
+
     /// I/O error
     Io(io::Error),
 }
@@ -27,6 +30,9 @@ impl fmt::Display for Error {
         match self {
             Error::Crossterm(err) => err.fmt(fmt),
             Error::InvalidGlyph() => write!(fmt, "Invalid glyph"),
+            Error::InvalidGrid() => {
+                write!(fmt, "Invalid grid: all widgets must be rectangular")
+            }
             Error::Io(ref err) => err.fmt(fmt),
         }
     }
@@ -36,8 +42,8 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             Error::Crossterm(ref err) => Some(err),
-            Error::InvalidGlyph() => None,
             Error::Io(ref err) => Some(err),
+            _ => None,
         }
     }
 }
