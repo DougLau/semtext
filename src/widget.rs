@@ -6,7 +6,7 @@ use crate::{Cells, Constraints, Result};
 
 /// A component of a user interface
 pub trait Widget {
-    /// Get the widget constraints
+    /// Get the layout constraints
     fn constraints(&self) -> Constraints {
         Constraints::default()
     }

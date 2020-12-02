@@ -4,12 +4,14 @@
 //
 use std::ops::{Bound, RangeBounds};
 
-/// Widget dimension constraints
+/// Widget layout constraints
 ///
-/// These are minimum and maximum bounds for widget size, in cells.
+/// These are minimum and maximum bounds for [Widget] dimensions, in cells.
 /// Width is constrained by horizontal bounds, height by vertical.
 ///
 /// They can be specified using range syntax.
+///
+/// [Widget]: trait.Widget.html
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Constraints {
     /// Horizontal start bound

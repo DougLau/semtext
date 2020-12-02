@@ -4,9 +4,9 @@
 //
 use crate::{Error, Result, Widget};
 
-/// A helper to lay out widgets.
+/// Helper for widget layout.
 ///
-/// This is used to lay out `Widget`s in a rectangular layer of cells.
+/// It can build a rectangular array of text cells containing [Widget]s.
 pub struct Grid<'a> {
     widgets: Vec<&'a dyn Widget>,
     rows: usize,
@@ -16,11 +16,11 @@ pub struct Grid<'a> {
 impl<'a> Grid<'a> {
     /// Create a new layout grid
     ///
-    /// Rather than using this function directly, the `grid` macro is
+    /// Rather than using this function directly, the [grid] macro is
     /// recommended.
     ///
-    /// * `widgets`: A `Vec` of references to `Widget`s, laid out in column,
-    ///              then row order.
+    /// * `widgets`: A `Vec` of `Widget` references, laid out in row-major
+    ///              order.
     /// * `rows`: The number of rows in the grid.
     pub fn new(widgets: Vec<&'a dyn Widget>, rows: usize) -> Result<Self> {
         let cols = widgets.len() / rows;
@@ -78,10 +78,10 @@ impl<'a> Grid<'a> {
 /// Build a [Grid] of [Widget]s
 ///
 /// This macro is inspired by the concise CSS [grid-template-areas] property.
-/// Each row is a series of [Widget] identifiers, separated by spaces, and
-/// terminated by a comma.
-/// A [Widget] can appear multiple times in the grid as long as it occupies a
-/// rectangular pattern.
+/// Each row is a series of `Widget` identifiers, separated by spaces, and
+/// ending with a comma.
+/// A `Widget` can appear multiple times in the `Grid` as long as it occupies a
+/// rectangular shape.
 ///
 /// ## Example
 /// ```rust
@@ -96,12 +96,10 @@ impl<'a> Grid<'a> {
 ///     a a b,
 ///     a a b,
 ///     c c b,
-/// );
+/// ).unwrap();
 /// # }
 /// ```
 /// [grid-template-areas]: https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas
-/// [Grid]: struct.Grid.html
-/// [Widget]: trait.Widget.html
 #[macro_export]
 macro_rules! grid {
     ( $($($widget:ident) + ,)*) => {
