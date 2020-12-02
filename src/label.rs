@@ -24,7 +24,7 @@ impl Widget for Label {
         let width = usize::from(cells.width());
         let height = usize::from(cells.height());
         for (row, txt) in wrap_iter(&self.txt, width).take(height).enumerate() {
-            let row = row as u16; // FIXME
+            let row = row as u16; // limited to u16 by take(height)
             cells.move_to(0, row)?;
             cells.print_str(&txt)?;
         }

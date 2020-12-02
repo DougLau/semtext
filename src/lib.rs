@@ -20,7 +20,8 @@ mod screen;
 mod spacer;
 mod widget;
 
-pub use crate::bbox::{BBox, Dim, Edge, Pos};
+use crate::bbox::{BBox, Dim, Pos};
+pub use crate::bbox::Edge;
 pub use crate::border::{Border, LineStyle};
 pub use crate::constraints::Constraints;
 pub use crate::error::{Error, Result};
