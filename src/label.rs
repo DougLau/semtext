@@ -6,6 +6,18 @@ use crate::{Cells, Result, Widget};
 use textwrap::wrap_iter;
 
 /// Text label widget
+///
+/// Inline styling using Markdown:
+///
+/// Text Style        | Markdown
+/// ------------------|---------
+/// Normal            | `Normal`
+/// `Reverse`         | `` `Reverse` ``
+/// _Italic_          | `*Italic*` or `_Italic_`
+/// **Bold**          | `**Bold**` or `__Bold__`
+/// ~~Strikethrough~~ | `~~Strikethrough~~`
+/// <u>Underline</u>  | `<u>Underline</u>`
+///
 pub struct Label {
     txt: String,
 }
