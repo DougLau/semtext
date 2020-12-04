@@ -128,12 +128,12 @@ impl<'a> LayoutBuilder<'a> {
         let mut done = 0; // number of widgets completed
         let mut width = 1;
         while done < w_bounds.len() && width <= self.cols {
-            for (con, gb) in w_bounds.iter().zip(&self.grid_boxes) {
+            for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
                 if gb.width() == width {
                     let start = gb.left().into();
                     let end = gb.right().into();
                     let mut bounds = &mut col_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, con.col);
+                    adjust_length_bounds(&mut bounds, wbnd.col);
                     done += 1;
                 }
             }
@@ -148,12 +148,12 @@ impl<'a> LayoutBuilder<'a> {
         let mut done = 0;
         let mut height = 1;
         while done < w_bounds.len() && height <= self.rows {
-            for (con, gb) in w_bounds.iter().zip(&self.grid_boxes) {
+            for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
                 if gb.height() == height {
                     let start = gb.top().into();
                     let end = gb.bottom().into();
                     let mut bounds = &mut row_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, con.row);
+                    adjust_length_bounds(&mut bounds, wbnd.row);
                     done += 1;
                 }
             }
@@ -171,12 +171,12 @@ fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
 /// Adjust a slice of length bounds to match a widget's bounds
 ///
 /// * `bounds`: Length bounds for columns or rows containing the widget
-/// * `wcon`: Length bounds for the widget
-fn adjust_length_bounds(bounds: &mut [LengthBound], wcon: LengthBound) {
-    distribute_decrease(bounds, wcon.maximum());
+/// * `wbnd`: Length bounds for the widget
+fn adjust_length_bounds(bounds: &mut [LengthBound], wbnd: LengthBound) {
+    distribute_decrease(bounds, wbnd.maximum());
     let min: u16 = bounds.iter().map(|c| c.minimum()).sum();
-    if min < wcon.minimum() {
-        let increase = wcon.minimum() - min;
+    if min < wbnd.minimum() {
+        let increase = wbnd.minimum() - min;
         let push_increase = distribute_increase(bounds, increase, false);
         distribute_increase(bounds, push_increase, true);
     }
