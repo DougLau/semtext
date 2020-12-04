@@ -4,78 +4,141 @@
 //
 use std::ops::{Bound, RangeBounds};
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Constraints1 {
+    /// Minimum bound (inclusive)
+    minimum: u16,
+    /// Maximum bound (exclusive)
+    maximum: u16,
+}
+
 /// Widget layout constraints
 ///
 /// These are minimum and maximum bounds for [Widget] dimensions, in cells.
-/// Width is constrained by horizontal bounds, height by vertical.
+/// This included column and row constraints.
 ///
 /// They can be specified using range syntax.
 ///
 /// [Widget]: trait.Widget.html
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Constraints {
-    /// Horizontal start bound
-    horiz_start: Bound<u16>,
-    /// Horizontal end bound
-    horiz_end: Bound<u16>,
-    /// Vertical start bound
-    vert_start: Bound<u16>,
-    /// Vertical end bound
-    vert_end: Bound<u16>,
+    /// Column constraints
+    pub col: Constraints1,
+    /// Vertical constraints
+    pub row: Constraints1,
+}
+
+impl Default for Constraints1 {
+    fn default() -> Self {
+        Constraints1 {
+            minimum: u16::MIN,
+            maximum: u16::MAX,
+        }
+    }
+}
+
+impl Constraints1 {
+    /// Create one dimensional constraints
+    pub fn new<R>(bounds: R) -> Self
+    where
+        R: RangeBounds<u16>,
+    {
+        let minimum = min_bound(bounds.start_bound());
+        let maximum = max_bound(bounds.end_bound());
+        Constraints1 { minimum, maximum }
+    }
+
+    /// Get the minimum bound (inclusive)
+    pub fn minimum(self) -> u16 {
+        self.minimum
+    }
+
+    /// Get the maximum bound (exclusive)
+    pub fn maximum(self) -> u16 {
+        self.maximum
+    }
+
+    /// Get the available amount to increase
+    pub fn available(self) -> u16 {
+        self.maximum - self.minimum
+    }
+
+    /// Increase minimum amount
+    pub fn increase(&mut self) {
+        self.minimum += 1;
+        if self.minimum >= self.maximum {
+            self.maximum = self.minimum + 1;
+        }
+    }
+
+    /// Decrease maximum amount
+    pub fn decrease(&mut self, amount: u16) {
+        self.maximum = amount.max(self.minimum + 1);
+    }
+}
+
+/// Get minimum from a bound
+fn min_bound(bound: Bound<&u16>) -> u16 {
+    match bound {
+        Bound::Unbounded => u16::MIN,
+        Bound::Included(x) => *x,
+        Bound::Excluded(x) => *x + 1,
+    }
+}
+
+/// Get maximum from a bound
+fn max_bound(bound: Bound<&u16>) -> u16 {
+    match bound {
+        Bound::Unbounded => u16::MAX,
+        Bound::Included(x) => *x + 1,
+        Bound::Excluded(x) => *x,
+    }
 }
 
 impl Default for Constraints {
     fn default() -> Self {
         Constraints {
-            horiz_start: Bound::Unbounded,
-            horiz_end: Bound::Unbounded,
-            vert_start: Bound::Unbounded,
-            vert_end: Bound::Unbounded,
+            col: Constraints1::default(),
+            row: Constraints1::default(),
         }
     }
 }
 
-/// Get cloned range bound
-fn bound_cloned<T: Clone>(bound: Bound<&T>) -> Bound<T> {
-    match bound {
-        Bound::Unbounded => Bound::Unbounded,
-        Bound::Included(x) => Bound::Included(x.clone()),
-        Bound::Excluded(x) => Bound::Excluded(x.clone()),
-    }
-}
-
 impl Constraints {
-    /// Adjust horizontal constraints
+    /// Create new constraints
+    fn new(col: Constraints1, row: Constraints1) -> Self {
+        Constraints { col, row }
+    }
+
+    /// Adjust column constraints
     ///
     /// ```rust
     /// use semtext::Constraints;
     ///
-    /// let c0 = Constraints::default().with_horizontal(..10);
-    /// let c1 = Constraints::default().with_horizontal(2..);
+    /// let c0 = Constraints::default().with_columns(..10);
+    /// let c1 = Constraints::default().with_columns(2..);
     /// ```
-    pub fn with_horizontal<R>(mut self, horiz: R) -> Self
+    pub fn with_columns<R>(mut self, col: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.horiz_start = bound_cloned(horiz.start_bound());
-        self.horiz_end = bound_cloned(horiz.end_bound());
+        self.col = Constraints1::new(col);
         self
     }
 
-    /// Adjust vertical constraints
+    /// Adjust row constraints
     ///
     /// ```rust
     /// use semtext::Constraints;
     ///
-    /// let c0 = Constraints::default().with_vertical(1..8);
-    /// let c1 = Constraints::default().with_vertical(2..=4);
+    /// let c0 = Constraints::default().with_rows(1..8);
+    /// let c1 = Constraints::default().with_rows(2..=4);
     /// ```
-    pub fn with_vertical<R>(mut self, vert: R) -> Self
+    pub fn with_rows<R>(mut self, row: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.vert_start = bound_cloned(vert.start_bound());
-        self.vert_end = bound_cloned(vert.end_bound());
+        self.row = Constraints1::new(row);
         self
     }
 }
@@ -87,16 +150,14 @@ mod test {
     #[test]
     fn constraints() {
         let con = Constraints::default();
-        assert_eq!(con.horiz_start, Bound::Unbounded);
-        assert_eq!(con.horiz_end, Bound::Unbounded);
-        assert_eq!(con.vert_start, Bound::Unbounded);
-        assert_eq!(con.vert_end, Bound::Unbounded);
-        let con = Constraints::default()
-            .with_horizontal(..5)
-            .with_vertical(2..=2);
-        assert_eq!(con.horiz_start, Bound::Unbounded);
-        assert_eq!(con.horiz_end, Bound::Excluded(5));
-        assert_eq!(con.vert_start, Bound::Included(2));
-        assert_eq!(con.vert_end, Bound::Included(2));
+        assert_eq!(con.col.minimum, 0);
+        assert_eq!(con.col.maximum, u16::MAX);
+        assert_eq!(con.row.minimum, 0);
+        assert_eq!(con.row.maximum, u16::MAX);
+        let con = Constraints::default().with_columns(..5).with_rows(2..=2);
+        assert_eq!(con.col.minimum, 0);
+        assert_eq!(con.col.maximum, 5);
+        assert_eq!(con.row.minimum, 2);
+        assert_eq!(con.row.maximum, 3);
     }
 }

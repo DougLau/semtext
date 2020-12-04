@@ -226,9 +226,9 @@ impl<'a> Cells<'a> {
         let bbox = self.bbox;
         let fill_width = bbox.width() / glyph.width() as u16;
         if bbox.height() > 0 && fill_width > 0 {
-            self.move_to(bbox.col(), bbox.row())?;
+            self.move_to(bbox.left(), bbox.top())?;
             for row in 0..bbox.height() {
-                self.move_to(bbox.col(), bbox.row() + row)?;
+                self.move_to(bbox.left(), bbox.top() + row)?;
                 for _ in 0..fill_width {
                     match glyph.inner {
                         GlyphInner::Char(ch) => self.screen.print_char(ch)?,
@@ -242,8 +242,8 @@ impl<'a> Cells<'a> {
 
     /// Move cursor to a cell
     pub fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
-        let col = self.bbox.col() + col;
-        let row = self.bbox.row() + row;
+        let col = self.bbox.left() + col;
+        let row = self.bbox.top() + row;
         self.screen.move_to(col, row)
     }
 

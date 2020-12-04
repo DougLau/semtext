@@ -12,35 +12,35 @@ pub struct Spacer {
 }
 
 impl Spacer {
-    /// Adjust horizontal spacing (constraints)
+    /// Adjust column spacing (constraints)
     ///
     /// ```rust
     /// use semtext::Spacer;
     ///
-    /// let s0 = Spacer::default().with_horizontal(..10);
-    /// let s1 = Spacer::default().with_horizontal(2..);
+    /// let s0 = Spacer::default().with_columns(..10);
+    /// let s1 = Spacer::default().with_columns(2..);
     /// ```
-    pub fn with_horizontal<R>(mut self, horiz: R) -> Self
+    pub fn with_columns<R>(mut self, col: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.constraints = self.constraints.with_horizontal(horiz);
+        self.constraints = self.constraints.with_columns(col);
         self
     }
 
-    /// Adjust vertical spacing (constraints)
+    /// Adjust row spacing (constraints)
     ///
     /// ```rust
     /// use semtext::Spacer;
     ///
-    /// let s0 = Spacer::default().with_vertical(1..8);
-    /// let s1 = Spacer::default().with_vertical(2..=4);
+    /// let s0 = Spacer::default().with_rows(1..8);
+    /// let s1 = Spacer::default().with_rows(2..=4);
     /// ```
-    pub fn with_vertical<R>(mut self, vert: R) -> Self
+    pub fn with_rows<R>(mut self, row: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.constraints = self.constraints.with_vertical(vert);
+        self.constraints = self.constraints.with_rows(row);
         self
     }
 }

@@ -24,7 +24,7 @@ bitflags! {
 }
 
 /// Text cell position
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Pos {
     /// Column relative to left edge
     pub col: u16,
@@ -33,7 +33,7 @@ pub struct Pos {
 }
 
 /// Text cell dimensions
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Dim {
     /// Width in text cells
     pub width: u16,
@@ -42,7 +42,7 @@ pub struct Dim {
 }
 
 /// Bounding box of text cells
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct BBox {
     /// Position of top-left cell
     pos: Pos,
@@ -77,14 +77,9 @@ impl BBox {
         BBox { pos, dim }
     }
 
-    /// Get the left column
-    pub fn col(self) -> u16 {
+    /// Get the left column (inclusive)
+    pub fn left(self) -> u16 {
         self.pos.col
-    }
-
-    /// Get the top row
-    pub fn row(self) -> u16 {
-        self.pos.row
     }
 
     /// Get the width
@@ -92,9 +87,24 @@ impl BBox {
         self.dim.width
     }
 
+    /// Get the right column (exclusive)
+    pub fn right(self) -> u16 {
+        self.left() + self.width()
+    }
+
+    /// Get the top row (inclusive)
+    pub fn top(self) -> u16 {
+        self.pos.row
+    }
+
     /// Get the height
     pub fn height(self) -> u16 {
         self.dim.height
+    }
+
+    /// Get the bottom row (exclusive)
+    pub fn bottom(self) -> u16 {
+        self.top() + self.height()
     }
 
     /// Check if the bounding box is empty
@@ -102,20 +112,10 @@ impl BBox {
         self.dim.is_empty()
     }
 
-    /// Get the right column
-    fn right(self) -> u16 {
-        self.col() + self.width()
-    }
-
-    /// Get the bottom row
-    fn bottom(self) -> u16 {
-        self.row() + self.height()
-    }
-
     /// Clip with another bounding box
     pub fn clip(self, rhs: Self) -> Self {
-        let col = self.col().max(rhs.col());
-        let row = self.row().max(rhs.row());
+        let col = self.left().max(rhs.left());
+        let row = self.top().max(rhs.top());
         let right = self.right().min(rhs.right());
         let bottom = self.bottom().min(rhs.bottom());
         let width = if right > col { right - col } else { 0 };
@@ -141,7 +141,7 @@ impl BBox {
         let mut left = self;
         left.dim.width = self.width().min(width);
         let mut right = self;
-        right.pos.col = self.col() + left.width();
+        right.pos.col = self.left() + left.width();
         right.dim.width = self.width() - left.width();
         (left, right)
     }
@@ -150,7 +150,7 @@ impl BBox {
     fn split_right(self, width: u16) -> (Self, Self) {
         let mut right = self;
         right.dim.width = self.width().min(width);
-        right.pos.col = self.col() + self.width() - right.width();
+        right.pos.col = self.right() - right.width();
         let mut left = self;
         left.dim.width = self.width() - right.width();
         (right, left)
@@ -167,7 +167,7 @@ impl BBox {
         top.dim.height = self.height().min(height);
         let mut bottom = self;
         bottom.dim.height = self.height() - top.height();
-        bottom.pos.row = self.row() + top.height();
+        bottom.pos.row = self.top() + top.height();
         (top, bottom)
     }
 
@@ -175,7 +175,7 @@ impl BBox {
     fn split_bottom(self, height: u16) -> (Self, Self) {
         let mut bottom = self;
         bottom.dim.height = self.height().min(height);
-        bottom.pos.row = self.row() + self.height() - bottom.height();
+        bottom.pos.row = self.bottom() - bottom.height();
         let mut top = self;
         top.dim.height = self.height() - bottom.height();
         (bottom, top)

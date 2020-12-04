@@ -20,12 +20,13 @@ mod screen;
 mod spacer;
 mod widget;
 
-use crate::bbox::{BBox, Dim, Pos};
-pub use crate::bbox::Edge;
+pub use crate::bbox::{BBox, Edge};
+use crate::bbox::{Dim, Pos};
 pub use crate::border::{Border, LineStyle};
 pub use crate::constraints::Constraints;
+use crate::constraints::Constraints1;
 pub use crate::error::{Error, Result};
-pub use crate::grid::Grid;
+pub use crate::grid::Layout;
 pub use crate::label::Label;
 pub use crate::screen::{Cells, Glyph, Screen};
 pub use crate::spacer::Spacer;
