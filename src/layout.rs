@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 //!
-use crate::{BBox, AreaBound, LengthBound, Error, Result, Widget};
+use crate::{AreaBound, BBox, Error, LengthBound, Result, Widget};
 
 /// Builder for widget layouts.
 struct LayoutBuilder<'a> {
@@ -143,10 +143,7 @@ impl<'a> LayoutBuilder<'a> {
     }
 
     /// Calculate bounds for all rows
-    fn calculate_row_bounds(
-        &self,
-        w_bounds: &[AreaBound],
-    ) -> Vec<LengthBound> {
+    fn calculate_row_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
         let mut row_bounds = vec![LengthBound::default(); self.rows.into()];
         let mut done = 0;
         let mut height = 1;

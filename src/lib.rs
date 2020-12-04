@@ -12,7 +12,7 @@
 
 mod bbox;
 mod border;
-mod constraints;
+mod bounds;
 mod error;
 mod label;
 mod layout;
@@ -23,8 +23,8 @@ mod widget;
 pub use crate::bbox::{BBox, Edge};
 use crate::bbox::{Dim, Pos};
 pub use crate::border::{Border, LineStyle};
-pub use crate::constraints::AreaBound;
-use crate::constraints::LengthBound;
+pub use crate::bounds::AreaBound;
+use crate::bounds::LengthBound;
 pub use crate::error::{Error, Result};
 pub use crate::label::Label;
 pub use crate::layout::Layout;

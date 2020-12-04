@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Cells, AreaBound, Result};
+use crate::{AreaBound, Cells, Result};
 
 /// A component of a user interface
 pub trait Widget {
