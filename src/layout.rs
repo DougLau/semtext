@@ -1,4 +1,4 @@
-// grid.rs
+// layout.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
