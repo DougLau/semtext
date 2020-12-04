@@ -2,17 +2,17 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Constraints, Widget};
+use crate::{AreaBound, Widget};
 use std::ops::RangeBounds;
 
 /// Spacer widget
 #[derive(Default)]
 pub struct Spacer {
-    constraints: Constraints,
+    bounds: AreaBound,
 }
 
 impl Spacer {
-    /// Adjust column spacing (constraints)
+    /// Adjust column spacing (bounds)
     ///
     /// ```rust
     /// use semtext::Spacer;
@@ -24,11 +24,11 @@ impl Spacer {
     where
         R: RangeBounds<u16>,
     {
-        self.constraints = self.constraints.with_columns(col);
+        self.bounds = self.bounds.with_columns(col);
         self
     }
 
-    /// Adjust row spacing (constraints)
+    /// Adjust row spacing (bounds)
     ///
     /// ```rust
     /// use semtext::Spacer;
@@ -40,14 +40,14 @@ impl Spacer {
     where
         R: RangeBounds<u16>,
     {
-        self.constraints = self.constraints.with_rows(row);
+        self.bounds = self.bounds.with_rows(row);
         self
     }
 }
 
 impl Widget for Spacer {
-    /// Get the widget constraints
-    fn constraints(&self) -> Constraints {
-        self.constraints
+    /// Get the area bounds
+    fn bounds(&self) -> AreaBound {
+        self.bounds
     }
 }

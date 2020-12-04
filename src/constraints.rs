@@ -1,51 +1,54 @@
-// constraints.rs
+// bounds.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
 use std::ops::{Bound, RangeBounds};
 
+/// Bounds on columns or rows
+///
+/// This restricts minimum and maximum allowed length.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Constraints1 {
+pub struct LengthBound {
     /// Minimum bound (inclusive)
     minimum: u16,
     /// Maximum bound (exclusive)
     maximum: u16,
 }
 
-/// Widget layout constraints
+/// Bounds on area
 ///
 /// These are minimum and maximum bounds for [Widget] dimensions, in cells.
-/// This included column and row constraints.
+/// This includes column and row bounds.
 ///
 /// They can be specified using range syntax.
 ///
 /// [Widget]: trait.Widget.html
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Constraints {
-    /// Column constraints
-    pub col: Constraints1,
-    /// Vertical constraints
-    pub row: Constraints1,
+pub struct AreaBound {
+    /// Cell column bounds
+    pub col: LengthBound,
+    /// Cell row bounds
+    pub row: LengthBound,
 }
 
-impl Default for Constraints1 {
+impl Default for LengthBound {
     fn default() -> Self {
-        Constraints1 {
+        LengthBound {
             minimum: u16::MIN,
             maximum: u16::MAX,
         }
     }
 }
 
-impl Constraints1 {
-    /// Create one dimensional constraints
+impl LengthBound {
+    /// Create a new length bound
     pub fn new<R>(bounds: R) -> Self
     where
         R: RangeBounds<u16>,
     {
         let minimum = min_bound(bounds.start_bound());
         let maximum = max_bound(bounds.end_bound());
-        Constraints1 { minimum, maximum }
+        LengthBound { minimum, maximum }
     }
 
     /// Get the minimum bound (inclusive)
@@ -63,15 +66,15 @@ impl Constraints1 {
         self.maximum - self.minimum
     }
 
-    /// Increase minimum amount
-    pub fn increase(&mut self) {
-        self.minimum += 1;
+    /// Increase minimum bound
+    pub fn increase(&mut self, amount: u16) {
+        self.minimum += amount;
         if self.minimum >= self.maximum {
             self.maximum = self.minimum + 1;
         }
     }
 
-    /// Decrease maximum amount
+    /// Decrease maximum bound
     pub fn decrease(&mut self, amount: u16) {
         self.maximum = amount.max(self.minimum + 1);
     }
@@ -95,50 +98,50 @@ fn max_bound(bound: Bound<&u16>) -> u16 {
     }
 }
 
-impl Default for Constraints {
+impl Default for AreaBound {
     fn default() -> Self {
-        Constraints {
-            col: Constraints1::default(),
-            row: Constraints1::default(),
+        AreaBound {
+            col: LengthBound::default(),
+            row: LengthBound::default(),
         }
     }
 }
 
-impl Constraints {
-    /// Create new constraints
-    fn new(col: Constraints1, row: Constraints1) -> Self {
-        Constraints { col, row }
+impl AreaBound {
+    /// Create new area bounds
+    fn new(col: LengthBound, row: LengthBound) -> Self {
+        AreaBound { col, row }
     }
 
-    /// Adjust column constraints
+    /// Adjust column bounds
     ///
     /// ```rust
-    /// use semtext::Constraints;
+    /// use semtext::AreaBound;
     ///
-    /// let c0 = Constraints::default().with_columns(..10);
-    /// let c1 = Constraints::default().with_columns(2..);
+    /// let c0 = AreaBound::default().with_columns(..10);
+    /// let c1 = AreaBound::default().with_columns(2..);
     /// ```
     pub fn with_columns<R>(mut self, col: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.col = Constraints1::new(col);
+        self.col = LengthBound::new(col);
         self
     }
 
-    /// Adjust row constraints
+    /// Adjust row bounds
     ///
     /// ```rust
-    /// use semtext::Constraints;
+    /// use semtext::AreaBound;
     ///
-    /// let c0 = Constraints::default().with_rows(1..8);
-    /// let c1 = Constraints::default().with_rows(2..=4);
+    /// let c0 = AreaBound::default().with_rows(1..8);
+    /// let c1 = AreaBound::default().with_rows(2..=4);
     /// ```
     pub fn with_rows<R>(mut self, row: R) -> Self
     where
         R: RangeBounds<u16>,
     {
-        self.row = Constraints1::new(row);
+        self.row = LengthBound::new(row);
         self
     }
 }
@@ -148,16 +151,16 @@ mod test {
     use super::*;
 
     #[test]
-    fn constraints() {
-        let con = Constraints::default();
-        assert_eq!(con.col.minimum, 0);
-        assert_eq!(con.col.maximum, u16::MAX);
-        assert_eq!(con.row.minimum, 0);
-        assert_eq!(con.row.maximum, u16::MAX);
-        let con = Constraints::default().with_columns(..5).with_rows(2..=2);
-        assert_eq!(con.col.minimum, 0);
-        assert_eq!(con.col.maximum, 5);
-        assert_eq!(con.row.minimum, 2);
-        assert_eq!(con.row.maximum, 3);
+    fn bounds() {
+        let bnd = AreaBound::default();
+        assert_eq!(bnd.col.minimum, 0);
+        assert_eq!(bnd.col.maximum, u16::MAX);
+        assert_eq!(bnd.row.minimum, 0);
+        assert_eq!(bnd.row.maximum, u16::MAX);
+        let bnd = AreaBound::default().with_columns(..5).with_rows(2..=2);
+        assert_eq!(bnd.col.minimum, 0);
+        assert_eq!(bnd.col.maximum, 5);
+        assert_eq!(bnd.row.minimum, 2);
+        assert_eq!(bnd.row.maximum, 3);
     }
 }

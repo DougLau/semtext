@@ -2,13 +2,13 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Cells, Constraints, Result};
+use crate::{Cells, AreaBound, Result};
 
 /// A component of a user interface
 pub trait Widget {
-    /// Get the layout constraints
-    fn constraints(&self) -> Constraints {
-        Constraints::default()
+    /// Get the area bounds
+    fn bounds(&self) -> AreaBound {
+        AreaBound::default()
     }
 
     /// Render the widget

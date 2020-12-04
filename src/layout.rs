@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 //!
-use crate::{BBox, Constraints, Constraints1, Error, Result, Widget};
+use crate::{BBox, AreaBound, LengthBound, Error, Result, Widget};
 
 /// Builder for widget layouts.
 struct LayoutBuilder<'a> {
@@ -104,63 +104,65 @@ impl<'a> LayoutBuilder<'a> {
 
     /// Calculate cell bounding boxes
     fn calculate_cell_boxes(&self, lyr: BBox) -> Result<Vec<BBox>> {
-        let wcons: Vec<Constraints> =
-            self.widgets.iter().map(|w| w.constraints()).collect();
-        let col_cons = self.calculate_column_constraints(&wcons[..]);
-        let row_cons = self.calculate_row_constraints(&wcons[..]);
+        let w_bounds: Vec<AreaBound> =
+            self.widgets.iter().map(|w| w.bounds()).collect();
+        let col_bounds = self.calculate_column_bounds(&w_bounds[..]);
+        let row_bounds = self.calculate_row_bounds(&w_bounds[..]);
         // Distribute excess cells from lyr BBox to columns and rows
         /*
         for row in &row_cons {
             for col in &col_cons {
-                cell_boxes.push(Constraints::new(*col, *row));
+                cell_boxes.push(AreaBound::new(*col, *row));
             }
         }*/
         let mut cell_boxes = vec![];
         Ok(cell_boxes)
     }
 
-    fn calculate_column_constraints(
+    /// Calculate bounds for all columns
+    fn calculate_column_bounds(
         &self,
-        wcons: &[Constraints],
-    ) -> Vec<Constraints1> {
-        let mut col_cons = vec![Constraints1::default(); self.cols.into()];
+        w_bounds: &[AreaBound],
+    ) -> Vec<LengthBound> {
+        let mut col_bounds = vec![LengthBound::default(); self.cols.into()];
         let mut done = 0; // number of widgets completed
         let mut width = 1;
-        while done < wcons.len() && width <= self.cols {
-            for (con, gb) in wcons.iter().zip(&self.grid_boxes) {
+        while done < w_bounds.len() && width <= self.cols {
+            for (con, gb) in w_bounds.iter().zip(&self.grid_boxes) {
                 if gb.width() == width {
                     let start = gb.left().into();
                     let end = gb.right().into();
-                    let mut cons = &mut col_cons[start..end];
-                    adjust_constraints(&mut cons, con.col);
+                    let mut bounds = &mut col_bounds[start..end];
+                    adjust_length_bounds(&mut bounds, con.col);
                     done += 1;
                 }
             }
             width += 1;
         }
-        col_cons
+        col_bounds
     }
 
-    fn calculate_row_constraints(
+    /// Calculate bounds for all rows
+    fn calculate_row_bounds(
         &self,
-        wcons: &[Constraints],
-    ) -> Vec<Constraints1> {
-        let mut row_cons = vec![Constraints1::default(); self.rows.into()];
+        w_bounds: &[AreaBound],
+    ) -> Vec<LengthBound> {
+        let mut row_bounds = vec![LengthBound::default(); self.rows.into()];
         let mut done = 0;
         let mut height = 1;
-        while done < wcons.len() && height <= self.rows {
-            for (con, gb) in wcons.iter().zip(&self.grid_boxes) {
+        while done < w_bounds.len() && height <= self.rows {
+            for (con, gb) in w_bounds.iter().zip(&self.grid_boxes) {
                 if gb.height() == height {
                     let start = gb.top().into();
                     let end = gb.bottom().into();
-                    let mut cons = &mut row_cons[start..end];
-                    adjust_constraints(&mut cons, con.row);
+                    let mut bounds = &mut row_bounds[start..end];
+                    adjust_length_bounds(&mut bounds, con.row);
                     done += 1;
                 }
             }
             height += 1;
         }
-        row_cons
+        row_bounds
     }
 }
 
@@ -169,26 +171,26 @@ fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
     a as *const _ == b as *const _
 }
 
-/// Adjust cell constraints for one dimension
+/// Adjust a slice of length bounds to match a widget's bounds
 ///
-/// * `cons`: Constraints for all columns or rows
-/// * `wcon`: Widget constraints
-fn adjust_constraints(cons: &mut [Constraints1], wcon: Constraints1) {
-    distribute_decrease(cons, wcon.maximum());
-    let min: u16 = cons.iter().map(|c| c.minimum()).sum();
+/// * `bounds`: Length bounds for columns or rows containing the widget
+/// * `wcon`: Length bounds for the widget
+fn adjust_length_bounds(bounds: &mut [LengthBound], wcon: LengthBound) {
+    distribute_decrease(bounds, wcon.maximum());
+    let min: u16 = bounds.iter().map(|c| c.minimum()).sum();
     if min < wcon.minimum() {
         let increase = wcon.minimum() - min;
-        let push_increase = distribute_increase(cons, increase, false);
-        distribute_increase(cons, push_increase, true);
+        let push_increase = distribute_increase(bounds, increase, false);
+        distribute_increase(bounds, push_increase, true);
     }
 }
 
-/// Decrease maximums on a slice of constraints
-fn distribute_decrease(con_slice: &mut [Constraints1], maximum: u16) {
-    let mut unbounded = 0; // count of unbounded constraints
-    let mut total = 0; // total of bounded maximum constraints
-    for con in con_slice.iter_mut() {
-        let max = con.maximum();
+/// Decrease maximums on a slice of length bounds
+fn distribute_decrease(bounds: &mut [LengthBound], maximum: u16) {
+    let mut unbounded = 0; // count of unbounded lengths
+    let mut total = 0; // total of bounded maximum lengths
+    for bnd in bounds.iter_mut() {
+        let max = bnd.maximum();
         if max < u16::MAX {
             total += max;
         } else {
@@ -202,31 +204,31 @@ fn distribute_decrease(con_slice: &mut [Constraints1], maximum: u16) {
         (0, 0)
     };
     let mut bonus = bonus;
-    for con in con_slice.iter_mut() {
-        let max = con.maximum();
+    for bnd in bounds.iter_mut() {
+        let max = bnd.maximum();
         if max == u16::MAX {
             if bonus > 0 {
-                con.decrease(each + 1);
+                bnd.decrease(each + 1);
                 bonus -= 1;
             } else {
-                con.decrease(each);
+                bnd.decrease(each);
             }
         }
     }
 }
 
-/// Increase minimums on a slice of constraints
+/// Increase minimums on a slice of length bounds
 fn distribute_increase(
-    con_slice: &mut [Constraints1],
+    bounds: &mut [LengthBound],
     increase: u16,
     push: bool,
 ) -> u16 {
     let mut increase = increase;
     while increase > 0 {
         let before = increase;
-        for con in con_slice.iter_mut() {
-            if push || con.available() > 0 {
-                con.increase();
+        for bnd in bounds.iter_mut() {
+            if push || bnd.available() > 0 {
+                bnd.increase(1);
                 increase -= 1;
                 if increase == 0 {
                     break;
