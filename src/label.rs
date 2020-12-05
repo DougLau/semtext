@@ -38,7 +38,7 @@ impl Widget for Label {
         let w = self.txt.width() as u16;
         let rows = w / 24 + 1;
         let cols = w / rows + 1;
-        b.with_columns(cols..=cols+2).with_rows(rows..=rows)
+        b.with_columns(cols..=cols + 2).with_rows(rows..=rows)
     }
 
     /// Render the widget

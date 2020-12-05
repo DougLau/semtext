@@ -351,10 +351,7 @@ mod test {
     fn spacer1() {
         let a = Spacer::default();
         let b = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
-            [a],
-            [b],
-        ).unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [a], [b],).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
         assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));
@@ -454,11 +451,7 @@ mod test {
     fn grid1() {
         let a = Spacer::default();
         let b = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25),
-            [a],
-            [b],
-        )
-        .unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [a], [b],).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 9, 24));
         assert_eq!(l.boxes[1], BBox::new(0, 24, 9, 1));

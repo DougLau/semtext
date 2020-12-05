@@ -126,31 +126,31 @@ impl Screen {
     }
 
     /// Clear the screen (fill with the space character)
-    pub fn clear(&mut self) -> Result<()> {
+    fn clear(&mut self) -> Result<()> {
         queue!(self.out, terminal::Clear(terminal::ClearType::All))?;
         Ok(())
     }
 
     /// Get all cells on screen
-    pub fn cells(&mut self, bbox: BBox) -> Cells {
+    fn cells(&mut self, bbox: BBox) -> Cells {
         let bbox = self.bbox().clip(bbox);
         Cells { screen: self, bbox }
     }
 
     /// Set a text attribute
-    pub fn set_attribute(&mut self, attr: style::Attribute) -> Result<()> {
+    fn set_attribute(&mut self, attr: style::Attribute) -> Result<()> {
         queue!(self.out, style::SetAttribute(attr))?;
         Ok(())
     }
 
     /// Set the foreground color
-    pub fn set_foreground_color(&mut self, color: style::Color) -> Result<()> {
+    fn set_foreground_color(&mut self, color: style::Color) -> Result<()> {
         queue!(self.out, style::SetForegroundColor(color))?;
         Ok(())
     }
 
     /// Set the background color
-    pub fn set_background_color(&mut self, color: style::Color) -> Result<()> {
+    fn set_background_color(&mut self, color: style::Color) -> Result<()> {
         queue!(self.out, style::SetBackgroundColor(color))?;
         Ok(())
     }
@@ -162,7 +162,7 @@ impl Screen {
     }
 
     /// Move cursor right by a number of columns
-    pub fn move_right(&mut self, col: u16) -> Result<()> {
+    fn move_right(&mut self, col: u16) -> Result<()> {
         queue!(self.out, cursor::MoveRight(col))?;
         Ok(())
     }
@@ -181,6 +181,7 @@ impl Screen {
 
     /// Render a layout
     pub fn render<'a>(&mut self, layout: &Layout<'a>) -> Result<()> {
+        self.clear()?;
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
             let mut cells = self.cells(*bbox);
             widget.render(&mut cells)?;
@@ -257,6 +258,11 @@ impl<'a> Cells<'a> {
         let col = self.bbox.left() + col;
         let row = self.bbox.top() + row;
         self.screen.move_to(col, row)
+    }
+
+    /// Move cursor right by a number of columns
+    pub fn move_right(&mut self, col: u16) -> Result<()> {
+        self.screen.move_right(col)
     }
 
     /// Print a char at the cursor location
