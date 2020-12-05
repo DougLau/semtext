@@ -123,69 +123,6 @@ impl BBox {
         BBox::new(col, row, width, height)
     }
 
-    /// Split into two bounding boxes starting from a given edge
-    pub fn split(self, edge: Edge, cells: u16) -> (Self, Self) {
-        match edge {
-            Edge::LEFT => self.split_left(cells),
-            Edge::RIGHT => self.split_right(cells),
-            Edge::LEFT_RIGHT => self.split_horiz(),
-            Edge::TOP => self.split_top(cells),
-            Edge::BOTTOM => self.split_bottom(cells),
-            Edge::TOP_BOTTOM => self.split_vert(),
-            _ => panic!("Invalid Edges"),
-        }
-    }
-
-    /// Split from left edge
-    fn split_left(self, width: u16) -> (Self, Self) {
-        let mut left = self;
-        left.dim.width = self.width().min(width);
-        let mut right = self;
-        right.pos.col = self.left() + left.width();
-        right.dim.width = self.width() - left.width();
-        (left, right)
-    }
-
-    /// Split from right edge
-    fn split_right(self, width: u16) -> (Self, Self) {
-        let mut right = self;
-        right.dim.width = self.width().min(width);
-        right.pos.col = self.right() - right.width();
-        let mut left = self;
-        left.dim.width = self.width() - right.width();
-        (right, left)
-    }
-
-    /// Split horizontally
-    fn split_horiz(self) -> (Self, Self) {
-        self.split_left(self.width() / 2)
-    }
-
-    /// Split from top edge
-    fn split_top(self, height: u16) -> (Self, Self) {
-        let mut top = self;
-        top.dim.height = self.height().min(height);
-        let mut bottom = self;
-        bottom.dim.height = self.height() - top.height();
-        bottom.pos.row = self.top() + top.height();
-        (top, bottom)
-    }
-
-    /// Split from bottom edge
-    fn split_bottom(self, height: u16) -> (Self, Self) {
-        let mut bottom = self;
-        bottom.dim.height = self.height().min(height);
-        bottom.pos.row = self.bottom() - bottom.height();
-        let mut top = self;
-        top.dim.height = self.height() - bottom.height();
-        (bottom, top)
-    }
-
-    /// Split vertically
-    fn split_vert(self) -> (Self, Self) {
-        self.split_top(self.height() / 2)
-    }
-
     /// Trim cells from the given edges
     pub fn trim(self, edge: Edge, cells: u16) -> Self {
         let mut bbox = self;
