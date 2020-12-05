@@ -22,7 +22,7 @@ impl Spacer {
     /// Adjust column spacing (bounds)
     ///
     /// ```rust
-    /// use semtext::Spacer;
+    /// use semtext::widget::Spacer;
     ///
     /// let s0 = Spacer::default().with_columns(..10);
     /// let s1 = Spacer::default().with_columns(2..);
@@ -38,7 +38,7 @@ impl Spacer {
     /// Adjust row spacing (bounds)
     ///
     /// ```rust
-    /// use semtext::Spacer;
+    /// use semtext::widget::Spacer;
     ///
     /// let s0 = Spacer::default().with_rows(1..8);
     /// let s1 = Spacer::default().with_rows(2..=4);

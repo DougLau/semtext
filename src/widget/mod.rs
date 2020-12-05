@@ -1,7 +1,8 @@
-// widget.rs
+// widget/mod.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+//! User Interface Widgets
 use crate::{AreaBound, Cells, Result};
 
 /// A component of a user interface
@@ -17,3 +18,13 @@ pub trait Widget {
         Ok(())
     }
 }
+
+mod border;
+mod label;
+mod linestyle;
+mod spacer;
+
+pub use border::Border;
+pub use label::Label;
+pub use linestyle::LineStyle;
+pub use spacer::Spacer;

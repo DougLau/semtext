@@ -313,7 +313,7 @@ impl<'a> Layout<'a> {
 /// ```rust
 /// # #[macro_use] extern crate semtext;
 /// # fn main() {
-/// use semtext::{BBox, Label, Layout, Widget};
+/// use semtext::{BBox, Layout, Widget, widget::Label};
 ///
 /// let a = Label::new("Top Left");
 /// let b = Label::new("Right");
@@ -345,7 +345,7 @@ macro_rules! layout {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{Label, Spacer};
+    use crate::widget::{Label, Spacer};
 
     #[test]
     fn spacer1() {

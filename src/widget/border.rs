@@ -3,77 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::{BBox, Cells, Edge, Result, Widget};
-
-/// Styles for borders
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum LineStyle {
-    /// Solid line (thicker with accent)
-    ///
-    /// ```text
-    ///   ╭─────╮           ┍━━━━━┓
-    ///   │     │           │     ┃
-    ///   │     │           │     ┃
-    ///   ╰─────╯           ╰─────┚
-    /// Edge::NONE      Edge::TOP_RIGHT
-    ///                     Accent
-    /// ```
-    Solid,
-    /// Solid line (doubled with accent)
-    ///
-    /// ```text
-    ///   ╭─────╮           ╓────╮
-    ///   │     │           ║    │
-    ///   │     │           ║    │
-    ///   ╰─────╯           ╚════╛
-    /// Edge::NONE     Edge::BOTTOM_LEFT
-    ///                     Accent
-    /// ```
-    Double,
-    /// Tightly packed line (thicker with accent)
-    ///
-    /// ```text
-    ///    ▁▁▁▁             ▗▄▄▄▄
-    ///   ▕    ▏            ▐    ▏
-    ///   ▕    ▏            ▐    ▏
-    ///    ▔▔▔▔              ▔▔▔▔
-    /// Edge::NONE      Edge::TOP_LEFT
-    ///                     Accent
-    /// ```
-    Tight,
-    /// Dashed line (thicker with accent)
-    ///
-    /// ```text
-    ///   ╭╌╌╌╌╮            ┏╍╍╍╍┑
-    ///   ┆    ┆            ┇    ┆
-    ///   ┆    ┆            ┇    ┆
-    ///   ╰╌╌╌╌╯            ┖╌╌╌╌╯
-    /// Edge::NONE      Edge::TOP_LEFT
-    ///                     Accent
-    /// ```
-    Dashed,
-    /// Block line (full with accent)
-    ///
-    /// ```text
-    ///   ▗▄▄▄▄▖            ▗▄▄▄▄▄
-    ///   ▐    ▌            ▐    █
-    ///   ▐    ▌            ▐    █
-    ///   ▝▀▀▀▀▘            ▐█████
-    /// Edge::NONE      Edge::BOTTOM_RIGHT
-    ///                     Accent
-    /// ```
-    Block,
-    /// Outer block line (full with accent)
-    ///
-    /// ```text
-    ///   ▛▀▀▀▀▜            ▛▀▀▀▀▜
-    ///   ▌    ▐            ▌    ▐
-    ///   ▌    ▐            ▌    ▐
-    ///   ▙▄▄▄▄▟            ██████
-    /// Edge::NONE       Edge::BOTTOM
-    ///                     Accent
-    /// ```
-    OuterBlock,
-}
+use crate::widget::LineStyle;
 
 /// Border widget
 ///
@@ -86,12 +16,6 @@ pub struct Border {
     pub accents: Edge,
     /// Line style
     pub line_style: LineStyle,
-}
-
-impl Default for LineStyle {
-    fn default() -> Self {
-        LineStyle::Solid
-    }
 }
 
 impl Border {

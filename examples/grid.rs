@@ -1,6 +1,5 @@
-use semtext::{
-    layout, Border, Edge, Label, Layout, LineStyle, Screen, Spacer, Widget,
-};
+use semtext::{layout, Edge, Layout, Screen, Widget};
+use semtext::widget::{Border, Label, LineStyle, Spacer};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
