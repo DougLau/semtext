@@ -238,9 +238,9 @@ impl<'a> Cells<'a> {
         let bbox = self.bbox;
         let fill_width = bbox.width() / glyph.width() as u16;
         if bbox.height() > 0 && fill_width > 0 {
-            self.move_to(bbox.left(), bbox.top())?;
+            self.move_to(0, 0)?;
             for row in 0..bbox.height() {
-                self.move_to(bbox.left(), bbox.top() + row)?;
+                self.move_to(0, row)?;
                 for _ in 0..fill_width {
                     match &glyph.inner {
                         GlyphInner::Char(ch) => self.screen.print_char(*ch)?,

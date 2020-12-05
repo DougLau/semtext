@@ -345,10 +345,10 @@ macro_rules! layout {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::Spacer;
+    use crate::{Label, Spacer};
 
     #[test]
-    fn grid1() {
+    fn spacer1() {
         let a = Spacer::default();
         let b = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
@@ -361,7 +361,7 @@ mod test {
     }
 
     #[test]
-    fn grid2() {
+    fn spacer2() {
         let a = Spacer::default();
         let b = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
@@ -374,7 +374,7 @@ mod test {
     }
 
     #[test]
-    fn grid3() {
+    fn spacer3() {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
@@ -393,7 +393,7 @@ mod test {
     }
 
     #[test]
-    fn grid4() {
+    fn spacer4() {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
@@ -412,7 +412,7 @@ mod test {
     }
 
     #[test]
-    fn grid5() {
+    fn spacer5() {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
@@ -431,7 +431,7 @@ mod test {
     }
 
     #[test]
-    fn grid6() {
+    fn spacer6() {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
@@ -448,5 +448,68 @@ mod test {
         assert_eq!(l.boxes[0], BBox::new(0, 0, 40, 25));
         assert_eq!(l.boxes[1], BBox::new(40, 0, 40, 16));
         assert_eq!(l.boxes[2], BBox::new(40, 16, 40, 9));
+    }
+
+    #[test]
+    fn grid1() {
+        let a = Spacer::default();
+        let b = Label::new("Label");
+        let l = layout!(BBox::new(0, 0, 80, 25),
+            [a],
+            [b],
+        )
+        .unwrap();
+        assert_eq!(l.boxes.len(), 2);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 9, 24));
+        assert_eq!(l.boxes[1], BBox::new(0, 24, 9, 1));
+    }
+
+    #[test]
+    fn grid2() {
+        let a = Spacer::default();
+        let b = Label::new("Label");
+        let l = layout!(BBox::new(0, 0, 80, 25),
+            [a b],
+        )
+        .unwrap();
+        assert_eq!(l.boxes.len(), 2);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 74, 2));
+        assert_eq!(l.boxes[1], BBox::new(74, 0, 6, 2));
+    }
+
+    #[test]
+    fn grid3() {
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let c = Label::new("Label");
+        let l = layout!(BBox::new(0, 0, 80, 25),
+            [a b],
+            [a c],
+        )
+        .unwrap();
+        assert_eq!(l.boxes.len(), 3);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 74, 25));
+        assert_eq!(l.boxes[1], BBox::new(74, 0, 6, 24));
+        assert_eq!(l.boxes[2], BBox::new(74, 24, 6, 1));
+    }
+
+    #[test]
+    fn grid4() {
+        let a = Spacer::default();
+        let b = Label::new("This is a test label with some text");
+        let c = Spacer::default();
+        let d = Label::new("Label");
+        let e = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
+            [a a a e],
+            [b c d e],
+        )
+        .unwrap();
+        assert_eq!(l.boxes.len(), 5);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 52, 23));
+        assert_eq!(l.boxes[1], BBox::new(52, 0, 28, 25));
+        assert_eq!(l.boxes[2], BBox::new(0, 23, 18, 2));
+        assert_eq!(l.boxes[3], BBox::new(18, 23, 28, 2));
+        assert_eq!(l.boxes[4], BBox::new(46, 23, 6, 2));
     }
 }
