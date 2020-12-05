@@ -28,6 +28,6 @@ use crate::bounds::LengthBound;
 pub use crate::error::{Error, Result};
 pub use crate::label::Label;
 pub use crate::layout::Layout;
-pub use crate::screen::{Cells, Glyph, Screen};
+pub use crate::screen::{Cells, Glyph, IntoGlyph, Screen};
 pub use crate::spacer::Spacer;
 pub use crate::widget::Widget;

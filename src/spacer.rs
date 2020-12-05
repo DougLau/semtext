@@ -2,13 +2,20 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{AreaBound, Widget};
+use crate::{AreaBound, Cells, Glyph, IntoGlyph, Result, Widget};
 use std::ops::RangeBounds;
 
 /// Spacer widget
+///
+/// A spacer can be used for fixed or variable width spacing between other
+/// widgets.  By default, it does not render anything, but a fill glyph may be
+/// provided.
 #[derive(Default)]
 pub struct Spacer {
+    /// Area bounds
     bounds: AreaBound,
+    /// Fill character
+    fill: Option<Glyph>,
 }
 
 impl Spacer {
@@ -43,11 +50,25 @@ impl Spacer {
         self.bounds = self.bounds.with_rows(row);
         self
     }
+
+    /// Set a fill glyph
+    pub fn with_fill<G: IntoGlyph>(mut self, fill: G) -> Result<Self> {
+        self.fill = Some(fill.into_glyph()?);
+        Ok(self)
+    }
 }
 
 impl Widget for Spacer {
     /// Get the area bounds
     fn bounds(&self) -> AreaBound {
         self.bounds
+    }
+
+    /// Render the widget
+    fn render(&self, cells: &mut Cells) -> Result<()> {
+        if let Some(fill) = &self.fill {
+            cells.fill(fill)?;
+        }
+        Ok(())
     }
 }

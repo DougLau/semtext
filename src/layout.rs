@@ -345,14 +345,16 @@ macro_rules! layout {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::Label;
+    use crate::Spacer;
 
     #[test]
     fn grid1() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox, [a], [b],).unwrap();
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
+            [a],
+            [b],
+        ).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
         assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));
@@ -360,10 +362,9 @@ mod test {
 
     #[test]
     fn grid2() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox,
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
             [a b],
         )
         .unwrap();
@@ -374,11 +375,10 @@ mod test {
 
     #[test]
     fn grid3() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let c = Label::new("Label C");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox,
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let c = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
             [a b],
             [a c],
         )
@@ -394,11 +394,10 @@ mod test {
 
     #[test]
     fn grid4() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let c = Label::new("Label C");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox,
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let c = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
             [a a b],
             [a a c],
         )
@@ -414,11 +413,10 @@ mod test {
 
     #[test]
     fn grid5() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let c = Label::new("Label C");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox,
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let c = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
             [a a b b],
             [a a c c],
         )
@@ -434,11 +432,10 @@ mod test {
 
     #[test]
     fn grid6() {
-        let a = Label::new("Label A");
-        let b = Label::new("Label B");
-        let c = Label::new("Label C");
-        let bbox = BBox::new(0, 0, 80, 25);
-        let l = layout!(bbox,
+        let a = Spacer::default();
+        let b = Spacer::default();
+        let c = Spacer::default();
+        let l = layout!(BBox::new(0, 0, 80, 25),
             [a a b b],
             [a a b b],
             [a a c c],

@@ -2,8 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{Cells, Result, Widget};
+use crate::{AreaBound, Cells, Result, Widget};
 use textwrap::wrap_iter;
+use unicode_width::UnicodeWidthStr;
 
 /// Text label widget
 ///
@@ -31,6 +32,15 @@ impl Label {
 }
 
 impl Widget for Label {
+    /// Get the area bounds
+    fn bounds(&self) -> AreaBound {
+        let b = AreaBound::default();
+        let w = self.txt.width() as u16;
+        let rows = w / 24 + 1;
+        let cols = w / rows + 1;
+        b.with_columns(cols..=cols+2).with_rows(rows..=rows)
+    }
+
     /// Render the widget
     fn render(&self, cells: &mut Cells) -> Result<()> {
         let width = usize::from(cells.width());

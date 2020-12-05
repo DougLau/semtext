@@ -5,17 +5,16 @@
 use crate::{BBox, Dim, Error, Layout, Result};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
-use std::convert::TryFrom;
 use std::io::{Stdout, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// Inner enum for glyphs
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum GlyphInner<'a> {
+#[derive(Clone, Debug, PartialEq)]
+enum GlyphInner {
     /// Character glyph
     Char(char),
-    /// String slice glyph
-    Str(&'a str),
+    /// String glyph
+    Str(String),
 }
 
 /// Printable glyph
@@ -24,20 +23,26 @@ enum GlyphInner<'a> {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use semtext::Glyph;
-/// use std::convert::TryFrom;
+/// use semtext::IntoGlyph;
 ///
-/// let glyph_char = Glyph::try_from('🦀')?;
-/// let glyph_str = Glyph::try_from("a\u{308}")?;
+/// let glyph_char = '🦀'.into_glyph()?;
+/// let glyph_str = "a\u{308}".into_glyph()?;
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Glyph<'a> {
-    /// Inner glyph value (char or str)
-    inner: GlyphInner<'a>,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Glyph {
+    /// Inner glyph value (char or String)
+    inner: GlyphInner,
     /// Width in text cells (must be either 1 or 2)
     width: usize,
+}
+
+/// Trait to convert into a Glyph
+///
+/// This is used instead of TryFrom to avoid error conversion nonsense
+pub trait IntoGlyph {
+    fn into_glyph(self) -> Result<Glyph>;
 }
 
 /// Terminal screen
@@ -58,13 +63,12 @@ pub struct Cells<'a> {
     bbox: BBox,
 }
 
-impl TryFrom<char> for Glyph<'_> {
-    type Error = Error;
-
-    fn try_from(c: char) -> Result<Self> {
-        if let Some(width) = c.width() {
+impl IntoGlyph for char {
+    /// Create a Glyph from a `char`
+    fn into_glyph(self) -> Result<Glyph> {
+        if let Some(width) = self.width() {
             if width == 1 || width == 2 {
-                let inner = GlyphInner::Char(c);
+                let inner = GlyphInner::Char(self);
                 return Ok(Glyph { inner, width });
             }
         }
@@ -72,24 +76,23 @@ impl TryFrom<char> for Glyph<'_> {
     }
 }
 
-impl<'a> TryFrom<&'a str> for Glyph<'a> {
-    type Error = Error;
-
-    fn try_from(s: &'a str) -> Result<Self> {
-        let width = s.width();
+impl IntoGlyph for &str {
+    /// Create a Glyphn from a `&str`
+    fn into_glyph(self) -> Result<Glyph> {
+        let width = self.width();
         if width == 1 || width == 2 {
-            let inner = GlyphInner::Str(s);
+            let inner = GlyphInner::Str(self.to_string());
             return Ok(Glyph { inner, width });
         }
         Err(Error::InvalidGlyph())
     }
 }
 
-impl<'a> Glyph<'a> {
+impl Glyph {
     /// Get the glyph width.
     ///
     /// The width must be either 1 or 2 (checked on construction).
-    fn width(self) -> usize {
+    fn width(&self) -> usize {
         self.width
     }
 }
@@ -231,7 +234,7 @@ impl<'a> Cells<'a> {
     }
 
     /// Fill the cells with a glyph
-    pub fn fill(&'a mut self, glyph: Glyph<'a>) -> Result<()> {
+    pub fn fill(&mut self, glyph: &Glyph) -> Result<()> {
         let bbox = self.bbox;
         let fill_width = bbox.width() / glyph.width() as u16;
         if bbox.height() > 0 && fill_width > 0 {
@@ -239,9 +242,9 @@ impl<'a> Cells<'a> {
             for row in 0..bbox.height() {
                 self.move_to(bbox.left(), bbox.top() + row)?;
                 for _ in 0..fill_width {
-                    match glyph.inner {
-                        GlyphInner::Char(ch) => self.screen.print_char(ch)?,
-                        GlyphInner::Str(st) => self.screen.print_str(st)?,
+                    match &glyph.inner {
+                        GlyphInner::Char(ch) => self.screen.print_char(*ch)?,
+                        GlyphInner::Str(st) => self.screen.print_str(&st)?,
                     }
                 }
             }
