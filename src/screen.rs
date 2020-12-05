@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{BBox, Dim, Error, Result};
+use crate::{BBox, Dim, Error, Layout, Result};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::convert::TryFrom;
@@ -173,6 +173,15 @@ impl Screen {
     /// Print a str at the cursor location
     fn print_str(&mut self, st: &str) -> Result<()> {
         queue!(self.out, style::Print(st))?;
+        Ok(())
+    }
+
+    /// Render a layout
+    pub fn render<'a>(&mut self, layout: &Layout<'a>) -> Result<()> {
+        for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
+            let mut cells = self.cells(*bbox);
+            widget.render(&mut cells)?;
+        }
         Ok(())
     }
 

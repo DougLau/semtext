@@ -21,7 +21,7 @@ mod spacer;
 mod widget;
 
 pub use crate::bbox::{BBox, Edge};
-use crate::bbox::{Dim, Pos};
+use crate::bbox::Dim;
 pub use crate::border::{Border, LineStyle};
 pub use crate::bounds::AreaBound;
 use crate::bounds::LengthBound;

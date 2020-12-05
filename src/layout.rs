@@ -20,11 +20,14 @@ struct LayoutBuilder<'a> {
 }
 
 /// Widget layout
+///
+/// This is a set of borrowed [Widget]s and their bounding boxes.  It is
+/// normally created using the [layout] macro.
 pub struct Layout<'a> {
     /// All widgets in layout
-    widgets: Vec<&'a dyn Widget>,
+    pub(crate) widgets: Vec<&'a dyn Widget>,
     /// Cell bounding boxes for all widgets
-    boxes: Vec<BBox>,
+    pub(crate) boxes: Vec<BBox>,
 }
 
 impl<'a> LayoutBuilder<'a> {
@@ -96,40 +99,36 @@ impl<'a> LayoutBuilder<'a> {
     }
 
     /// Build the layout
-    fn build(self, lyr: BBox) -> Result<Layout<'a>> {
-        let boxes = self.calculate_cell_boxes(lyr)?;
+    fn build(self, bx: BBox) -> Result<Layout<'a>> {
+        let boxes = self.calculate_cell_boxes(bx)?;
         let widgets = self.widgets;
         Ok(Layout { widgets, boxes })
     }
 
     /// Calculate cell bounding boxes
-    fn calculate_cell_boxes(&self, lyr: BBox) -> Result<Vec<BBox>> {
+    fn calculate_cell_boxes(&self, bx: BBox) -> Result<Vec<BBox>> {
         let w_bounds: Vec<AreaBound> =
             self.widgets.iter().map(|w| w.bounds()).collect();
-        let col_bounds = self.calculate_column_bounds(&w_bounds[..]);
-        let row_bounds = self.calculate_row_bounds(&w_bounds[..]);
-        // Distribute excess cells from lyr BBox to columns and rows
-        /*
-        for row in &row_cons {
-            for col in &col_cons {
-                cell_boxes.push(AreaBound::new(*col, *row));
-            }
-        }*/
-        let mut cell_boxes = vec![];
+        let col_bounds = self.col_bounds(&w_bounds[..]);
+        let columns = distribute_bounds(col_bounds, bx.width());
+        let row_bounds = self.row_bounds(&w_bounds[..]);
+        let rows = distribute_bounds(row_bounds, bx.height());
+        let cell_boxes: Vec<BBox> = self
+            .grid_boxes
+            .iter()
+            .map(|gb| widget_cell_bbox(bx, *gb, &columns[..], &rows[..]))
+            .collect();
         Ok(cell_boxes)
     }
 
-    /// Calculate bounds for all columns
-    fn calculate_column_bounds(
-        &self,
-        w_bounds: &[AreaBound],
-    ) -> Vec<LengthBound> {
+    /// Create bounds for all columns
+    fn col_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
         let mut col_bounds = vec![LengthBound::default(); self.cols.into()];
         let mut done = 0; // number of widgets completed
-        let mut width = 1;
-        while done < w_bounds.len() && width <= self.cols {
+        let mut grid_width = 1; // widget grid width
+        while done < w_bounds.len() && grid_width <= self.cols {
             for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
-                if gb.width() == width {
+                if gb.width() == grid_width {
                     let start = gb.left().into();
                     let end = gb.right().into();
                     let mut bounds = &mut col_bounds[start..end];
@@ -137,19 +136,19 @@ impl<'a> LayoutBuilder<'a> {
                     done += 1;
                 }
             }
-            width += 1;
+            grid_width += 1;
         }
         col_bounds
     }
 
-    /// Calculate bounds for all rows
-    fn calculate_row_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
+    /// Create bounds for all rows
+    fn row_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
         let mut row_bounds = vec![LengthBound::default(); self.rows.into()];
-        let mut done = 0;
-        let mut height = 1;
-        while done < w_bounds.len() && height <= self.rows {
+        let mut done = 0; // number of widgets completed
+        let mut grid_height = 1; // widget grid height
+        while done < w_bounds.len() && grid_height <= self.rows {
             for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
-                if gb.height() == height {
+                if gb.height() == grid_height {
                     let start = gb.top().into();
                     let end = gb.bottom().into();
                     let mut bounds = &mut row_bounds[start..end];
@@ -157,7 +156,7 @@ impl<'a> LayoutBuilder<'a> {
                     done += 1;
                 }
             }
-            height += 1;
+            grid_height += 1;
         }
         row_bounds
     }
@@ -173,7 +172,10 @@ fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
 /// * `bounds`: Length bounds for columns or rows containing the widget
 /// * `wbnd`: Length bounds for the widget
 fn adjust_length_bounds(bounds: &mut [LengthBound], wbnd: LengthBound) {
-    distribute_decrease(bounds, wbnd.maximum());
+    let max = wbnd.maximum();
+    if max < u16::MAX {
+        distribute_decrease(bounds, max);
+    }
     let min: u16 = bounds.iter().map(|c| c.minimum()).sum();
     if min < wbnd.minimum() {
         let increase = wbnd.minimum() - min;
@@ -239,6 +241,42 @@ fn distribute_increase(
     increase
 }
 
+/// Distribute total lengths to a `Vec` of lengths
+///
+/// NOTE: this uses a woefully inefficient algorithm
+fn distribute_bounds(mut bounds: Vec<LengthBound>, total: u16) -> Vec<u16> {
+    let minimum = bounds[..].iter().map(|b| b.minimum()).sum::<u16>();
+    if minimum < total {
+        let maximum = bounds[..]
+            .iter()
+            .map(|b| b.maximum())
+            .fold(0u16, |sum, b| sum.saturating_add(b));
+        let maximum = total.min(maximum);
+        let extra = maximum - minimum;
+        let mut added = 0;
+        while added < extra {
+            // find index of bound with max available
+            let (i, _) = bounds[..]
+                .iter()
+                .enumerate()
+                .max_by_key(|&(_, &b)| b.available())
+                .unwrap();
+            bounds[i].increase(1);
+            added += 1;
+        }
+    }
+    bounds[..].iter().map(|b| b.minimum()).collect()
+}
+
+/// Calculate a widget cell bounding box from grid data
+fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
+    let col = bx.left() + cols[..gb.left() as usize].iter().sum::<u16>();
+    let row = bx.top() + rows[..gb.top() as usize].iter().sum::<u16>();
+    let width = cols[gb.left() as usize..gb.right() as usize].iter().sum();
+    let height = rows[gb.top() as usize..gb.bottom() as usize].iter().sum();
+    BBox::new(col, row, width, height)
+}
+
 impl<'a> Layout<'a> {
     /// Create a new widget layout
     ///
@@ -281,7 +319,7 @@ impl<'a> Layout<'a> {
 /// let b = Label::new("Right");
 /// let c = Label::new("Bottom Left");
 /// let bbox = BBox::new(0, 0, 80, 25);
-/// let g = layout!(bbox,
+/// let l = layout!(bbox,
 ///     [a a b],
 ///     [a a b],
 ///     [c c b],
@@ -293,13 +331,13 @@ impl<'a> Layout<'a> {
 macro_rules! layout {
     ( $bbox:expr, $([ $($widget:ident)+ ],)+ ) => {
         {
-            let mut g = Vec::<&dyn Widget>::new();
+            let mut w = Vec::<&dyn Widget>::new();
             let mut rows = 0;
             $(
-                $( g.push(&$widget); )+
+                $( w.push(&$widget); )+
                 rows += 1;
             )?
-            Layout::new($bbox, g, rows)
+            Layout::new($bbox, w, rows)
         }
     }
 }
@@ -310,20 +348,108 @@ mod test {
     use crate::Label;
 
     #[test]
-    fn grids() {
+    fn grid1() {
+        let a = Label::new("Label A");
+        let b = Label::new("Label B");
+        let bbox = BBox::new(0, 0, 80, 25);
+        let l = layout!(bbox, [a], [b],).unwrap();
+        assert_eq!(l.boxes.len(), 2);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
+        assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));
+    }
+
+    #[test]
+    fn grid2() {
+        let a = Label::new("Label A");
+        let b = Label::new("Label B");
+        let bbox = BBox::new(0, 0, 80, 25);
+        let l = layout!(bbox,
+            [a b],
+        )
+        .unwrap();
+        assert_eq!(l.boxes.len(), 2);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 40, 25));
+        assert_eq!(l.boxes[1], BBox::new(40, 0, 40, 25));
+    }
+
+    #[test]
+    fn grid3() {
         let a = Label::new("Label A");
         let b = Label::new("Label B");
         let c = Label::new("Label C");
         let bbox = BBox::new(0, 0, 80, 25);
-        let g = layout!(
-            bbox,
+        let l = layout!(bbox,
+            [a b],
+            [a c],
+        )
+        .unwrap();
+        assert!(widget_is_same(l.widgets[0], &a));
+        assert!(widget_is_same(l.widgets[1], &b));
+        assert!(widget_is_same(l.widgets[2], &c));
+        assert_eq!(l.boxes.len(), 3);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 40, 25));
+        assert_eq!(l.boxes[1], BBox::new(40, 0, 40, 12));
+        assert_eq!(l.boxes[2], BBox::new(40, 12, 40, 13));
+    }
+
+    #[test]
+    fn grid4() {
+        let a = Label::new("Label A");
+        let b = Label::new("Label B");
+        let c = Label::new("Label C");
+        let bbox = BBox::new(0, 0, 80, 25);
+        let l = layout!(bbox,
+            [a a b],
+            [a a c],
+        )
+        .unwrap();
+        assert!(widget_is_same(l.widgets[0], &a));
+        assert!(widget_is_same(l.widgets[1], &b));
+        assert!(widget_is_same(l.widgets[2], &c));
+        assert_eq!(l.boxes.len(), 3);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 53, 25));
+        assert_eq!(l.boxes[1], BBox::new(53, 0, 27, 12));
+        assert_eq!(l.boxes[2], BBox::new(53, 12, 27, 13));
+    }
+
+    #[test]
+    fn grid5() {
+        let a = Label::new("Label A");
+        let b = Label::new("Label B");
+        let c = Label::new("Label C");
+        let bbox = BBox::new(0, 0, 80, 25);
+        let l = layout!(bbox,
             [a a b b],
-            [a a c c],
             [a a c c],
         )
         .unwrap();
-        assert!(widget_is_same(g.widgets[0], &a));
-        assert!(widget_is_same(g.widgets[1], &b));
-        assert!(widget_is_same(g.widgets[2], &c));
+        assert!(widget_is_same(l.widgets[0], &a));
+        assert!(widget_is_same(l.widgets[1], &b));
+        assert!(widget_is_same(l.widgets[2], &c));
+        assert_eq!(l.boxes.len(), 3);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 40, 25));
+        assert_eq!(l.boxes[1], BBox::new(40, 0, 40, 12));
+        assert_eq!(l.boxes[2], BBox::new(40, 12, 40, 13));
+    }
+
+    #[test]
+    fn grid6() {
+        let a = Label::new("Label A");
+        let b = Label::new("Label B");
+        let c = Label::new("Label C");
+        let bbox = BBox::new(0, 0, 80, 25);
+        let l = layout!(bbox,
+            [a a b b],
+            [a a b b],
+            [a a c c],
+        )
+        .unwrap();
+        assert!(widget_is_same(l.widgets[0], &a));
+        assert!(widget_is_same(l.widgets[1], &b));
+        assert!(widget_is_same(l.widgets[2], &c));
+        assert_eq!(l.boxes.len(), 3);
+        assert_eq!(l.boxes[0], BBox::new(0, 0, 40, 25));
+        assert_eq!(l.boxes[1], BBox::new(40, 0, 40, 16));
+        assert_eq!(l.boxes[2], BBox::new(40, 16, 40, 9));
     }
 }

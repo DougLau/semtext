@@ -15,20 +15,25 @@ pub struct LengthBound {
     maximum: u16,
 }
 
-/// Bounds on area
+/// Bounds restricting cell area
 ///
-/// These are minimum and maximum bounds for [Widget] dimensions, in cells.
-/// This includes column and row bounds.
-///
+/// This includes column and row length bounds for [Widget]s, in cells.
 /// They can be specified using range syntax.
 ///
+/// ### Example
+///
+/// ```rust
+/// use semtext::AreaBound;
+///
+/// let b = AreaBound::default().with_columns(6..=10).with_rows(1..);
+/// ```
 /// [Widget]: trait.Widget.html
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AreaBound {
     /// Cell column bounds
-    pub col: LengthBound,
+    pub(crate) col: LengthBound,
     /// Cell row bounds
-    pub row: LengthBound,
+    pub(crate) row: LengthBound,
 }
 
 impl Default for LengthBound {
@@ -108,18 +113,15 @@ impl Default for AreaBound {
 }
 
 impl AreaBound {
-    /// Create new area bounds
-    fn new(col: LengthBound, row: LengthBound) -> Self {
-        AreaBound { col, row }
-    }
-
     /// Adjust column bounds
+    ///
+    /// ### Example
     ///
     /// ```rust
     /// use semtext::AreaBound;
     ///
-    /// let c0 = AreaBound::default().with_columns(..10);
-    /// let c1 = AreaBound::default().with_columns(2..);
+    /// let b0 = AreaBound::default().with_columns(..10);
+    /// let b1 = AreaBound::default().with_columns(2..);
     /// ```
     pub fn with_columns<R>(mut self, col: R) -> Self
     where
@@ -131,11 +133,13 @@ impl AreaBound {
 
     /// Adjust row bounds
     ///
+    /// ### Example
+    ///
     /// ```rust
     /// use semtext::AreaBound;
     ///
-    /// let c0 = AreaBound::default().with_rows(1..8);
-    /// let c1 = AreaBound::default().with_rows(2..=4);
+    /// let b0 = AreaBound::default().with_rows(1..8);
+    /// let b1 = AreaBound::default().with_rows(2..=4);
     /// ```
     pub fn with_rows<R>(mut self, row: R) -> Self
     where
