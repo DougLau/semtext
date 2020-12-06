@@ -11,11 +11,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_accents(Edge::BOTTOM_RIGHT)
         .with_line_style(LineStyle::Double);
     let a = Label::new("This is a bit of test text inside of a label");
-    let c = Label::new("This label is on the right side");
+    let c = Label::new("This label has more text on the right side");
     loop {
         let layout = layout!(screen.bbox(),
+            [_ _ _ _],
+            [a a _ b],
             [_ _ _ b],
-            [a s c b],
+            [_ c c b],
+            [s _ _ b],
         )?;
         screen.render(&layout)?;
         match screen.event()? {
