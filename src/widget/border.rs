@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{BBox, Cells, Edge, Result, Widget};
 use crate::widget::LineStyle;
+use crate::{BBox, Cells, Edge, Result, Widget};
 
 /// Border widget
 ///

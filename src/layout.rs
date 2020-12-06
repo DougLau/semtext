@@ -5,10 +5,18 @@
 //!
 use crate::{AreaBound, BBox, Error, LengthBound, Result, Widget};
 
+/// Widget or spacer in a layout
+pub enum GridItem<'a> {
+    /// Widget grid item
+    Widget(&'a dyn Widget),
+    /// Spacer grid item
+    Spacer(Option<u16>),
+}
+
 /// Builder for widget layouts.
 struct LayoutBuilder<'a> {
-    /// `Widget` references, laid out in row-major order
-    grid: Vec<&'a dyn Widget>,
+    /// `GridItem`s, laid out in row-major order
+    grid: Vec<GridItem<'a>>,
     /// Grid rows
     rows: u16,
     /// Grid columns
@@ -32,7 +40,7 @@ pub struct Layout<'a> {
 
 impl<'a> LayoutBuilder<'a> {
     /// Create a new layout builder
-    fn new<'b>(grid: Vec<&'a dyn Widget>, rows: u16) -> Result<Self> {
+    fn new<'b>(grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
         let len = grid.len() as u16; // FIXME
         let cols = len / rows;
         if cols * rows != len {
@@ -53,9 +61,11 @@ impl<'a> LayoutBuilder<'a> {
     /// Make a `Vec` of unique widgets
     fn widgets_unique(&self) -> Vec<&'a dyn Widget> {
         let mut widgets = Vec::new();
-        for widget in &self.grid {
-            if !widgets.iter().any(|w| widget_is_same(*w, *widget)) {
-                widgets.push(*widget);
+        for item in &self.grid {
+            if let GridItem::Widget(widget) = item {
+                if !widgets.iter().any(|w| widget_is_same(*w, *widget)) {
+                    widgets.push(*widget);
+                }
             }
         }
         widgets
@@ -77,15 +87,17 @@ impl<'a> LayoutBuilder<'a> {
         let mut left = u16::MAX;
         let mut right = u16::MIN;
         let mut count = 0;
-        for (i, w) in self.grid.iter().enumerate() {
-            if widget_is_same(*w, widget) {
-                let row = i as u16 / self.cols;
-                top = top.min(row);
-                bottom = bottom.max(row);
-                let col = i as u16 % self.cols;
-                left = left.min(col);
-                right = right.max(col);
-                count += 1;
+        for (i, item) in self.grid.iter().enumerate() {
+            if let GridItem::Widget(w) = item {
+                if widget_is_same(*w, widget) {
+                    let row = i as u16 / self.cols;
+                    top = top.min(row);
+                    bottom = bottom.max(row);
+                    let col = i as u16 % self.cols;
+                    left = left.min(col);
+                    right = right.max(col);
+                    count += 1;
+                }
             }
         }
         if count > 0 {
@@ -284,13 +296,9 @@ impl<'a> Layout<'a> {
     /// recommended.
     ///
     /// * `bbox`: Bounding box of layout.
-    /// * `grid`: A slice of `Widget` references, laid out in row-major order.
+    /// * `grid`: A slice of `GridItem`s, laid out in row-major order.
     /// * `rows`: The number of rows in the grid.
-    pub fn new(
-        bbox: BBox,
-        grid: Vec<&'a dyn Widget>,
-        rows: u16,
-    ) -> Result<Self> {
+    pub fn new(bbox: BBox, grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
         LayoutBuilder::new(grid, rows)?.build(bbox)
     }
 }
@@ -313,7 +321,7 @@ impl<'a> Layout<'a> {
 /// ```rust
 /// # #[macro_use] extern crate semtext;
 /// # fn main() {
-/// use semtext::{BBox, Layout, Widget, widget::Label};
+/// use semtext::{BBox, GridItem, Layout, Widget, widget::Label};
 ///
 /// let a = Label::new("Top Left");
 /// let b = Label::new("Right");
@@ -329,17 +337,19 @@ impl<'a> Layout<'a> {
 /// [grid-template-areas]: https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas
 #[macro_export]
 macro_rules! layout {
-    ( $bbox:expr, $([ $($widget:ident)+ ],)+ ) => {
+    (_) => { GridItem::Spacer(None) };
+    ($widget:ident) => { GridItem::Widget(&$widget) };
+    ($bbox:expr, $([ $($item:tt)+ ],)+) => {
         {
-            let mut w = Vec::<&dyn Widget>::new();
+            let mut w = Vec::<GridItem>::new();
             let mut rows = 0;
             $(
-                $( w.push(&$widget); )+
+                $( w.push(layout!( $item )); )+
                 rows += 1;
             )?
             Layout::new($bbox, w, rows)
         }
-    }
+    };
 }
 
 #[cfg(test)]
@@ -449,60 +459,46 @@ mod test {
 
     #[test]
     fn grid1() {
-        let a = Spacer::default();
-        let b = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25), [a], [b],).unwrap();
-        assert_eq!(l.boxes.len(), 2);
-        assert_eq!(l.boxes[0], BBox::new(0, 0, 9, 24));
-        assert_eq!(l.boxes[1], BBox::new(0, 24, 9, 1));
+        let a = Label::new("Label");
+        let l = layout!(BBox::new(0, 0, 80, 25), [_], [a],).unwrap();
+        assert_eq!(l.boxes.len(), 1);
+        assert_eq!(l.boxes[0], BBox::new(0, 24, 9, 1));
     }
 
     #[test]
     fn grid2() {
-        let a = Spacer::default();
-        let b = Label::new("Label");
+        let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a b],
+            [_ a],
         )
         .unwrap();
-        assert_eq!(l.boxes.len(), 2);
-        assert_eq!(l.boxes[0], BBox::new(0, 0, 74, 2));
-        assert_eq!(l.boxes[1], BBox::new(74, 0, 6, 2));
+        assert_eq!(l.boxes.len(), 1);
+        assert_eq!(l.boxes[0], BBox::new(74, 0, 6, 2));
     }
 
     #[test]
     fn grid3() {
-        let a = Spacer::default();
-        let b = Spacer::default();
-        let c = Label::new("Label");
+        let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a b],
-            [a c],
+            [_ _],
+            [_ a],
         )
         .unwrap();
-        assert_eq!(l.boxes.len(), 3);
-        assert_eq!(l.boxes[0], BBox::new(0, 0, 74, 25));
-        assert_eq!(l.boxes[1], BBox::new(74, 0, 6, 24));
-        assert_eq!(l.boxes[2], BBox::new(74, 24, 6, 1));
+        assert_eq!(l.boxes.len(), 1);
+        assert_eq!(l.boxes[0], BBox::new(74, 24, 6, 1));
     }
 
     #[test]
     fn grid4() {
-        let a = Spacer::default();
-        let b = Label::new("This is a test label with some text");
-        let c = Spacer::default();
-        let d = Label::new("Label");
-        let e = Spacer::default();
+        let a = Label::new("This is a test label with some text");
+        let b = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a a a e],
-            [b c d e],
+            [_ _ _ _],
+            [a _ b _],
         )
         .unwrap();
-        assert_eq!(l.boxes.len(), 5);
-        assert_eq!(l.boxes[0], BBox::new(0, 0, 52, 23));
-        assert_eq!(l.boxes[1], BBox::new(52, 0, 28, 25));
-        assert_eq!(l.boxes[2], BBox::new(0, 23, 18, 2));
-        assert_eq!(l.boxes[3], BBox::new(18, 23, 28, 2));
-        assert_eq!(l.boxes[4], BBox::new(46, 23, 6, 2));
+        assert_eq!(l.boxes.len(), 2);
+        assert_eq!(l.boxes[0], BBox::new(0, 23, 18, 2));
+        assert_eq!(l.boxes[1], BBox::new(46, 23, 6, 2));
     }
 }
