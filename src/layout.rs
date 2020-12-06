@@ -306,9 +306,10 @@ impl<'a> Layout<'a> {
 /// Layout [Widget]s onto a grid
 ///
 /// * `bbox`: Bounding box of cells to lay out
-/// * `[a ...], [b ...],`: One or more rows of `Widget`s.  A row is a series of
-///                        identifiers, separated by spaces and enclosed in
-///                        square brackets, ending with a comma.
+/// * `[a ...], [b ...],`: One or more rows of grid items, enclosed in square
+///                        brackets.  A grid item is either a [Widget]
+///                        identifier or an underscore `_`, which is used for
+///                        spacing.
 ///
 /// * returns: `Result<`[Layout]`>`
 ///
@@ -321,7 +322,7 @@ impl<'a> Layout<'a> {
 /// ```rust
 /// # #[macro_use] extern crate semtext;
 /// # fn main() {
-/// use semtext::{BBox, GridItem, Layout, Widget, widget::Label};
+/// use semtext::{BBox, Widget, widget::Label};
 ///
 /// let a = Label::new("Top Left");
 /// let b = Label::new("Right");
@@ -337,17 +338,17 @@ impl<'a> Layout<'a> {
 /// [grid-template-areas]: https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas
 #[macro_export]
 macro_rules! layout {
-    (_) => { GridItem::Spacer(None) };
-    ($widget:ident) => { GridItem::Widget(&$widget) };
+    (_) => { $crate::GridItem::Spacer(None) };
+    ($widget:ident) => { $crate::GridItem::Widget(&$widget) };
     ($bbox:expr, $([ $($item:tt)+ ],)+) => {
         {
-            let mut w = Vec::<GridItem>::new();
+            let mut w = Vec::<$crate::GridItem>::new();
             let mut rows = 0;
             $(
                 $( w.push(layout!( $item )); )+
                 rows += 1;
             )?
-            Layout::new($bbox, w, rows)
+            $crate::Layout::new($bbox, w, rows)
         }
     };
 }
