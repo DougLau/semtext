@@ -329,9 +329,9 @@ impl<'a> Layout<'a> {
 /// let c = Label::new("Bottom Left");
 /// let bbox = BBox::new(0, 0, 80, 25);
 /// let l = layout!(bbox,
-///     [a a b],
-///     [a a b],
-///     [c c b],
+///     [a a b]
+///     [a a b]
+///     [c c b]
 /// ).unwrap();
 /// # }
 /// ```
@@ -340,7 +340,7 @@ impl<'a> Layout<'a> {
 macro_rules! layout {
     (_) => { $crate::GridItem::Spacer(None) };
     ($widget:ident) => { $crate::GridItem::Widget(&$widget) };
-    ($bbox:expr, $([ $($item:tt)+ ],)+) => {
+    ($bbox:expr, $([ $($item:tt)+ ])+) => {
         {
             let mut w = Vec::<$crate::GridItem>::new();
             let mut rows = 0;
@@ -362,7 +362,7 @@ mod test {
     fn spacer1() {
         let a = Spacer::default();
         let b = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25), [a], [b],).unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [a] [b]).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
         assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));
@@ -373,7 +373,7 @@ mod test {
         let a = Spacer::default();
         let b = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a b],
+            [a b]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 2);
@@ -387,8 +387,8 @@ mod test {
         let b = Spacer::default();
         let c = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a b],
-            [a c],
+            [a b]
+            [a c]
         )
         .unwrap();
         assert!(widget_is_same(l.widgets[0], &a));
@@ -406,8 +406,8 @@ mod test {
         let b = Spacer::default();
         let c = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a a b],
-            [a a c],
+            [a a b]
+            [a a c]
         )
         .unwrap();
         assert!(widget_is_same(l.widgets[0], &a));
@@ -425,8 +425,8 @@ mod test {
         let b = Spacer::default();
         let c = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a a b b],
-            [a a c c],
+            [a a b b]
+            [a a c c]
         )
         .unwrap();
         assert!(widget_is_same(l.widgets[0], &a));
@@ -444,9 +444,9 @@ mod test {
         let b = Spacer::default();
         let c = Spacer::default();
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [a a b b],
-            [a a b b],
-            [a a c c],
+            [a a b b]
+            [a a b b]
+            [a a c c]
         )
         .unwrap();
         assert!(widget_is_same(l.widgets[0], &a));
@@ -461,7 +461,7 @@ mod test {
     #[test]
     fn grid1() {
         let a = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25), [_], [a],).unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [_] [a]).unwrap();
         assert_eq!(l.boxes.len(), 1);
         assert_eq!(l.boxes[0], BBox::new(0, 24, 9, 1));
     }
@@ -470,7 +470,7 @@ mod test {
     fn grid2() {
         let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ a],
+            [_ a]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 1);
@@ -481,8 +481,8 @@ mod test {
     fn grid3() {
         let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ _],
-            [_ a],
+            [_ _]
+            [_ a]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 1);
@@ -494,8 +494,8 @@ mod test {
         let a = Label::new("This is a test label with some text");
         let b = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ _ _ _],
-            [a _ b _],
+            [_ _ _ _]
+            [a _ b _]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 2);

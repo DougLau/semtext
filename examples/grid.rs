@@ -14,11 +14,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let c = Label::new("This label has more text on the right side");
     loop {
         let layout = layout!(screen.bbox(),
-            [_ _ _ _],
-            [a a _ b],
-            [_ _ _ b],
-            [_ c c b],
-            [s _ _ b],
+            [_ _ _ _]
+            [a a _ b]
+            [_ _ _ b]
+            [_ c c b]
+            [s _ _ b]
         )?;
         screen.render(&layout)?;
         match screen.event()? {
