@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{BBox, Dim, Error, Layout, Result};
 use crate::widget::Widget;
+use crate::{BBox, Dim, Error, Layout, Result};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -227,9 +227,9 @@ impl Screen {
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
             if let Some(border) = widget.border() {
                 let mut cells = self.cells(*bbox);
-                border.render(&mut cells);
+                border.render(&mut cells)?;
                 let mut cells = self.cells(border.inset(*bbox));
-                widget.render(&mut cells);
+                widget.render(&mut cells)?;
             } else {
                 let mut cells = self.cells(*bbox);
                 widget.render(&mut cells)?;

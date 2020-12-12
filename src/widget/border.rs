@@ -234,8 +234,7 @@ impl Widget for Border {
     fn bounds(&self) -> AreaBound {
         let cols = self.width();
         let rows = self.height();
-        let b = AreaBound::default();
-        b.with_columns(cols..).with_rows(rows..)
+        AreaBound::default().with_columns(cols..).with_rows(rows..)
     }
 
     /// Render the widget
