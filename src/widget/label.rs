@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{AreaBound, Cells, Result, Widget};
+use crate::{AreaBound, Cells, Edge, Result, Widget, widget::Border};
 use textwrap::wrap_iter;
 use unicode_width::UnicodeWidthStr;
 
@@ -39,6 +39,11 @@ impl Widget for Label {
         let rows = w / 24 + 1;
         let cols = w / rows + 1;
         b.with_columns(cols..=cols + 2).with_rows(rows..=rows)
+    }
+
+    /// Get the border
+    fn border(&self) -> Option<Border> {
+        Some(Border::default().with_edges(Edge::ALL))
     }
 
     /// Render the widget

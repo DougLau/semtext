@@ -3,6 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::{BBox, Dim, Error, Layout, Result};
+use crate::widget::Widget;
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -12,7 +13,11 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 use futures_core::stream::Stream;
 
 #[cfg(feature = "async")]
-use std::{pin::Pin, task::{Context, Poll}, future::Future};
+use std::{
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 #[cfg(feature = "async")]
 /// Needed in order to await the stream.
@@ -22,7 +27,10 @@ struct EvStreamFut(Box<dyn Stream<Item = crossterm::Result<Event>> + Unpin>);
 impl Future for EvStreamFut {
     type Output = Option<crossterm::Result<Event>>;
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    fn poll(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Self::Output> {
         Pin::new(&mut self.0).poll_next(cx)
     }
 }
@@ -140,7 +148,11 @@ impl Screen {
         #[cfg(feature = "async")]
         {
             let ev_stream = EvStreamFut(Box::new(event::EventStream::new()));
-            Ok(Screen { out, dim, ev_stream })
+            Ok(Screen {
+                out,
+                dim,
+                ev_stream,
+            })
         }
     }
 
@@ -213,8 +225,15 @@ impl Screen {
     pub fn render<'a>(&mut self, layout: &Layout<'a>) -> Result<()> {
         self.clear()?;
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
-            let mut cells = self.cells(*bbox);
-            widget.render(&mut cells)?;
+            if let Some(border) = widget.border() {
+                let mut cells = self.cells(*bbox);
+                border.render(&mut cells);
+                let mut cells = self.cells(border.inset(*bbox));
+                widget.render(&mut cells);
+            } else {
+                let mut cells = self.cells(*bbox);
+                widget.render(&mut cells)?;
+            }
         }
         Ok(())
     }

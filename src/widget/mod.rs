@@ -12,6 +12,11 @@ pub trait Widget {
         AreaBound::default()
     }
 
+    /// Get the border
+    fn border(&self) -> Option<Border> {
+        None
+    }
+
     /// Render the widget
     fn render(&self, _cells: &mut Cells) -> Result<()> {
         // default implementation renders nothing

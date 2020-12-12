@@ -120,7 +120,7 @@ impl<'a> LayoutBuilder<'a> {
     /// Calculate cell bounding boxes
     fn calculate_cell_boxes(&self, bx: BBox) -> Result<Vec<BBox>> {
         let w_bounds: Vec<AreaBound> =
-            self.widgets.iter().map(|w| w.bounds()).collect();
+            self.widgets.iter().map(|w| widget_bounds(*w)).collect();
         let col_bounds = self.col_bounds(&w_bounds[..]);
         let columns = distribute_bounds(col_bounds, bx.width());
         let row_bounds = self.row_bounds(&w_bounds[..]);
@@ -177,6 +177,15 @@ impl<'a> LayoutBuilder<'a> {
 /// Check if two widgets are at the same memory address
 fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
     a as *const _ == b as *const _
+}
+
+/// Get the bounds of a widget (including border)
+fn widget_bounds(w: &dyn Widget) -> AreaBound {
+    if let Some(b) = w.border() {
+        w.bounds() + b.bounds()
+    } else {
+        w.bounds()
+    }
 }
 
 /// Adjust a slice of length bounds to match a widget's bounds
@@ -362,7 +371,7 @@ mod test {
     fn spacer1() {
         let a = Spacer::default();
         let b = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25), [a] [b]).unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [a][b]).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
         assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));

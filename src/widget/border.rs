@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::widget::LineStyle;
-use crate::{BBox, Cells, Edge, Result, Widget};
+use crate::{AreaBound, BBox, Cells, Edge, Result, Widget};
 
 /// Border widget
 ///
@@ -12,8 +12,10 @@ use crate::{BBox, Cells, Edge, Result, Widget};
 pub struct Border {
     /// Normal edges
     pub edges: Edge,
+
     /// Accented edges
     pub accents: Edge,
+
     /// Line style
     pub line_style: LineStyle,
 }
@@ -62,7 +64,7 @@ impl Border {
     }
 
     /// Get the bbox inside the border
-    fn inset(self, bbox: BBox) -> BBox {
+    pub fn inset(self, bbox: BBox) -> BBox {
         bbox.trim(self.edges, 1)
     }
 
@@ -228,6 +230,14 @@ impl Border {
 }
 
 impl Widget for Border {
+    /// Get the area bounds
+    fn bounds(&self) -> AreaBound {
+        let cols = self.width();
+        let rows = self.height();
+        let b = AreaBound::default();
+        b.with_columns(cols..).with_rows(rows..)
+    }
+
     /// Render the widget
     fn render(&self, cells: &mut Cells) -> Result<()> {
         let width = cells.width();
