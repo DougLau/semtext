@@ -33,6 +33,6 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn main() {
-    pasts::exec!(async { async_main().await.expect("async_main errored") });
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    futures::executor::block_on(async_main())
 }

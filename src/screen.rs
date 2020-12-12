@@ -8,6 +8,25 @@ use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+#[cfg(feature = "async")]
+use futures_core::stream::Stream;
+
+#[cfg(feature = "async")]
+use std::{pin::Pin, task::{Context, Poll}, future::Future};
+
+#[cfg(feature = "async")]
+/// Needed in order to await the stream.
+struct EvStreamFut(Box<dyn Stream<Item = crossterm::Result<Event>> + Unpin>);
+
+#[cfg(feature = "async")]
+impl Future for EvStreamFut {
+    type Output = Option<crossterm::Result<Event>>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        Pin::new(&mut self.0).poll_next(cx)
+    }
+}
+
 /// Inner enum for glyphs
 #[derive(Clone, Debug, PartialEq)]
 enum GlyphInner {
@@ -51,6 +70,9 @@ pub struct Screen {
     out: Stdout,
     /// Dimensions of screen in text cells
     dim: Dim,
+    #[cfg(feature = "async")]
+    /// Event stream future.
+    ev_stream: EvStreamFut,
 }
 
 /// Cells of text
@@ -111,7 +133,15 @@ impl Screen {
             terminal::DisableLineWrap,
             terminal::Clear(terminal::ClearType::All),
         )?;
-        Ok(Screen { out, dim })
+        #[cfg(not(feature = "async"))]
+        {
+            Ok(Screen { out, dim })
+        }
+        #[cfg(feature = "async")]
+        {
+            let ev_stream = EvStreamFut(Box::new(event::EventStream::new()));
+            Ok(Screen { out, dim, ev_stream })
+        }
     }
 
     /// Set the screen title
@@ -196,7 +226,18 @@ impl Screen {
         if let Event::Resize(width, height) = ev {
             self.dim = Dim::new(width, height);
         }
-        return Ok(ev);
+        Ok(ev)
+    }
+
+    /// Asynchronous wait for input events
+    #[cfg(feature = "async")]
+    pub async fn input(&mut self) -> Result<Event> {
+        self.out.flush()?;
+        let ev = (&mut self.ev_stream).await.unwrap()?;
+        if let Event::Resize(width, height) = ev {
+            self.dim = Dim::new(width, height);
+        }
+        Ok(ev)
     }
 
     /// Cleanup screen
