@@ -176,7 +176,16 @@ impl<'a> LayoutBuilder<'a> {
 
 /// Check if two widgets are at the same memory address
 fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
-    a as *const dyn Widget as *const () == b as *const dyn Widget as *const ()
+    data_pointer(a) == data_pointer(b)
+}
+
+/// Get the data pointer of a trait object
+///
+/// Taken from [here]
+///
+/// [here]: https://github.com/rust-lang/rust/issues/27751#issuecomment-336554503
+fn data_pointer<T: ?Sized>(t: &T) -> *const u8 {
+    t as *const T as *const u8
 }
 
 /// Get the bounds of a widget (including border)
