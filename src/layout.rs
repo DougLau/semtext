@@ -176,7 +176,7 @@ impl<'a> LayoutBuilder<'a> {
 
 /// Check if two widgets are at the same memory address
 fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
-    a as *const _ == b as *const _
+    a as *const dyn Widget as *const () == b as *const dyn Widget as *const ()
 }
 
 /// Get the bounds of a widget (including border)
