@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::widget::Widget;
-use crate::{BBox, Dim, Error, Layout, Result};
+use crate::{BBox, Dim, Error, Layout, Result, Theme};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -78,6 +78,8 @@ pub struct Screen {
     out: Stdout,
     /// Dimensions of screen in text cells
     dim: Dim,
+    /// Style theme
+    theme: Theme,
     #[cfg(feature = "async")]
     /// Event stream future.
     ev_stream: EvStreamFut,
@@ -132,6 +134,7 @@ impl Screen {
     pub fn new() -> Result<Self> {
         let (width, height) = terminal::size()?;
         let dim = Dim::new(width, height);
+        let theme = Theme::default();
         terminal::enable_raw_mode()?;
         let mut out = std::io::stdout();
         queue!(
@@ -143,7 +146,7 @@ impl Screen {
         )?;
         #[cfg(not(feature = "async"))]
         {
-            Ok(Screen { out, dim })
+            Ok(Screen { out, dim, theme })
         }
         #[cfg(feature = "async")]
         {
@@ -151,6 +154,7 @@ impl Screen {
             Ok(Screen {
                 out,
                 dim,
+                theme,
                 ev_stream,
             })
         }
@@ -223,16 +227,17 @@ impl Screen {
 
     /// Render a layout
     pub fn render<'a>(&mut self, layout: &Layout<'a>) -> Result<()> {
+        let theme = self.theme.clone();
         self.clear()?;
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
             if let Some(border) = widget.border() {
                 let mut cells = self.cells(*bbox);
-                border.render(&mut cells)?;
+                border.render(&mut cells, &theme)?;
                 let mut cells = self.cells(border.inset(*bbox));
-                widget.render(&mut cells)?;
+                widget.render(&mut cells, &theme)?;
             } else {
                 let mut cells = self.cells(*bbox);
-                widget.render(&mut cells)?;
+                widget.render(&mut cells, &theme)?;
             }
         }
         Ok(())
@@ -311,6 +316,16 @@ impl<'a> Cells<'a> {
             }
         }
         Ok(())
+    }
+
+    /// Set the foreground color
+    pub fn set_foreground_color(&mut self, color: style::Color) -> Result<()> {
+        self.screen.set_foreground_color(color)
+    }
+
+    /// Set the background color
+    pub fn set_background_color(&mut self, color: style::Color) -> Result<()> {
+        self.screen.set_background_color(color)
     }
 
     /// Move cursor to a cell
