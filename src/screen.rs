@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::widget::Widget;
-use crate::{BBox, Dim, Error, Layout, Result, Theme};
+use crate::{BBox, Color, Dim, Error, Layout, Result, Theme};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -190,14 +190,14 @@ impl Screen {
     }
 
     /// Set the foreground color
-    fn set_foreground_color(&mut self, color: style::Color) -> Result<()> {
-        queue!(self.out, style::SetForegroundColor(color))?;
+    fn set_foreground_color(&mut self, color: Color) -> Result<()> {
+        queue!(self.out, style::SetForegroundColor(color.into()))?;
         Ok(())
     }
 
     /// Set the background color
-    fn set_background_color(&mut self, color: style::Color) -> Result<()> {
-        queue!(self.out, style::SetBackgroundColor(color))?;
+    fn set_background_color(&mut self, color: Color) -> Result<()> {
+        queue!(self.out, style::SetBackgroundColor(color.into()))?;
         Ok(())
     }
 
@@ -319,13 +319,13 @@ impl<'a> Cells<'a> {
     }
 
     /// Set the foreground color
-    pub fn set_foreground_color(&mut self, color: style::Color) -> Result<()> {
-        self.screen.set_foreground_color(color)
+    pub fn set_foreground_color(&mut self, color: Color) -> Result<()> {
+        self.screen.set_foreground_color(color.into())
     }
 
     /// Set the background color
-    pub fn set_background_color(&mut self, color: style::Color) -> Result<()> {
-        self.screen.set_background_color(color)
+    pub fn set_background_color(&mut self, color: Color) -> Result<()> {
+        self.screen.set_background_color(color.into())
     }
 
     /// Move cursor to a cell

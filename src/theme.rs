@@ -2,7 +2,53 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crossterm::style::Color;
+use crossterm::style::Color as Clr;
+
+/// Color intensity
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Intensity {
+    Normal,
+    Bright,
+}
+
+/// Colors
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Color {
+    Black(Intensity),
+    Red(Intensity),
+    Green(Intensity),
+    Yellow(Intensity),
+    Blue(Intensity),
+    Magenta(Intensity),
+    Cyan(Intensity),
+    White(Intensity),
+    Rgb(u8, u8, u8),
+}
+
+impl From<Color> for Clr {
+    fn from(clr: Color) -> Self {
+        use Color::*;
+        match clr {
+            Black(Intensity::Normal) => Clr::Black,
+            Black(Intensity::Bright) => Clr::DarkGrey,
+            Red(Intensity::Normal) => Clr::DarkRed,
+            Red(Intensity::Bright) => Clr::Red,
+            Green(Intensity::Normal) => Clr::DarkGreen,
+            Green(Intensity::Bright) => Clr::Green,
+            Yellow(Intensity::Normal) => Clr::DarkYellow,
+            Yellow(Intensity::Bright) => Clr::Yellow,
+            Blue(Intensity::Normal) => Clr::DarkBlue,
+            Blue(Intensity::Bright) => Clr::Blue,
+            Magenta(Intensity::Normal) => Clr::DarkMagenta,
+            Magenta(Intensity::Bright) => Clr::Magenta,
+            Cyan(Intensity::Normal) => Clr::DarkCyan,
+            Cyan(Intensity::Bright) => Clr::Cyan,
+            White(Intensity::Normal) => Clr::Grey,
+            White(Intensity::Bright) => Clr::White,
+            Rgb(r, g, b) => Clr::Rgb { r, g, b },
+        }
+    }
+}
 
 /// Style theme
 #[derive(Clone, Debug, PartialEq)]
@@ -23,11 +69,11 @@ impl Default for Theme {
     fn default() -> Self {
         // These are terminal base colors
         // They don't necessarily match the names
-        let foreground = Color::White;
-        let background = Color::Black;
-        let primary = Color::Yellow;
-        let secondary = Color::Cyan;
-        let tertiary = Color::Magenta;
+        let foreground = Color::White(Intensity::Bright);
+        let background = Color::Black(Intensity::Normal);
+        let primary = Color::Yellow(Intensity::Bright);
+        let secondary = Color::Cyan(Intensity::Bright);
+        let tertiary = Color::Magenta(Intensity::Bright);
         Self {
             foreground,
             background,
