@@ -4,24 +4,40 @@
 //
 use crossterm::style::Color as Clr;
 
-/// Color intensity
+/// ANSI color intensity
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Intensity {
+    /// Normal (dark) color intensity
     Normal,
+    /// Bright color intensity
     Bright,
 }
 
-/// Colors
+/// Text Colors
+///
+/// Colors can be specified using one of the standard 16 ANSI colors, or as
+/// `Rgb` 24-bit *true color*.  In most cases, it is best to use the ANSI
+/// colors, since it allows the user to define their own preferences for all
+/// their terminal apps.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Color {
+    /// Standard ANSI *black* (normal) and *dark gray* (bright)
     Black(Intensity),
+    /// Standard ANSI *red*
     Red(Intensity),
+    /// Standard ANSI *green*
     Green(Intensity),
+    /// Standard ANSI *yellow*
     Yellow(Intensity),
+    /// Standard ANSI *blue*
     Blue(Intensity),
+    /// Standard ANSI *magenta*
     Magenta(Intensity),
+    /// Standard ANSI *cyan*
     Cyan(Intensity),
+    /// Standard ANSI *light gray* (normal) and *white* (bright)
     White(Intensity),
+    /// Red, green, blue *true color*
     Rgb(u8, u8, u8),
 }
 

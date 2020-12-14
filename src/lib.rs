@@ -25,5 +25,5 @@ use crate::bounds::LengthBound;
 pub use crate::error::{Error, Result};
 pub use crate::layout::{GridItem, Layout};
 pub use crate::screen::{Cells, Glyph, IntoGlyph, Screen};
-pub use crate::theme::{Color, Theme};
+pub use crate::theme::{Color, Intensity, Theme};
 pub use crate::widget::Widget;
