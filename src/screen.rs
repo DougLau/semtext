@@ -227,17 +227,18 @@ impl Screen {
 
     /// Render a layout
     pub fn render<'a>(&mut self, layout: &Layout<'a>) -> Result<()> {
-        let theme = self.theme.clone();
+        let background = self.theme.background();
+        self.set_background_color(background)?;
         self.clear()?;
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
             if let Some(border) = widget.border() {
                 let mut cells = self.cells(*bbox);
-                border.render(&mut cells, &theme)?;
+                border.render(&mut cells)?;
                 let mut cells = self.cells(border.inset(*bbox));
-                widget.render(&mut cells, &theme)?;
+                widget.render(&mut cells)?;
             } else {
                 let mut cells = self.cells(*bbox);
-                widget.render(&mut cells, &theme)?;
+                widget.render(&mut cells)?;
             }
         }
         Ok(())
@@ -316,6 +317,11 @@ impl<'a> Cells<'a> {
             }
         }
         Ok(())
+    }
+
+    /// Get the screen theme
+    pub fn theme(&self) -> &Theme {
+        &self.screen.theme
     }
 
     /// Set the foreground color

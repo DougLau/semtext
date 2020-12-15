@@ -21,21 +21,21 @@ pub enum Intensity {
 /// their terminal apps.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Color {
-    /// Standard ANSI *black* (normal) and *dark gray* (bright)
+    /// ANSI color 0 *black*, and 8 *dark gray* (bright)
     Black(Intensity),
-    /// Standard ANSI *red*
+    /// ANSI color 1 *red*, and 9 (bright)
     Red(Intensity),
-    /// Standard ANSI *green*
+    /// ANSI color 2 *green*, and 10 (bright)
     Green(Intensity),
-    /// Standard ANSI *yellow*
+    /// ANSI color 3 *yellow*, and 11 (bright)
     Yellow(Intensity),
-    /// Standard ANSI *blue*
+    /// ANSI color 4 *blue*, and 12 (bright)
     Blue(Intensity),
-    /// Standard ANSI *magenta*
+    /// ANSI color 5 *magenta*, and 13 (bright)
     Magenta(Intensity),
-    /// Standard ANSI *cyan*
+    /// ANSI color 6 *cyan*, and 14 (bright)
     Cyan(Intensity),
-    /// Standard ANSI *light gray* (normal) and *white* (bright)
+    /// ANSI color 7 *light gray*, and 15 *white* (bright)
     White(Intensity),
     /// Red, green, blue *true color*
     Rgb(u8, u8, u8),
@@ -107,15 +107,52 @@ impl Theme {
         self
     }
 
-    pub(crate) fn foreground(&self) -> Color {
+    /// Set the background color
+    pub fn with_background(mut self, clr: Color) -> Self {
+        self.background = clr;
+        self
+    }
+
+    /// Set the primary color
+    pub fn with_primary(mut self, clr: Color) -> Self {
+        self.primary = clr;
+        self
+    }
+
+    /// Set the secondary color
+    pub fn with_secondary(mut self, clr: Color) -> Self {
+        self.secondary = clr;
+        self
+    }
+
+    /// Set the tertiary color
+    pub fn with_tertiary(mut self, clr: Color) -> Self {
+        self.tertiary = clr;
+        self
+    }
+
+    /// Get the foreground color
+    pub fn foreground(&self) -> Color {
         self.foreground
     }
 
-    pub(crate) fn background(&self) -> Color {
+    /// Get the background color
+    pub fn background(&self) -> Color {
         self.background
     }
 
-    pub(crate) fn primary(&self) -> Color {
+    /// Get the primary color
+    pub fn primary(&self) -> Color {
         self.primary
+    }
+
+    /// Get the secondary color
+    pub fn secondary(&self) -> Color {
+        self.secondary
+    }
+
+    /// Get the tertiary color
+    pub fn tertiary(&self) -> Color {
+        self.tertiary
     }
 }

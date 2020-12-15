@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{widget::Border, AreaBound, Cells, Edge, Result, Theme, Widget};
+use crate::{widget::Border, AreaBound, Cells, Edge, Result, Widget};
 use textwrap::wrap_iter;
 use unicode_width::UnicodeWidthStr;
 
@@ -47,9 +47,11 @@ impl Widget for Label {
     }
 
     /// Render the widget
-    fn render(&self, cells: &mut Cells, theme: &Theme) -> Result<()> {
-        cells.set_foreground_color(theme.foreground())?;
-        cells.set_background_color(theme.background())?;
+    fn render(&self, cells: &mut Cells) -> Result<()> {
+        let foreground = cells.theme().foreground();
+        let background = cells.theme().background();
+        cells.set_foreground_color(foreground)?;
+        cells.set_background_color(background)?;
         let width = usize::from(cells.width());
         let height = usize::from(cells.height());
         for (row, txt) in wrap_iter(&self.txt, width).take(height).enumerate() {

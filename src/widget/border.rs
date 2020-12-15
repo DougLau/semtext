@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::widget::LineStyle;
-use crate::{AreaBound, BBox, Cells, Edge, Result, Theme, Widget};
+use crate::{AreaBound, BBox, Cells, Edge, Result, Widget};
 
 /// Border widget
 ///
@@ -238,9 +238,11 @@ impl Widget for Border {
     }
 
     /// Render the widget
-    fn render(&self, cells: &mut Cells, theme: &Theme) -> Result<()> {
-        cells.set_foreground_color(theme.primary())?;
-        cells.set_background_color(theme.background())?;
+    fn render(&self, cells: &mut Cells) -> Result<()> {
+        let primary = cells.theme().primary();
+        let background = cells.theme().background();
+        cells.set_foreground_color(primary)?;
+        cells.set_background_color(background)?;
         let width = cells.width();
         let height = cells.height();
         if width == 0 || height == 0 {
