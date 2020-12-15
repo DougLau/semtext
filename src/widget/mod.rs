@@ -29,7 +29,7 @@ mod label;
 mod linestyle;
 mod spacer;
 
-pub use border::Border;
+pub use border::{Border, Edge};
 pub use label::Label;
 pub use linestyle::LineStyle;
 pub use spacer::Spacer;

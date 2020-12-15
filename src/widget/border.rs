@@ -2,8 +2,28 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+use bitflags::bitflags;
 use crate::widget::LineStyle;
-use crate::{AreaBound, BBox, Cells, Edge, Result, Widget};
+use crate::{AreaBound, BBox, Cells, Result, Widget};
+
+bitflags! {
+    /// Border edge
+    #[derive(Default)]
+    pub struct Edge: u8 {
+        const NONE = 0x00;
+        const TOP = 0x01;
+        const BOTTOM = 0x02;
+        const LEFT = 0x04;
+        const RIGHT = 0x08;
+        const TOP_LEFT = Self::TOP.bits | Self::LEFT.bits;
+        const TOP_RIGHT = Self::TOP.bits | Self::RIGHT.bits;
+        const BOTTOM_LEFT = Self::BOTTOM.bits | Self::LEFT.bits;
+        const BOTTOM_RIGHT = Self::BOTTOM.bits | Self::RIGHT.bits;
+        const TOP_BOTTOM = Self::TOP.bits | Self::BOTTOM.bits;
+        const LEFT_RIGHT = Self::LEFT.bits | Self::RIGHT.bits;
+        const ALL = Self::TOP_BOTTOM.bits | Self::LEFT_RIGHT.bits;
+    }
+}
 
 /// Border widget
 ///
@@ -64,8 +84,21 @@ impl Border {
     }
 
     /// Get the bbox inside the border
-    pub fn inset(self, bbox: BBox) -> BBox {
-        bbox.trim(self.edges, 1)
+    pub fn inset(self, mut bbox: BBox) -> BBox {
+        let trim = 1;
+        if self.edges.contains(Edge::LEFT) {
+            bbox = bbox.trim_left(trim);
+        }
+        if self.edges.contains(Edge::RIGHT) {
+            bbox = bbox.trim_right(trim);
+        }
+        if self.edges.contains(Edge::TOP) {
+            bbox = bbox.trim_top(trim);
+        }
+        if self.edges.contains(Edge::BOTTOM) {
+            bbox = bbox.trim_bottom(trim);
+        }
+        bbox
     }
 
     /// Get character at top edge

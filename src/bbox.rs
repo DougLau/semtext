@@ -2,26 +2,6 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use bitflags::bitflags;
-
-bitflags! {
-    /// Edge of a widget or bounding box
-    #[derive(Default)]
-    pub struct Edge: u8 {
-        const NONE = 0x00;
-        const TOP = 0x01;
-        const BOTTOM = 0x02;
-        const LEFT = 0x04;
-        const RIGHT = 0x08;
-        const TOP_LEFT = Self::TOP.bits | Self::LEFT.bits;
-        const TOP_RIGHT = Self::TOP.bits | Self::RIGHT.bits;
-        const BOTTOM_LEFT = Self::BOTTOM.bits | Self::LEFT.bits;
-        const BOTTOM_RIGHT = Self::BOTTOM.bits | Self::RIGHT.bits;
-        const TOP_BOTTOM = Self::TOP.bits | Self::BOTTOM.bits;
-        const LEFT_RIGHT = Self::LEFT.bits | Self::RIGHT.bits;
-        const ALL = Self::TOP_BOTTOM.bits | Self::LEFT_RIGHT.bits;
-    }
-}
 
 /// Text cell position
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -74,7 +54,7 @@ impl BBox {
     pub fn new(col: u16, row: u16, width: u16, height: u16) -> Self {
         let pos = Pos::new(col, row);
         let dim = Dim::new(width, height);
-        BBox { pos, dim }
+        Self { pos, dim }
     }
 
     /// Get the left column (inclusive)
@@ -123,48 +103,34 @@ impl BBox {
         BBox::new(col, row, width, height)
     }
 
-    /// Trim cells from the given edges
-    pub fn trim(self, edge: Edge, cells: u16) -> Self {
-        let mut bbox = self;
-        if edge.contains(Edge::LEFT) {
-            bbox.trim_left(cells);
-        }
-        if edge.contains(Edge::RIGHT) {
-            bbox.trim_right(cells);
-        }
-        if edge.contains(Edge::TOP) {
-            bbox.trim_top(cells);
-        }
-        if edge.contains(Edge::BOTTOM) {
-            bbox.trim_bottom(cells);
-        }
-        bbox
-    }
-
     /// Trim cells from left edge
-    fn trim_left(&mut self, cells: u16) {
-        let cells = self.width().min(cells);
-        self.pos.col += cells;
-        self.dim.width -= cells;
+    pub fn trim_left(mut self, trim: u16) -> Self {
+        let trim = self.width().min(trim);
+        self.pos.col += trim;
+        self.dim.width -= trim;
+        self
     }
 
     /// Trim cells from right edge
-    fn trim_right(&mut self, cells: u16) {
-        let cells = self.width().min(cells);
-        self.dim.width -= cells;
+    pub fn trim_right(mut self, trim: u16) -> Self {
+        let trim = self.width().min(trim);
+        self.dim.width -= trim;
+        self
     }
 
     /// Trim cells from top edge
-    fn trim_top(&mut self, cells: u16) {
-        let cells = self.height().min(cells);
-        self.pos.row += cells;
-        self.dim.height -= cells;
+    pub fn trim_top(mut self, trim: u16) -> Self {
+        let trim = self.height().min(trim);
+        self.pos.row += trim;
+        self.dim.height -= trim;
+        self
     }
 
     /// Trim cells from bottom edge
-    fn trim_bottom(&mut self, cells: u16) {
-        let cells = self.height().min(cells);
-        self.dim.height -= cells;
+    pub fn trim_bottom(mut self, trim: u16) -> Self {
+        let trim = self.height().min(trim);
+        self.dim.height -= trim;
+        self
     }
 }
 
@@ -175,6 +141,9 @@ mod test {
     #[test]
     fn bbox_trim() {
         let bbox = BBox::new(0, 0, 5, 7);
-        assert_eq!(bbox.trim(Edge::LEFT, 1), BBox::new(1, 0, 4, 7));
+        assert_eq!(bbox.trim_left(1), BBox::new(1, 0, 4, 7));
+        assert_eq!(bbox.trim_right(1), BBox::new(0, 0, 4, 7));
+        assert_eq!(bbox.trim_top(1), BBox::new(0, 1, 5, 6));
+        assert_eq!(bbox.trim_bottom(1), BBox::new(0, 0, 5, 6));
     }
 }

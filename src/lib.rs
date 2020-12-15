@@ -19,7 +19,7 @@ mod theme;
 pub mod widget;
 
 use crate::bbox::Dim;
-pub use crate::bbox::{BBox, Edge};
+pub use crate::bbox::BBox;
 pub use crate::bounds::AreaBound;
 use crate::bounds::LengthBound;
 pub use crate::error::{Error, Result};

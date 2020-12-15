@@ -177,10 +177,14 @@ impl Screen {
         Ok(())
     }
 
-    /// Get all cells on screen
-    fn cells(&mut self, bbox: BBox) -> Cells {
+    /// Get cells contained by a bounding box
+    fn cells(&mut self, bbox: BBox) -> Option<Cells> {
         let bbox = self.bbox().clip(bbox);
-        Cells { screen: self, bbox }
+        if bbox.is_empty() {
+            None
+        } else {
+            Some(Cells { screen: self, bbox })
+        }
     }
 
     /// Set a text attribute
@@ -232,13 +236,16 @@ impl Screen {
         self.clear()?;
         for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
             if let Some(border) = widget.border() {
-                let mut cells = self.cells(*bbox);
-                border.render(&mut cells)?;
-                let mut cells = self.cells(border.inset(*bbox));
-                widget.render(&mut cells)?;
+                if let Some(mut cells) = self.cells(*bbox) {
+                    border.render(&mut cells)?;
+                }
+                if let Some(mut cells) = self.cells(border.inset(*bbox)) {
+                    widget.render(&mut cells)?;
+                }
             } else {
-                let mut cells = self.cells(*bbox);
-                widget.render(&mut cells)?;
+                if let Some(mut cells) = self.cells(*bbox) {
+                    widget.render(&mut cells)?;
+                }
             }
         }
         Ok(())
