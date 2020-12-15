@@ -11,13 +11,13 @@ use crate::{AreaBound, BBox, Cells, Edge, Result, Widget};
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Border {
     /// Normal edges
-    pub edges: Edge,
+    edges: Edge,
 
     /// Accented edges
-    pub accents: Edge,
+    accents: Edge,
 
     /// Line style
-    pub line_style: LineStyle,
+    line_style: LineStyle,
 }
 
 impl Border {

@@ -40,7 +40,7 @@ pub struct Layout<'a> {
 
 impl<'a> LayoutBuilder<'a> {
     /// Create a new layout builder
-    fn new<'b>(grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
+    fn new(grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
         let len = grid.len() as u16; // FIXME
         let cols = len / rows;
         if cols * rows != len {

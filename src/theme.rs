@@ -83,8 +83,6 @@ pub struct Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        // These are terminal base colors
-        // They don't necessarily match the names
         let foreground = Color::White(Intensity::Bright);
         let background = Color::Black(Intensity::Normal);
         let primary = Color::Yellow(Intensity::Bright);

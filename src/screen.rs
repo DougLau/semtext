@@ -326,12 +326,12 @@ impl<'a> Cells<'a> {
 
     /// Set the foreground color
     pub fn set_foreground_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_foreground_color(color.into())
+        self.screen.set_foreground_color(color)
     }
 
     /// Set the background color
     pub fn set_background_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_background_color(color.into())
+        self.screen.set_background_color(color)
     }
 
     /// Move cursor to a cell
