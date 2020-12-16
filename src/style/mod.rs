@@ -4,8 +4,8 @@
 //
 //! Style items
 
-//mod border;
 mod line;
+mod theme;
 
-//pub use border::{Border};
 pub use line::Line;
+pub use theme::{Color, Intensity, Theme};

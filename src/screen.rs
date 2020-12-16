@@ -2,8 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+use crate::style::{Color, Theme};
 use crate::widget::Widget;
-use crate::{BBox, Color, Dim, Error, Layout, Result, Theme};
+use crate::{BBox, Dim, Error, Layout, Result};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
