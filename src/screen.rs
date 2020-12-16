@@ -242,10 +242,8 @@ impl Screen {
                 if let Some(mut cells) = self.cells(border.inset(*bbox)) {
                     widget.render(&mut cells)?;
                 }
-            } else {
-                if let Some(mut cells) = self.cells(*bbox) {
-                    widget.render(&mut cells)?;
-                }
+            } else if let Some(mut cells) = self.cells(*bbox) {
+                widget.render(&mut cells)?;
             }
         }
         Ok(())

@@ -2,9 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{AreaBound, Cells, Result, Widget};
 use crate::style::Line;
 use crate::widget::Border;
+use crate::{AreaBound, Cells, Result, Widget};
 use textwrap::wrap_iter;
 use unicode_width::UnicodeWidthStr;
 

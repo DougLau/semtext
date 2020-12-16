@@ -1,6 +1,6 @@
 use crossterm::event::{Event, KeyCode};
 use semtext::widget::{Border, Label, Spacer};
-use semtext::{layout, Screen, style::Line};
+use semtext::{layout, style::Line, Screen};
 
 async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
