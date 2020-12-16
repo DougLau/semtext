@@ -16,6 +16,7 @@ mod error;
 mod layout;
 mod screen;
 mod theme;
+pub mod style;
 pub mod widget;
 
 use crate::bbox::Dim;

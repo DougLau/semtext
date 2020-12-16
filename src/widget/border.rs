@@ -2,70 +2,68 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use bitflags::bitflags;
-use crate::widget::LineStyle;
+use crate::style::Line;
 use crate::{AreaBound, BBox, Cells, Result, Widget};
-
-bitflags! {
-    /// Border edge
-    #[derive(Default)]
-    pub struct Edge: u8 {
-        const NONE = 0x00;
-        const TOP = 0x01;
-        const BOTTOM = 0x02;
-        const LEFT = 0x04;
-        const RIGHT = 0x08;
-        const TOP_LEFT = Self::TOP.bits | Self::LEFT.bits;
-        const TOP_RIGHT = Self::TOP.bits | Self::RIGHT.bits;
-        const BOTTOM_LEFT = Self::BOTTOM.bits | Self::LEFT.bits;
-        const BOTTOM_RIGHT = Self::BOTTOM.bits | Self::RIGHT.bits;
-        const TOP_BOTTOM = Self::TOP.bits | Self::BOTTOM.bits;
-        const LEFT_RIGHT = Self::LEFT.bits | Self::RIGHT.bits;
-        const ALL = Self::TOP_BOTTOM.bits | Self::LEFT_RIGHT.bits;
-    }
-}
 
 /// Border widget
 ///
 /// One or more edges are drawn around a bounding box.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Border {
-    /// Normal edges
-    edges: Edge,
+    /// Style for left edge
+    left: Option<Line>,
 
-    /// Accented edges
-    accents: Edge,
+    /// Style for right edge
+    right: Option<Line>,
 
-    /// Line style
-    line_style: LineStyle,
+    /// Style for top edge
+    top: Option<Line>,
+
+    /// Style for bottom edge
+    bottom: Option<Line>,
 }
 
 impl Border {
-    /// Set border edges
-    pub fn with_edges(mut self, edges: Edge) -> Self {
-        self.edges = edges;
-        self.with_accents(self.accents)
-    }
-
-    /// Set border edge accents
-    pub fn with_accents(mut self, accents: Edge) -> Self {
-        self.accents = self.edges & accents;
+    /// Set line style for all edges
+    pub fn with_all(mut self, line: Line) -> Self {
+        self.left = Some(line);
+        self.right = Some(line);
+        self.top = Some(line);
+        self.bottom = Some(line);
         self
     }
 
-    /// Set border line style
-    pub fn with_line_style(mut self, line_style: LineStyle) -> Self {
-        self.line_style = line_style;
+    /// Set line style for left edge
+    pub fn with_left(mut self, line: Option<Line>) -> Self {
+        self.left = line;
+        self
+    }
+
+    /// Set line style for right edge
+    pub fn with_right(mut self, line: Option<Line>) -> Self {
+        self.right = line;
+        self
+    }
+
+    /// Set line style for top edge
+    pub fn with_top(mut self, line: Option<Line>) -> Self {
+        self.top = line;
+        self
+    }
+
+    /// Set line style for bottom edge
+    pub fn with_bottom(mut self, line: Option<Line>) -> Self {
+        self.bottom = line;
         self
     }
 
     /// Get the total width in cells (left and right edges)
     pub fn width(self) -> u16 {
         let mut width = 0;
-        if self.edges.contains(Edge::LEFT) {
+        if self.left.is_some() {
             width += 1;
         }
-        if self.edges.contains(Edge::RIGHT) {
+        if self.right.is_some() {
             width += 1;
         }
         width
@@ -74,10 +72,10 @@ impl Border {
     /// Get the total height in cells (top and bottom edges)
     pub fn height(self) -> u16 {
         let mut height = 0;
-        if self.edges.contains(Edge::TOP) {
+        if self.top.is_some() {
             height += 1;
         }
-        if self.edges.contains(Edge::BOTTOM) {
+        if self.bottom.is_some() {
             height += 1;
         }
         height
@@ -86,179 +84,19 @@ impl Border {
     /// Get the bbox inside the border
     pub fn inset(self, mut bbox: BBox) -> BBox {
         let trim = 1;
-        if self.edges.contains(Edge::LEFT) {
+        if self.left.is_some() {
             bbox = bbox.trim_left(trim);
         }
-        if self.edges.contains(Edge::RIGHT) {
+        if self.right.is_some() {
             bbox = bbox.trim_right(trim);
         }
-        if self.edges.contains(Edge::TOP) {
+        if self.top.is_some() {
             bbox = bbox.trim_top(trim);
         }
-        if self.edges.contains(Edge::BOTTOM) {
+        if self.bottom.is_some() {
             bbox = bbox.trim_bottom(trim);
         }
         bbox
-    }
-
-    /// Get character at top edge
-    pub fn top(self) -> char {
-        match (self.line_style, self.accents & Edge::TOP) {
-            (LineStyle::Solid, Edge::TOP) => '━',
-            (LineStyle::Double, Edge::TOP) => '═',
-            (LineStyle::Tight, Edge::TOP) => '▄',
-            (LineStyle::Tight, _) => '▁',
-            (LineStyle::Dashed, Edge::TOP) => '╍',
-            (LineStyle::Dashed, _) => '╌',
-            (LineStyle::Block, Edge::TOP) => '█',
-            (LineStyle::Block, _) => '▄',
-            (LineStyle::OuterBlock, Edge::TOP) => '█',
-            (LineStyle::OuterBlock, _) => '▀',
-            _ => '─',
-        }
-    }
-
-    /// Get character at bottom edge
-    pub fn bottom(self) -> char {
-        match (self.line_style, self.accents & Edge::BOTTOM) {
-            (LineStyle::Solid, Edge::BOTTOM) => '━',
-            (LineStyle::Double, Edge::BOTTOM) => '═',
-            (LineStyle::Tight, Edge::BOTTOM) => '▀',
-            (LineStyle::Tight, _) => '▔',
-            (LineStyle::Dashed, Edge::BOTTOM) => '╍',
-            (LineStyle::Dashed, _) => '╌',
-            (LineStyle::Block, Edge::BOTTOM) => '█',
-            (LineStyle::Block, _) => '▀',
-            (LineStyle::OuterBlock, Edge::BOTTOM) => '█',
-            (LineStyle::OuterBlock, _) => '▄',
-            _ => '─',
-        }
-    }
-
-    /// Get character at left edge
-    pub fn left(self) -> char {
-        match (self.line_style, self.accents & Edge::LEFT) {
-            (LineStyle::Solid, Edge::LEFT) => '┃',
-            (LineStyle::Double, Edge::LEFT) => '║',
-            (LineStyle::Tight, Edge::LEFT) => '▐',
-            (LineStyle::Tight, _) => '▕',
-            (LineStyle::Dashed, Edge::LEFT) => '┇',
-            (LineStyle::Dashed, _) => '┆',
-            (LineStyle::Block, Edge::LEFT) => '█',
-            (LineStyle::Block, _) => '▐',
-            (LineStyle::OuterBlock, Edge::LEFT) => '█',
-            (LineStyle::OuterBlock, _) => '▌',
-            _ => '│',
-        }
-    }
-
-    /// Get character at right edge
-    pub fn right(self) -> char {
-        match (self.line_style, self.accents & Edge::RIGHT) {
-            (LineStyle::Solid, Edge::RIGHT) => '┃',
-            (LineStyle::Double, Edge::RIGHT) => '║',
-            (LineStyle::Tight, Edge::LEFT) => '▌',
-            (LineStyle::Tight, _) => '▏',
-            (LineStyle::Dashed, Edge::RIGHT) => '┇',
-            (LineStyle::Dashed, _) => '┆',
-            (LineStyle::Block, Edge::RIGHT) => '█',
-            (LineStyle::Block, _) => '▌',
-            (LineStyle::OuterBlock, Edge::RIGHT) => '█',
-            (LineStyle::OuterBlock, _) => '▐',
-            _ => '│',
-        }
-    }
-
-    /// Get character at top-left corner
-    pub fn top_left(self) -> char {
-        match (self.line_style, self.accents & Edge::TOP_LEFT) {
-            (LineStyle::Double, Edge::TOP) => '╒',
-            (LineStyle::Double, Edge::LEFT) => '╓',
-            (LineStyle::Double, Edge::TOP_LEFT) => '╔',
-            (LineStyle::Tight, Edge::TOP_LEFT) => '▗',
-            (LineStyle::Tight, _) => ' ',
-            (LineStyle::Block, Edge::TOP) => '▐',
-            (LineStyle::Block, Edge::LEFT) => '▄',
-            (LineStyle::Block, Edge::TOP_LEFT) => '█',
-            (LineStyle::Block, _) => '▗',
-            (LineStyle::OuterBlock, Edge::TOP) => '█',
-            (LineStyle::OuterBlock, Edge::LEFT) => '█',
-            (LineStyle::OuterBlock, Edge::TOP_LEFT) => '█',
-            (LineStyle::OuterBlock, _) => '▛',
-            (_, Edge::TOP) => '┍',
-            (_, Edge::LEFT) => '┎',
-            (_, Edge::TOP_LEFT) => '┏',
-            _ => '╭',
-        }
-    }
-
-    /// Get character at top-right corner
-    pub fn top_right(self) -> char {
-        match (self.line_style, self.accents & Edge::TOP_RIGHT) {
-            (LineStyle::Double, Edge::TOP) => '╕',
-            (LineStyle::Double, Edge::RIGHT) => '╖',
-            (LineStyle::Double, Edge::TOP_RIGHT) => '╗',
-            (LineStyle::Tight, Edge::TOP_RIGHT) => '▖',
-            (LineStyle::Tight, _) => ' ',
-            (LineStyle::Block, Edge::TOP) => '▌',
-            (LineStyle::Block, Edge::RIGHT) => '▄',
-            (LineStyle::Block, Edge::TOP_RIGHT) => '█',
-            (LineStyle::Block, _) => '▖',
-            (LineStyle::OuterBlock, Edge::TOP) => '█',
-            (LineStyle::OuterBlock, Edge::RIGHT) => '█',
-            (LineStyle::OuterBlock, Edge::TOP_RIGHT) => '█',
-            (LineStyle::OuterBlock, _) => '▜',
-            (_, Edge::TOP) => '┑',
-            (_, Edge::RIGHT) => '┒',
-            (_, Edge::TOP_RIGHT) => '┓',
-            _ => '╮',
-        }
-    }
-
-    /// Get character at bottom-left corner
-    pub fn bottom_left(self) -> char {
-        match (self.line_style, self.accents & Edge::BOTTOM_LEFT) {
-            (LineStyle::Double, Edge::BOTTOM) => '╘',
-            (LineStyle::Double, Edge::LEFT) => '╙',
-            (LineStyle::Double, Edge::BOTTOM_LEFT) => '╚',
-            (LineStyle::Tight, Edge::BOTTOM_LEFT) => '▝',
-            (LineStyle::Tight, _) => ' ',
-            (LineStyle::Block, Edge::BOTTOM) => '▐',
-            (LineStyle::Block, Edge::LEFT) => '▀',
-            (LineStyle::Block, Edge::BOTTOM_LEFT) => '█',
-            (LineStyle::Block, _) => '▝',
-            (LineStyle::OuterBlock, Edge::BOTTOM) => '█',
-            (LineStyle::OuterBlock, Edge::LEFT) => '█',
-            (LineStyle::OuterBlock, Edge::BOTTOM_LEFT) => '█',
-            (LineStyle::OuterBlock, _) => '▙',
-            (_, Edge::BOTTOM) => '┕',
-            (_, Edge::LEFT) => '┖',
-            (_, Edge::BOTTOM_LEFT) => '┗',
-            _ => '╰',
-        }
-    }
-
-    /// Get character at bottom-right corner
-    pub fn bottom_right(self) -> char {
-        match (self.line_style, self.accents & Edge::BOTTOM_RIGHT) {
-            (LineStyle::Double, Edge::BOTTOM) => '╛',
-            (LineStyle::Double, Edge::RIGHT) => '╜',
-            (LineStyle::Double, Edge::BOTTOM_RIGHT) => '╝',
-            (LineStyle::Tight, Edge::BOTTOM_RIGHT) => '▘',
-            (LineStyle::Tight, _) => ' ',
-            (LineStyle::Block, Edge::BOTTOM) => '▌',
-            (LineStyle::Block, Edge::RIGHT) => '▀',
-            (LineStyle::Block, Edge::BOTTOM_RIGHT) => '█',
-            (LineStyle::Block, _) => '▘',
-            (LineStyle::OuterBlock, Edge::BOTTOM) => '█',
-            (LineStyle::OuterBlock, Edge::RIGHT) => '█',
-            (LineStyle::OuterBlock, Edge::BOTTOM_RIGHT) => '█',
-            (LineStyle::OuterBlock, _) => '▟',
-            (_, Edge::BOTTOM) => '┙',
-            (_, Edge::RIGHT) => '┚',
-            (_, Edge::BOTTOM_RIGHT) => '┛',
-            _ => '╯',
-        }
     }
 }
 
@@ -282,42 +120,41 @@ impl Widget for Border {
             return Ok(());
         }
         let inset = self.inset(BBox::new(0, 0, width, height));
-        let edges = self.edges;
         let mut row = 0;
-        if edges.contains(Edge::TOP) {
+        if let Some(top) = self.top {
             cells.move_to(0, 0)?;
-            if edges.contains(Edge::LEFT) {
-                cells.print_char(self.top_left())?;
+            if let Some(left) = self.left {
+                cells.print_char(top.top_left(left))?;
             }
             for _ in 0..inset.width() {
-                cells.print_char(self.top())?;
+                cells.print_char(top.top())?;
             }
-            if edges.contains(Edge::RIGHT) {
-                cells.print_char(self.top_right())?;
+            if let Some(right) = self.right {
+                cells.print_char(top.top_right(right))?;
             }
             row += 1;
         }
         for _ in 0..inset.height() {
-            if edges.contains(Edge::LEFT) {
+            if let Some(left) = self.left {
                 cells.move_to(0, row)?;
-                cells.print_char(self.left())?;
+                cells.print_char(left.left())?;
             }
-            if edges.contains(Edge::RIGHT) {
+            if let Some(right) = self.right {
                 cells.move_to(inset.width() + 1, row)?;
-                cells.print_char(self.right())?;
+                cells.print_char(right.right())?;
             }
             row += 1;
         }
-        if edges.contains(Edge::BOTTOM) {
+        if let Some(bottom) = self.bottom {
             cells.move_to(0, row)?;
-            if edges.contains(Edge::LEFT) {
-                cells.print_char(self.bottom_left())?;
+            if let Some(left) = self.left {
+                cells.print_char(bottom.bottom_left(left))?;
             }
             for _ in 0..inset.width() {
-                cells.print_char(self.bottom())?;
+                cells.print_char(bottom.bottom())?;
             }
-            if edges.contains(Edge::RIGHT) {
-                cells.print_char(self.bottom_right())?;
+            if let Some(right) = self.right {
+                cells.print_char(bottom.bottom_right(right))?;
             }
         }
         Ok(())
@@ -330,7 +167,7 @@ mod test {
 
     #[test]
     fn border() {
-        let bdr = Border::default().with_edges(Edge::ALL);
+        let bdr = Border::default().with_all(Line::default());
         let bbox = BBox::new(0, 0, 10, 10);
         assert_eq!(bdr.inset(bbox), BBox::new(1, 1, 8, 8));
     }

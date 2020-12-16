@@ -1,15 +1,15 @@
 use crossterm::event::{Event, KeyCode};
-use semtext::widget::{Border, Edge, Label, LineStyle, Spacer};
-use semtext::{layout, Screen};
+use semtext::widget::{Border, Label, Spacer};
+use semtext::{layout, Screen, style::Line};
 
 async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
     screen.set_title("Layout Test")?;
     let s = Spacer::default().with_fill('.')?;
     let b = Border::default()
-        .with_edges(Edge::ALL)
-        .with_accents(Edge::BOTTOM_RIGHT)
-        .with_line_style(LineStyle::Double);
+        .with_all(Line::Solid)
+        .with_bottom(Some(Line::Double))
+        .with_right(Some(Line::Dashed));
     let a = Label::new("This is a bit of text in a label");
     let c = Label::new("This label has more text on the right side");
     loop {

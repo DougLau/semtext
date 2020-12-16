@@ -26,10 +26,8 @@ pub trait Widget {
 
 mod border;
 mod label;
-mod linestyle;
 mod spacer;
 
-pub use border::{Border, Edge};
+pub use border::Border;
 pub use label::Label;
-pub use linestyle::LineStyle;
 pub use spacer::Spacer;
