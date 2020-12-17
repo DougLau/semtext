@@ -1,12 +1,12 @@
-// line.rs
+// outline.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
 
-/// Styles for border lines
+/// Styles for border outlines
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Line {
-    /// Solid line
+pub enum Outline {
+    /// Solid outline
     ///
     /// ```text
     ///   ╭───╮
@@ -14,7 +14,7 @@ pub enum Line {
     ///   ╰───╯
     /// ```
     Solid,
-    /// Thick solid line
+    /// Thick solid outline
     ///
     /// ```text
     ///   ┏━━━┓
@@ -22,7 +22,7 @@ pub enum Line {
     ///   ┗━━━┛
     /// ```
     Thick,
-    /// Doubled solid line
+    /// Doubled solid outline
     ///
     /// ```text
     ///   ╔═══╗
@@ -30,7 +30,7 @@ pub enum Line {
     ///   ╚═══╝
     /// ```
     Double,
-    /// Dashed line
+    /// Dashed outline
     ///
     /// ```text
     ///   ╭╌╌╌╮
@@ -38,7 +38,7 @@ pub enum Line {
     ///   ╰╌╌╌╯
     /// ```
     Dashed,
-    /// Thick dashed line
+    /// Thick dashed outline
     ///
     /// ```text
     ///   ┏╍╍╍┓
@@ -46,7 +46,7 @@ pub enum Line {
     ///   ┗╍╍╍┛
     /// ```
     DashedThick,
-    /// Tightly packed line
+    /// Tightly packed outline
     ///
     /// ```text
     ///    ▁▁▁
@@ -54,7 +54,7 @@ pub enum Line {
     ///    ▔▔▔
     /// ```
     Tight,
-    /// Half block line
+    /// Half block outline
     ///
     /// ```text
     ///   ▗▄▄▄▖
@@ -62,7 +62,7 @@ pub enum Line {
     ///   ▝▀▀▀▘
     /// ```
     HalfInner,
-    /// Outer block line
+    /// Outer block outline
     ///
     /// ```text
     ///   ▛▀▀▀▜
@@ -70,7 +70,7 @@ pub enum Line {
     ///   ▙▄▄▄▟
     /// ```
     HalfOuter,
-    /// Full Block line
+    /// Full Block outline
     ///
     /// ```text
     ///   █████
@@ -80,16 +80,16 @@ pub enum Line {
     Block,
 }
 
-impl Default for Line {
+impl Default for Outline {
     fn default() -> Self {
-        Line::Solid
+        Outline::Solid
     }
 }
 
-impl Line {
+impl Outline {
     /// Get character at top edge
     pub fn top(self) -> char {
-        use Line::*;
+        use Outline::*;
         match self {
             Solid => '─',
             Thick => '━',
@@ -105,7 +105,7 @@ impl Line {
 
     /// Get character at left edge
     pub fn left(self) -> char {
-        use Line::*;
+        use Outline::*;
         match self {
             Solid => '│',
             Thick => '┃',
@@ -121,7 +121,7 @@ impl Line {
 
     /// Get character at bottom edge
     pub fn bottom(self) -> char {
-        use Line::*;
+        use Outline::*;
         match self {
             Solid => '─',
             Thick => '━',
@@ -137,7 +137,7 @@ impl Line {
 
     /// Get character at right edge
     pub fn right(self) -> char {
-        use Line::*;
+        use Outline::*;
         match self {
             Solid => '│',
             Thick => '┃',
@@ -153,7 +153,7 @@ impl Line {
 
     /// Get character at top-left corner
     pub fn top_left(self, left: Self) -> char {
-        use Line::*;
+        use Outline::*;
         match (self, left) {
             (Solid, Solid) | (Solid, Dashed) => '╭',
             (Solid, Thick) | (Solid, DashedThick) => '┎',
@@ -190,7 +190,7 @@ impl Line {
 
     /// Get character at top-right corner
     pub fn top_right(self, right: Self) -> char {
-        use Line::*;
+        use Outline::*;
         match (self, right) {
             (Solid, Solid) | (Solid, Dashed) => '╮',
             (Solid, Thick) | (Solid, DashedThick) => '┒',
@@ -227,7 +227,7 @@ impl Line {
 
     /// Get character at bottom-left corner
     pub fn bottom_left(self, left: Self) -> char {
-        use Line::*;
+        use Outline::*;
         match (self, left) {
             (Solid, Solid) | (Solid, Dashed) => '╰',
             (Solid, Thick) | (Solid, DashedThick) => '┖',
@@ -264,7 +264,7 @@ impl Line {
 
     /// Get character at bottom-right corner
     pub fn bottom_right(self, right: Self) -> char {
-        use Line::*;
+        use Outline::*;
         match (self, right) {
             (Solid, Solid) | (Solid, Dashed) => '╯',
             (Solid, Thick) | (Solid, DashedThick) => '┚',

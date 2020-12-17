@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::style::Line;
+use crate::style::Outline;
 use crate::widget::Border;
 use crate::{AreaBound, Cells, Result, Widget};
 use textwrap::wrap_iter;
@@ -45,7 +45,7 @@ impl Widget for Label {
 
     /// Get the border
     fn border(&self) -> Option<Border> {
-        Some(Border::default().with_all(Line::Solid))
+        Some(Border::default().with_all(Outline::Solid))
     }
 
     /// Render the widget

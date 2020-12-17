@@ -4,8 +4,8 @@
 //
 //! Style items
 
-mod line;
+mod outline;
 mod theme;
 
-pub use line::Line;
+pub use outline::Outline;
 pub use theme::{Color, Intensity, Theme};

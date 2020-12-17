@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::style::Line;
+use crate::style::Outline;
 use crate::{AreaBound, BBox, Cells, Result, Widget};
 
 /// Border widget
@@ -11,49 +11,49 @@ use crate::{AreaBound, BBox, Cells, Result, Widget};
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Border {
     /// Style for left edge
-    left: Option<Line>,
+    left: Option<Outline>,
 
     /// Style for right edge
-    right: Option<Line>,
+    right: Option<Outline>,
 
     /// Style for top edge
-    top: Option<Line>,
+    top: Option<Outline>,
 
     /// Style for bottom edge
-    bottom: Option<Line>,
+    bottom: Option<Outline>,
 }
 
 impl Border {
-    /// Set line style for all edges
-    pub fn with_all(mut self, line: Line) -> Self {
-        self.left = Some(line);
-        self.right = Some(line);
-        self.top = Some(line);
-        self.bottom = Some(line);
+    /// Set outline style for all edges
+    pub fn with_all(mut self, outline: Outline) -> Self {
+        self.left = Some(outline);
+        self.right = Some(outline);
+        self.top = Some(outline);
+        self.bottom = Some(outline);
         self
     }
 
-    /// Set line style for left edge
-    pub fn with_left(mut self, line: Option<Line>) -> Self {
-        self.left = line;
+    /// Set outline style for left edge
+    pub fn with_left(mut self, outline: Option<Outline>) -> Self {
+        self.left = outline;
         self
     }
 
-    /// Set line style for right edge
-    pub fn with_right(mut self, line: Option<Line>) -> Self {
-        self.right = line;
+    /// Set outline style for right edge
+    pub fn with_right(mut self, outline: Option<Outline>) -> Self {
+        self.right = outline;
         self
     }
 
-    /// Set line style for top edge
-    pub fn with_top(mut self, line: Option<Line>) -> Self {
-        self.top = line;
+    /// Set outline style for top edge
+    pub fn with_top(mut self, outline: Option<Outline>) -> Self {
+        self.top = outline;
         self
     }
 
-    /// Set line style for bottom edge
-    pub fn with_bottom(mut self, line: Option<Line>) -> Self {
-        self.bottom = line;
+    /// Set outline style for bottom edge
+    pub fn with_bottom(mut self, outline: Option<Outline>) -> Self {
+        self.bottom = outline;
         self
     }
 
@@ -167,7 +167,7 @@ mod test {
 
     #[test]
     fn border() {
-        let bdr = Border::default().with_all(Line::default());
+        let bdr = Border::default().with_all(Outline::default());
         let bbox = BBox::new(0, 0, 10, 10);
         assert_eq!(bdr.inset(bbox), BBox::new(1, 1, 8, 8));
     }
