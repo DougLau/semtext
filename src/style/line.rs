@@ -62,14 +62,6 @@ pub enum Line {
     ///   ▝▀▀▀▘
     /// ```
     HalfInner,
-    /// Full Block line
-    ///
-    /// ```text
-    ///   █████
-    ///   █   █
-    ///   █████
-    /// ```
-    Block,
     /// Outer block line
     ///
     /// ```text
@@ -78,6 +70,14 @@ pub enum Line {
     ///   ▙▄▄▄▟
     /// ```
     HalfOuter,
+    /// Full Block line
+    ///
+    /// ```text
+    ///   █████
+    ///   █   █
+    ///   █████
+    /// ```
+    Block,
 }
 
 impl Default for Line {
@@ -119,49 +119,6 @@ impl Line {
         }
     }
 
-    /// Get character at top-left corner
-    pub fn top_left(self, left: Self) -> char {
-        use Line::*;
-        match (self, left) {
-            (Solid, Solid) | (Solid, Dashed) => '╭',
-            (Solid, Thick) | (Solid, DashedThick) => '┎',
-            (Solid, Double) => '╓',
-            (Thick, Solid) | (Thick, Dashed) => '┍',
-            (Thick, Thick) | (Thick, DashedThick) => '┏',
-            (Double, Solid) | (Double, Dashed) => '╒',
-            (Double, Double) => '╔',
-            (Tight, Tight) => '▗',
-            (Block, Block) => '█',
-            (Block, _) => '▐',
-            (_, Block) => '▄',
-            (HalfInner, _) => '▗',
-            (HalfOuter, HalfOuter) => '▛',
-            (HalfOuter, _) => '█',
-            _ => ' ',
-        }
-    }
-
-    /// Get character at top-right corner
-    pub fn top_right(self, right: Self) -> char {
-        use Line::*;
-        match (self, right) {
-            (Solid, Solid) | (Solid, Dashed) => '╮',
-            (Solid, Thick) | (Solid, DashedThick) => '┒',
-            (Solid, Double) => '╖',
-            (Thick, Solid) | (Thick, Dashed) => '┑',
-            (Thick, Thick) | (Thick, DashedThick) => '┓',
-            (Double, Solid) | (Double, Dashed) => '╕',
-            (Double, Double) => '╗',
-            (Tight, Tight) => '▖',
-            (HalfInner, HalfInner) => '▖',
-            (Block, Block) => '█',
-            (Block, _) => '▌',
-            (_, Block) => '▄',
-            (HalfOuter, HalfOuter) => '▜',
-            _ => ' ',
-        }
-    }
-
     /// Get character at bottom edge
     pub fn bottom(self) -> char {
         use Line::*;
@@ -194,6 +151,80 @@ impl Line {
         }
     }
 
+    /// Get character at top-left corner
+    pub fn top_left(self, left: Self) -> char {
+        use Line::*;
+        match (self, left) {
+            (Solid, Solid) | (Solid, Dashed) => '╭',
+            (Solid, Thick) | (Solid, DashedThick) => '┎',
+            (Solid, Double) => '╓',
+            (Solid, Tight) => '╶',
+            (Thick, Solid) | (Thick, Dashed) => '┍',
+            (Thick, Thick) | (Thick, DashedThick) => '┏',
+            (Thick, Double) | (Thick, Tight) => '╺',
+            (Double, Solid) | (Double, Dashed) => '╒',
+            (Double, Double) => '╔',
+            (Dashed, Solid) | (Dashed, Dashed) => '╭',
+            (Dashed, Thick) | (Dashed, DashedThick) => '┎',
+            (Dashed, Double) => '╓',
+            (Dashed, Tight) => '╶',
+            (DashedThick, Solid) | (DashedThick, Dashed) => '┍',
+            (DashedThick, Thick) | (DashedThick, DashedThick) => '┏',
+            (DashedThick, Double) | (DashedThick, Tight) => '╺',
+            (Tight, Tight) => ' ',
+            (Tight, _) => '▁',
+            (HalfInner, _) => '▗',
+            (HalfOuter, HalfInner) => '▐',
+            (HalfOuter, HalfOuter) => '▛',
+            (HalfOuter, Block) => '█',
+            (HalfOuter, _) => '▝',
+            (Block, Block) | (Block, HalfOuter) => '█',
+            (Block, _) => '▐',
+            (_, Thick) | (_, DashedThick) => '╻',
+            (_, Block) => '▄',
+            (_, HalfInner) => '▗',
+            (_, HalfOuter) => '▖',
+            _ => left.left(),
+        }
+    }
+
+    /// Get character at top-right corner
+    pub fn top_right(self, right: Self) -> char {
+        use Line::*;
+        match (self, right) {
+            (Solid, Solid) | (Solid, Dashed) => '╮',
+            (Solid, Thick) | (Solid, DashedThick) => '┒',
+            (Solid, Double) => '╖',
+            (Solid, Tight) => '╴',
+            (Thick, Solid) | (Thick, Dashed) => '┑',
+            (Thick, Thick) | (Thick, DashedThick) => '┓',
+            (Thick, Double) | (Thick, Tight) => '╸',
+            (Double, Solid) | (Double, Dashed) => '╕',
+            (Double, Double) => '╗',
+            (Dashed, Solid) | (Dashed, Dashed) => '╮',
+            (Dashed, Thick) | (Dashed, DashedThick) => '┒',
+            (Dashed, Double) => '╖',
+            (Dashed, Tight) => '╴',
+            (DashedThick, Solid) | (DashedThick, Dashed) => '┑',
+            (DashedThick, Thick) | (DashedThick, DashedThick) => '┓',
+            (DashedThick, Double) | (DashedThick, Tight) => '╸',
+            (Tight, Tight) => ' ',
+            (Tight, _) => '▁',
+            (HalfInner, _) => '▖',
+            (HalfOuter, HalfInner) => '▌',
+            (HalfOuter, HalfOuter) => '▜',
+            (HalfOuter, Block) => '█',
+            (HalfOuter, _) => '▘',
+            (Block, Block) | (Block, HalfOuter) => '█',
+            (Block, _) => '▌',
+            (_, Thick) | (_, DashedThick) => '╻',
+            (_, Block) => '▄',
+            (_, HalfInner) => '▖',
+            (_, HalfOuter) => '▗',
+            _ => right.right(),
+        }
+    }
+
     /// Get character at bottom-left corner
     pub fn bottom_left(self, left: Self) -> char {
         use Line::*;
@@ -201,17 +232,33 @@ impl Line {
             (Solid, Solid) | (Solid, Dashed) => '╰',
             (Solid, Thick) | (Solid, DashedThick) => '┖',
             (Solid, Double) => '╙',
+            (Solid, Tight) => '╶',
             (Thick, Solid) | (Thick, Dashed) => '┕',
             (Thick, Thick) | (Thick, DashedThick) => '┗',
+            (Thick, Double) | (Thick, Tight) => '╺',
             (Double, Solid) | (Double, Dashed) => '╘',
             (Double, Double) => '╚',
-            (Tight, Tight) => '▝',
-            (HalfInner, HalfInner) => '▝',
-            (Block, Block) => '█',
-            (Block, _) => '▐',
-            (_, Block) => '▀',
+            (Dashed, Solid) | (Dashed, Dashed) => '╰',
+            (Dashed, Thick) | (Dashed, DashedThick) => '┖',
+            (Dashed, Double) => '╙',
+            (Dashed, Tight) => '╶',
+            (DashedThick, Solid) | (DashedThick, Dashed) => '┕',
+            (DashedThick, Thick) | (DashedThick, DashedThick) => '┗',
+            (DashedThick, Double) | (DashedThick, Tight) => '╺',
+            (Tight, Tight) => ' ',
+            (Tight, _) => '▔',
+            (HalfInner, _) => '▝',
+            (HalfOuter, HalfInner) => '▐',
             (HalfOuter, HalfOuter) => '▙',
-            _ => ' ',
+            (HalfOuter, Block) => '█',
+            (HalfOuter, _) => '▗',
+            (Block, Block) | (Block, HalfOuter) => '█',
+            (Block, _) => '▐',
+            (_, Thick) | (_, DashedThick) => '╹',
+            (_, Block) => '▀',
+            (_, HalfInner) => '▝',
+            (_, HalfOuter) => '▘',
+            _ => left.left(),
         }
     }
 
@@ -222,17 +269,33 @@ impl Line {
             (Solid, Solid) | (Solid, Dashed) => '╯',
             (Solid, Thick) | (Solid, DashedThick) => '┚',
             (Solid, Double) => '╜',
+            (Solid, Tight) => '╴',
             (Thick, Solid) | (Thick, Dashed) => '┙',
             (Thick, Thick) | (Thick, DashedThick) => '┛',
+            (Thick, Double) | (Thick, Tight) => '╸',
             (Double, Solid) | (Double, Dashed) => '╛',
             (Double, Double) => '╝',
-            (Tight, Tight) => '▘',
-            (HalfInner, HalfInner) => '▘',
-            (Block, Block) => '█',
-            (Block, _) => '▌',
-            (_, Block) => '▀',
+            (Dashed, Solid) | (Dashed, Dashed) => '╯',
+            (Dashed, Thick) | (Dashed, DashedThick) => '┚',
+            (Dashed, Double) => '╜',
+            (Dashed, Tight) => '╴',
+            (DashedThick, Solid) | (DashedThick, Dashed) => '┙',
+            (DashedThick, Thick) | (DashedThick, DashedThick) => '┛',
+            (DashedThick, Double) | (DashedThick, Tight) => '╸',
+            (Tight, Tight) => ' ',
+            (Tight, _) => '▔',
+            (HalfInner, _) => '▘',
+            (HalfOuter, HalfInner) => '▌',
             (HalfOuter, HalfOuter) => '▟',
-            _ => ' ',
+            (HalfOuter, Block) => '█',
+            (HalfOuter, _) => '▖',
+            (Block, Block) | (Block, HalfOuter) => '█',
+            (Block, _) => '▌',
+            (_, Thick) | (_, DashedThick) => '╹',
+            (_, Block) => '▀',
+            (_, HalfInner) => '▘',
+            (_, HalfOuter) => '▝',
+            _ => right.right(),
         }
     }
 }
