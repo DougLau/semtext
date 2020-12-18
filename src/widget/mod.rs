@@ -3,7 +3,8 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 //! User Interface Widgets
-use crate::{AreaBound, Cells, Result};
+use crate::layout::AreaBound;
+use crate::{Cells, Result};
 
 /// A component of a user interface
 pub trait Widget {
@@ -25,9 +26,11 @@ pub trait Widget {
 }
 
 mod border;
+mod glyph;
 mod label;
 mod spacer;
 
 pub use border::Border;
+pub use glyph::{Glyph, IntoGlyph};
 pub use label::Label;
 pub use spacer::Spacer;

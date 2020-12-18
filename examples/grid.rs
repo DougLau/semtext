@@ -1,7 +1,7 @@
 use crossterm::event::{Event, KeyCode};
 use semtext::style::Outline;
 use semtext::widget::{Border, Label, Spacer};
-use semtext::{layout, Screen};
+use semtext::{grid_area, Screen};
 
 async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
@@ -14,14 +14,14 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let a = Label::new("This is a bit of text in a label");
     let c = Label::new("This label has more text on the right side");
     loop {
-        let layout = layout!(screen.bbox(),
+        let grid = grid_area!(screen.bbox(),
             [. . . .]
             [a a . b]
             [. . . b]
             [. c c b]
             [s . . b]
         )?;
-        screen.render(&layout)?;
+        screen.render(&grid)?;
         match screen.input().await? {
             Event::Key(key) => {
                 if key.code == KeyCode::Esc {

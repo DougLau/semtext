@@ -1,11 +1,12 @@
-// layout.rs
+// gridarea.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
 //!
-use crate::{AreaBound, BBox, Error, LengthBound, Result, Widget};
+use crate::layout::{AreaBound, BBox, LengthBound};
+use crate::{Error, Result, Widget};
 
-/// Widget or spacer in a layout
+/// Widget or spacer in a grid area
 pub enum GridItem<'a> {
     /// Widget grid item
     Widget(&'a dyn Widget),
@@ -14,7 +15,7 @@ pub enum GridItem<'a> {
 }
 
 /// Builder for widget layouts.
-struct LayoutBuilder<'a> {
+struct GridAreaBuilder<'a> {
     /// `GridItem`s, laid out in row-major order
     grid: Vec<GridItem<'a>>,
     /// Grid rows
@@ -27,26 +28,26 @@ struct LayoutBuilder<'a> {
     grid_boxes: Vec<BBox>,
 }
 
-/// Widget layout
+/// Grid area layout
 ///
 /// This is a set of borrowed [Widget]s and their bounding boxes.  It is
-/// normally created using the [layout] macro.
-pub struct Layout<'a> {
+/// normally created using the [grid_area] macro.
+pub struct GridArea<'a> {
     /// All widgets in layout
     pub(crate) widgets: Vec<&'a dyn Widget>,
     /// Cell bounding boxes for all widgets
     pub(crate) boxes: Vec<BBox>,
 }
 
-impl<'a> LayoutBuilder<'a> {
-    /// Create a new layout builder
+impl<'a> GridAreaBuilder<'a> {
+    /// Create a new grid area builder
     fn new(grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
         let len = grid.len() as u16; // FIXME
         let cols = len / rows;
         if cols * rows != len {
-            return Err(Error::InvalidLayout());
+            return Err(Error::InvalidGridArea());
         }
-        let mut builder = LayoutBuilder {
+        let mut builder = GridAreaBuilder {
             grid,
             rows,
             cols,
@@ -107,14 +108,14 @@ impl<'a> LayoutBuilder<'a> {
                 return Ok(BBox::new(left, top, width, height));
             }
         }
-        Err(Error::InvalidLayout())
+        Err(Error::InvalidGridArea())
     }
 
-    /// Build the layout
-    fn build(self, bx: BBox) -> Result<Layout<'a>> {
+    /// Build the grid area
+    fn build(self, bx: BBox) -> Result<GridArea<'a>> {
         let boxes = self.calculate_cell_boxes(bx)?;
         let widgets = self.widgets;
-        Ok(Layout { widgets, boxes })
+        Ok(GridArea { widgets, boxes })
     }
 
     /// Calculate cell bounding boxes
@@ -307,28 +308,28 @@ fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
     BBox::new(col, row, width, height)
 }
 
-impl<'a> Layout<'a> {
-    /// Create a new widget layout
+impl<'a> GridArea<'a> {
+    /// Create a new grid area layout
     ///
-    /// Rather than using this function directly, the [layout] macro is
+    /// Rather than using this function directly, the [grid_area] macro is
     /// recommended.
     ///
-    /// * `bbox`: Bounding box of layout.
+    /// * `bbox`: Bounding box of grid area.
     /// * `grid`: A slice of `GridItem`s, laid out in row-major order.
     /// * `rows`: The number of rows in the grid.
     pub fn new(bbox: BBox, grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
-        LayoutBuilder::new(grid, rows)?.build(bbox)
+        GridAreaBuilder::new(grid, rows)?.build(bbox)
     }
 }
 
-/// Layout [Widget]s onto a grid
+/// Lay out [Widget]s onto a grid area
 ///
 /// * `bbox`: Bounding box of cells to lay out
 /// * `[a …] [b …]`: One or more rows of grid items, enclosed in square
 ///                  brackets.  A grid item is either a [Widget] identifier or a
 ///                  dot `.`, which is used for spacing.
 ///
-/// * returns: `Result<`[Layout]`>`
+/// * returns: `Result<`[GridArea]`>`
 ///
 /// A `Widget` identifier can appear multiple times as long as it occupies a
 /// rectangular shape in the grid.
@@ -345,7 +346,7 @@ impl<'a> Layout<'a> {
 /// let b = Label::new("Right");
 /// let c = Label::new("Bottom Left");
 /// let bbox = BBox::new(0, 0, 80, 25);
-/// let l = layout!(bbox,
+/// let l = grid_area!(bbox,
 ///     [a a b]
 ///     [a a b]
 ///     [c c .]
@@ -354,18 +355,18 @@ impl<'a> Layout<'a> {
 /// ```
 /// [grid-template-areas]: https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas
 #[macro_export]
-macro_rules! layout {
-    (.) => { $crate::GridItem::Spacer(None) };
-    ($widget:ident) => { $crate::GridItem::Widget(&$widget) };
+macro_rules! grid_area {
+    (.) => { $crate::layout::GridItem::Spacer(None) };
+    ($widget:ident) => { $crate::layout::GridItem::Widget(&$widget) };
     ($bbox:expr, $([ $($item:tt)+ ])+) => {
         {
-            let mut w = Vec::<$crate::GridItem>::new();
+            let mut w = Vec::<$crate::layout::GridItem>::new();
             let mut rows = 0;
             $(
-                $( w.push(layout!( $item )); )+
+                $( w.push(grid_area!( $item )); )+
                 rows += 1;
             )?
-            $crate::Layout::new($bbox, w, rows)
+            $crate::layout::GridArea::new($bbox, w, rows)
         }
     };
 }
@@ -379,7 +380,7 @@ mod test {
     fn spacer1() {
         let a = Spacer::default();
         let b = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25), [a][b]).unwrap();
+        let l = grid_area!(BBox::new(0, 0, 80, 25), [a][b]).unwrap();
         assert_eq!(l.boxes.len(), 2);
         assert_eq!(l.boxes[0], BBox::new(0, 0, 80, 12));
         assert_eq!(l.boxes[1], BBox::new(0, 12, 80, 13));
@@ -389,7 +390,7 @@ mod test {
     fn spacer2() {
         let a = Spacer::default();
         let b = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [a b]
         )
         .unwrap();
@@ -403,7 +404,7 @@ mod test {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [a b]
             [a c]
         )
@@ -422,7 +423,7 @@ mod test {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [a a b]
             [a a c]
         )
@@ -441,7 +442,7 @@ mod test {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [a a b b]
             [a a c c]
         )
@@ -460,7 +461,7 @@ mod test {
         let a = Spacer::default();
         let b = Spacer::default();
         let c = Spacer::default();
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [a a b b]
             [a a b b]
             [a a c c]
@@ -478,7 +479,7 @@ mod test {
     #[test]
     fn grid1() {
         let a = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25), [.] [a]).unwrap();
+        let l = grid_area!(BBox::new(0, 0, 80, 25), [.] [a]).unwrap();
         assert_eq!(l.boxes.len(), 1);
         assert_eq!(l.boxes[0], BBox::new(0, 24, 9, 1));
     }
@@ -486,7 +487,7 @@ mod test {
     #[test]
     fn grid2() {
         let a = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [. a]
         )
         .unwrap();
@@ -497,7 +498,7 @@ mod test {
     #[test]
     fn grid3() {
         let a = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [. .]
             [. a]
         )
@@ -510,7 +511,7 @@ mod test {
     fn grid4() {
         let a = Label::new("This is a test label with some text");
         let b = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25),
+        let l = grid_area!(BBox::new(0, 0, 80, 25),
             [. . . .]
             [a . b .]
         )

@@ -2,7 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::{AreaBound, Cells, Glyph, IntoGlyph, Result, Widget};
+use crate::layout::AreaBound;
+use crate::widget::{Glyph, IntoGlyph};
+use crate::{Cells, Result, Widget};
 use std::ops::RangeBounds;
 
 /// Spacer widget

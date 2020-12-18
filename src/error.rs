@@ -15,8 +15,8 @@ pub enum Error {
     /// Invalid glyph
     InvalidGlyph(),
 
-    /// Invalid widget layout
-    InvalidLayout(),
+    /// Invalid grid area layout
+    InvalidGridArea(),
 
     /// I/O error
     Io(io::Error),
@@ -30,8 +30,8 @@ impl fmt::Display for Error {
         match self {
             Error::Crossterm(err) => err.fmt(fmt),
             Error::InvalidGlyph() => write!(fmt, "Invalid glyph"),
-            Error::InvalidLayout() => {
-                write!(fmt, "Invalid layout: all widgets must be rectangular")
+            Error::InvalidGridArea() => {
+                write!(fmt, "Invalid grid: all widgets must be rectangular")
             }
             Error::Io(ref err) => err.fmt(fmt),
         }

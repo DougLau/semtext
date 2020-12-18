@@ -10,19 +10,13 @@
 
 #![forbid(unsafe_code)]
 
-mod bbox;
-mod bounds;
 mod error;
-mod layout;
 mod screen;
+pub mod layout;
 pub mod style;
 pub mod widget;
 
-pub use crate::bbox::BBox;
-use crate::bbox::Dim;
-pub use crate::bounds::AreaBound;
-use crate::bounds::LengthBound;
-pub use crate::error::{Error, Result};
-pub use crate::layout::{GridItem, Layout};
-pub use crate::screen::{Cells, Glyph, IntoGlyph, Screen};
+pub use crate::error::Error;
+pub(crate) use crate::error::Result;
+pub use crate::screen::{Cells, Screen};
 pub use crate::widget::Widget;
