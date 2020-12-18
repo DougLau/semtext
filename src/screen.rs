@@ -2,10 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{BBox, Dim, GridArea};
+use crate::layout::{BBox, Cells, Dim, GridArea};
 use crate::style::{Color, Theme};
-use crate::widget::{Glyph, Widget};
-use crate::Result;
+use crate::{Result, Widget};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -47,16 +46,6 @@ pub struct Screen {
     #[cfg(feature = "async")]
     /// Event stream future.
     ev_stream: EvStreamFut,
-}
-
-/// Cells of text
-///
-/// The cells are in a rectangular area of the screen.
-pub struct Cells<'a> {
-    /// Screen containing cells
-    screen: &'a mut Screen,
-    /// Bounding box of cells
-    bbox: BBox,
 }
 
 impl Screen {
@@ -101,6 +90,11 @@ impl Screen {
         BBox::new(0, 0, self.dim.width, self.dim.height)
     }
 
+    /// Get the theme
+    pub(crate) fn theme(&self) -> &Theme {
+        &self.theme
+    }
+
     /// Clear the screen (fill with the space character)
     fn clear(&mut self) -> Result<()> {
         queue!(self.out, terminal::Clear(terminal::ClearType::All))?;
@@ -113,36 +107,39 @@ impl Screen {
         if bbox.is_empty() {
             None
         } else {
-            Some(Cells { screen: self, bbox })
+            Some(Cells::new(self, bbox))
         }
     }
 
     /// Set a text attribute
-    fn set_attribute(&mut self, attr: style::Attribute) -> Result<()> {
+    pub(crate) fn set_attribute(
+        &mut self,
+        attr: style::Attribute,
+    ) -> Result<()> {
         queue!(self.out, style::SetAttribute(attr))?;
         Ok(())
     }
 
     /// Set the foreground color
-    fn set_foreground_color(&mut self, color: Color) -> Result<()> {
+    pub(crate) fn set_foreground_color(&mut self, color: Color) -> Result<()> {
         queue!(self.out, style::SetForegroundColor(color.into()))?;
         Ok(())
     }
 
     /// Set the background color
-    fn set_background_color(&mut self, color: Color) -> Result<()> {
+    pub(crate) fn set_background_color(&mut self, color: Color) -> Result<()> {
         queue!(self.out, style::SetBackgroundColor(color.into()))?;
         Ok(())
     }
 
     /// Move cursor to a cell
-    fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
+    pub(crate) fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
         queue!(self.out, cursor::MoveTo(col, row))?;
         Ok(())
     }
 
     /// Move cursor right by a number of columns
-    fn move_right(&mut self, col: u16) -> Result<()> {
+    pub(crate) fn move_right(&mut self, col: u16) -> Result<()> {
         queue!(self.out, cursor::MoveRight(col))?;
         Ok(())
     }
@@ -221,72 +218,5 @@ impl Drop for Screen {
             // Is this useful?
             dbg!(err);
         }
-    }
-}
-
-impl<'a> Cells<'a> {
-    /// Get the width
-    pub fn width(&self) -> u16 {
-        self.bbox.width()
-    }
-
-    /// Get the height
-    pub fn height(&self) -> u16 {
-        self.bbox.height()
-    }
-
-    /// Fill the cells with a glyph
-    pub fn fill(&mut self, glyph: &Glyph) -> Result<()> {
-        let bbox = self.bbox;
-        let fill_width = bbox.width() / glyph.width() as u16;
-        if bbox.height() > 0 && fill_width > 0 {
-            self.move_to(0, 0)?;
-            for row in 0..bbox.height() {
-                self.move_to(0, row)?;
-                for _ in 0..fill_width {
-                    glyph.print(&mut self.screen)?;
-                }
-            }
-        }
-        Ok(())
-    }
-
-    /// Get the screen theme
-    pub fn theme(&self) -> &Theme {
-        &self.screen.theme
-    }
-
-    /// Set the foreground color
-    pub fn set_foreground_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_foreground_color(color)
-    }
-
-    /// Set the background color
-    pub fn set_background_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_background_color(color)
-    }
-
-    /// Move cursor to a cell
-    pub fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
-        let col = self.bbox.left() + col;
-        let row = self.bbox.top() + row;
-        self.screen.move_to(col, row)
-    }
-
-    /// Move cursor right by a number of columns
-    pub fn move_right(&mut self, col: u16) -> Result<()> {
-        self.screen.move_right(col)
-    }
-
-    /// Print a char at the cursor location
-    pub fn print_char(&mut self, ch: char) -> Result<()> {
-        // FIXME: check width first
-        self.screen.print_char(ch)
-    }
-
-    /// Print a str at the cursor location
-    pub fn print_str(&mut self, st: &str) -> Result<()> {
-        // FIXME: check width first
-        self.screen.print_str(st)
     }
 }

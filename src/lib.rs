@@ -11,12 +11,13 @@
 #![forbid(unsafe_code)]
 
 mod error;
-mod screen;
 pub mod layout;
+mod screen;
 pub mod style;
+mod traits;
 pub mod widget;
 
 pub use crate::error::Error;
 pub(crate) use crate::error::Result;
-pub use crate::screen::{Cells, Screen};
-pub use crate::widget::Widget;
+pub use crate::screen::Screen;
+pub use crate::traits::Widget;

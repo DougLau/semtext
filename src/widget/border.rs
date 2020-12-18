@@ -2,9 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{AreaBound, BBox};
+use crate::layout::{AreaBound, BBox, Cells};
 use crate::style::Outline;
-use crate::{Cells, Result, Widget};
+use crate::{Result, Widget};
 
 /// Border widget
 ///
