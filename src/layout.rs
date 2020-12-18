@@ -324,10 +324,9 @@ impl<'a> Layout<'a> {
 /// Layout [Widget]s onto a grid
 ///
 /// * `bbox`: Bounding box of cells to lay out
-/// * `[a ...], [b ...],`: One or more rows of grid items, enclosed in square
-///                        brackets.  A grid item is either a [Widget]
-///                        identifier or an underscore `_`, which is used for
-///                        spacing.
+/// * `[a …] [b …]`: One or more rows of grid items, enclosed in square
+///                  brackets.  A grid item is either a [Widget] identifier or a
+///                  dot `.`, which is used for spacing.
 ///
 /// * returns: `Result<`[Layout]`>`
 ///
@@ -349,14 +348,14 @@ impl<'a> Layout<'a> {
 /// let l = layout!(bbox,
 ///     [a a b]
 ///     [a a b]
-///     [c c b]
+///     [c c .]
 /// ).unwrap();
 /// # }
 /// ```
 /// [grid-template-areas]: https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas
 #[macro_export]
 macro_rules! layout {
-    (_) => { $crate::GridItem::Spacer(None) };
+    (.) => { $crate::GridItem::Spacer(None) };
     ($widget:ident) => { $crate::GridItem::Widget(&$widget) };
     ($bbox:expr, $([ $($item:tt)+ ])+) => {
         {
@@ -479,7 +478,7 @@ mod test {
     #[test]
     fn grid1() {
         let a = Label::new("Label");
-        let l = layout!(BBox::new(0, 0, 80, 25), [_] [a]).unwrap();
+        let l = layout!(BBox::new(0, 0, 80, 25), [.] [a]).unwrap();
         assert_eq!(l.boxes.len(), 1);
         assert_eq!(l.boxes[0], BBox::new(0, 24, 9, 1));
     }
@@ -488,7 +487,7 @@ mod test {
     fn grid2() {
         let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ a]
+            [. a]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 1);
@@ -499,8 +498,8 @@ mod test {
     fn grid3() {
         let a = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ _]
-            [_ a]
+            [. .]
+            [. a]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 1);
@@ -512,8 +511,8 @@ mod test {
         let a = Label::new("This is a test label with some text");
         let b = Label::new("Label");
         let l = layout!(BBox::new(0, 0, 80, 25),
-            [_ _ _ _]
-            [a _ b _]
+            [. . . .]
+            [a . b .]
         )
         .unwrap();
         assert_eq!(l.boxes.len(), 2);
