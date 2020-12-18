@@ -46,7 +46,7 @@ impl Widget for Label {
 
     /// Get the border
     fn border(&self) -> Option<Border> {
-        Some(Border::default().with_all(Outline::Solid))
+        Some(Border::default().with_outline(Outline::Solid))
     }
 
     /// Render the widget

@@ -8,7 +8,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     screen.set_title("Layout Test")?;
     let s = Spacer::default().with_fill('.')?;
     let b = Border::default()
-        .with_all(Outline::Solid)
+        .with_outline(Outline::Solid)
         .with_bottom(Some(Outline::Double))
         .with_right(Some(Outline::Dashed));
     let a = Label::new("This is a bit of text in a label");

@@ -26,7 +26,7 @@ pub struct Border {
 
 impl Border {
     /// Set outline style for all edges
-    pub fn with_all(mut self, outline: Outline) -> Self {
+    pub fn with_outline(mut self, outline: Outline) -> Self {
         self.left = Some(outline);
         self.right = Some(outline);
         self.top = Some(outline);
@@ -168,7 +168,7 @@ mod test {
 
     #[test]
     fn border() {
-        let bdr = Border::default().with_all(Outline::default());
+        let bdr = Border::default().with_outline(Outline::default());
         let bbox = BBox::new(0, 0, 10, 10);
         assert_eq!(bdr.inset(bbox), BBox::new(1, 1, 8, 8));
     }
