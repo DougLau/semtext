@@ -20,7 +20,7 @@ pub(crate) enum GlyphInner {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use semtext::IntoGlyph;
+/// use semtext::layout::IntoGlyph;
 ///
 /// let glyph_char = '🦀'.into_glyph()?;
 /// let glyph_str = "a\u{308}".into_glyph()?;

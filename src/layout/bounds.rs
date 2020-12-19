@@ -29,7 +29,7 @@ pub struct LengthBound {
 /// ### Example
 ///
 /// ```rust
-/// use semtext::AreaBound;
+/// use semtext::layout::AreaBound;
 ///
 /// let b = AreaBound::default().with_columns(6..=10).with_rows(1..);
 /// ```
@@ -148,7 +148,7 @@ impl AreaBound {
     /// ### Example
     ///
     /// ```rust
-    /// use semtext::AreaBound;
+    /// use semtext::layout::AreaBound;
     ///
     /// let b0 = AreaBound::default().with_columns(..10);
     /// let b1 = AreaBound::default().with_columns(2..);
@@ -166,7 +166,7 @@ impl AreaBound {
     /// ### Example
     ///
     /// ```rust
-    /// use semtext::AreaBound;
+    /// use semtext::layout::AreaBound;
     ///
     /// let b0 = AreaBound::default().with_rows(1..8);
     /// let b1 = AreaBound::default().with_rows(2..=4);
