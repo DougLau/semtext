@@ -141,7 +141,11 @@ impl Widget for Border {
                 cells.print_char(left.left())?;
             }
             if let Some(right) = self.right {
-                cells.move_to(inset.width() + 1, row)?;
+                if self.left.is_some() {
+                    cells.move_right(inset.width())?;
+                } else {
+                    cells.move_to(inset.width(), row)?;
+                }
                 cells.print_char(right.right())?;
             }
             row += 1;
