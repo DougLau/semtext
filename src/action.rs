@@ -16,7 +16,6 @@ pub enum Action {
 /// Key action mapping
 ///
 /// FIXME: don't expose crossterm KeyEvent
-/// FIXME: use Vec instead of HashMap
 pub struct KeyMap {
     /// Mapping of key events to actions
     map: HashMap<KeyEvent, Action>,

@@ -19,6 +19,9 @@ pub enum GridItem<'a> {
 /// Grid area layout
 ///
 /// A layout using a grid area, containing a set of borrowed [Widget]s.
+/// It is used when calling [Screen::step].
+///
+/// [Screen::step]: ../struct.Screen.html#method.step
 pub struct GridArea<'a> {
     /// Grid rows
     rows: u16,
@@ -105,7 +108,7 @@ impl<'a> GridArea<'a> {
     }
 
     /// Calculate bounding boxes for the widgets
-    pub fn widget_boxes(
+    pub(crate) fn widget_boxes(
         &self,
         bbox: BBox,
     ) -> Result<Vec<(&'a dyn Widget, BBox)>> {
