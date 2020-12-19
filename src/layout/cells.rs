@@ -2,9 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::BBox;
+use crate::layout::{BBox, Glyph};
 use crate::style::{Color, Theme};
-use crate::widget::Glyph;
 use crate::{Result, Screen};
 
 /// Cells of text on a [Screen]
