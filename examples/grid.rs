@@ -13,14 +13,14 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
         .with_right(Some(Outline::Dashed));
     let a = Label::new("This is a bit of text in a label");
     let c = Label::new("This label has more text on the right side");
+    let grid = grid_area!(
+        [. . . .]
+        [a a . b]
+        [. . . b]
+        [. c c b]
+        [s . . b]
+    )?;
     loop {
-        let grid = grid_area!(
-            [. . . .]
-            [a a . b]
-            [. . . b]
-            [. c c b]
-            [s . . b]
-        )?;
         screen.render(&grid)?;
         match screen.input().await? {
             Event::Key(key) => {
