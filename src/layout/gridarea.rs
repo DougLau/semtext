@@ -6,18 +6,19 @@
 use crate::layout::{AreaBound, BBox, LengthBound};
 use crate::{Error, Result, Widget};
 
-/// Widget or spacer in a grid area
+/// Item in a grid area
 pub enum GridItem<'a> {
-    /// Widget grid item
+    /// [Widget] grid item
     Widget(&'a dyn Widget),
-    /// Spacer grid item
-    Spacer(Option<u16>),
+    /// [Spacer] grid item
+    ///
+    /// [Spacer]: ../widget/struct.Spacer.html
+    Spacer(Option<u8>),
 }
 
-/// Grid area widget layout
+/// Grid area layout
 ///
-/// This is a widget layout using a grid area.  It contains a set of borrowed
-/// [Widget]s.  It is normally created using the [grid_area] macro.
+/// A layout using a grid area, containing a set of borrowed [Widget]s.
 pub struct GridArea<'a> {
     /// Grid rows
     rows: u16,
@@ -37,7 +38,12 @@ impl<'a> GridArea<'a> {
     ///
     /// * `grid`: A slice of [GridItem]s, laid out in row-major order.
     /// * `rows`: The number of rows in the grid.
-    /// Create a new grid area layout
+    ///
+    /// # Errors
+    ///
+    /// [Error::InvalidGridArea] If the length of `grid` is not a multiple of
+    ///                          `rows`, or if any [GridItem] does not form a
+    ///                          rectangular pattern.
     pub fn new(grid: &[GridItem<'a>], rows: u16) -> Result<Self> {
         let len = grid.len() as u16; // FIXME
         let cols = len / rows;
@@ -172,9 +178,14 @@ impl<'a> GridArea<'a> {
 fn widgets_unique<'a>(grid: &[GridItem<'a>]) -> Vec<&'a dyn Widget> {
     let mut widgets = Vec::new();
     for item in grid {
-        if let GridItem::Widget(widget) = item {
-            if !widgets.iter().any(|w| widget_is_same(*w, *widget)) {
-                widgets.push(*widget);
+        match item {
+            GridItem::Widget(widget) => {
+                if !widgets.iter().any(|w| widget_is_same(*w, *widget)) {
+                    widgets.push(*widget);
+                }
+            }
+            GridItem::Spacer(_) => {
+                // FIXME: Handle spacing
             }
         }
     }
@@ -316,16 +327,22 @@ fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
 
 /// Lay out [Widget]s onto a grid area
 ///
+/// This macro is inspired by the concise CSS [grid-template-areas] property.
+/// It can be used to construct a [GridArea].
+///
+/// ## Arguments
+///
 /// * `[a …] [b …]`: One or more rows of grid items, enclosed in square
 ///                  brackets.  A grid item is either a [Widget] identifier or a
-///                  dot `.`, which is used for spacing.
+///                  dot `.`, which is used for spacing.  A `Widget` can appear
+///                  multiple times as long as it occupies a rectangular shape
+///                  in the grid.
 ///
-/// * returns: `Result<`[GridArea]`>`
+/// ## Errors
 ///
-/// A `Widget` identifier can appear multiple times as long as it occupies a
-/// rectangular shape in the grid.
-///
-/// This macro is inspired by the concise CSS [grid-template-areas] property.
+/// [Error::InvalidGridArea] If the length of `grid` is not a multiple of
+///                          `rows`, or if any [Widget] does not form a
+///                          rectangular pattern.
 ///
 /// ## Example
 /// ```rust
