@@ -4,7 +4,7 @@
 //
 use crate::layout::{BBox, Cells, Dim, GridArea};
 use crate::style::{Color, Theme};
-use crate::{Result, Widget};
+use crate::{Action, EventActions, Result, Widget};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -156,13 +156,38 @@ impl Screen {
         Ok(())
     }
 
+    /// Render a grid area and wait for an action
+    pub fn step(&mut self, area: &GridArea) -> Result<Action> {
+        let actions = EventActions::default();
+        self.render(area)?;
+        loop {
+            match self.event()? {
+                Event::Resize(width, height) => {
+                    self.dim = Dim::new(width, height);
+                    self.render(area)?;
+                }
+                ev => {
+                    if let Some(action) = actions.lookup(&ev) {
+                        return Ok(action);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Wait for input events
+    fn event(&mut self) -> Result<Event> {
+        self.out.flush()?;
+        Ok(event::read()?)
+    }
+
     /// Render a grid area layout
-    pub fn render<'a>(&mut self, layout: &GridArea<'a>) -> Result<()> {
+    pub fn render(&mut self, area: &GridArea) -> Result<()> {
+        let widget_boxes = area.widget_boxes(self.bbox())?;
         let background = self.theme.background();
-        let bbox = self.bbox();
         self.set_background_color(background)?;
         self.clear()?;
-        for (widget, bbox) in layout.widget_boxes(bbox)?.iter() {
+        for (widget, bbox) in widget_boxes.iter() {
             if let Some(border) = widget.border() {
                 if let Some(mut cells) = self.cells(*bbox) {
                     border.render(&mut cells)?;
