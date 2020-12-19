@@ -343,9 +343,8 @@ fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
 ///
 /// ## Errors
 ///
-/// [Error::InvalidGridArea] If the length of `grid` is not a multiple of
-///                          `rows`, or if any [Widget] does not form a
-///                          rectangular pattern.
+/// [Error::InvalidGridArea] If the rows are not all the same length, or if any
+///                          [Widget] does not form a rectangular pattern.
 ///
 /// ## Example
 /// ```rust
