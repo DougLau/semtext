@@ -1,7 +1,6 @@
-use crossterm::event::{Event, KeyCode};
 use semtext::style::Outline;
 use semtext::widget::{Border, Label, Spacer};
-use semtext::{grid_area, Screen};
+use semtext::{grid_area, Action, Screen};
 
 async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
@@ -21,14 +20,9 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
         [s . . b]
     )?;
     loop {
-        screen.render(&grid)?;
-        match screen.input().await? {
-            Event::Key(key) => {
-                if key.code == KeyCode::Esc {
-                    break;
-                }
-            }
-            _ => {}
+        match screen.step_future(&grid).await? {
+            Action::Quit() => break,
+            _ => (),
         }
     }
     Ok(())

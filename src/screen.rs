@@ -4,7 +4,7 @@
 //
 use crate::layout::{BBox, Cells, Dim, GridArea};
 use crate::style::{Color, Theme};
-use crate::{Action, EventActions, Result, Widget};
+use crate::{Action, KeyMap, Result, Widget};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
@@ -156,33 +156,8 @@ impl Screen {
         Ok(())
     }
 
-    /// Render a grid area and wait for an action
-    pub fn step(&mut self, area: &GridArea) -> Result<Action> {
-        let actions = EventActions::default();
-        self.render(area)?;
-        loop {
-            match self.event()? {
-                Event::Resize(width, height) => {
-                    self.dim = Dim::new(width, height);
-                    self.render(area)?;
-                }
-                ev => {
-                    if let Some(action) = actions.lookup(&ev) {
-                        return Ok(action);
-                    }
-                }
-            }
-        }
-    }
-
-    /// Wait for input events
-    fn event(&mut self) -> Result<Event> {
-        self.out.flush()?;
-        Ok(event::read()?)
-    }
-
     /// Render a grid area layout
-    pub fn render(&mut self, area: &GridArea) -> Result<()> {
+    fn render(&mut self, area: &GridArea) -> Result<()> {
         let widget_boxes = area.widget_boxes(self.bbox())?;
         let background = self.theme.background();
         self.set_background_color(background)?;
@@ -199,28 +174,50 @@ impl Screen {
                 widget.render(&mut cells)?;
             }
         }
+        self.out.flush()?;
         Ok(())
     }
 
-    /// Wait for input events
-    pub fn event(&mut self) -> Result<Event> {
-        self.out.flush()?;
-        let ev = event::read()?;
-        if let Event::Resize(width, height) = ev {
-            self.dim = Dim::new(width, height);
+    /// Render a grid area and wait for an action
+    pub fn step(&mut self, area: &GridArea) -> Result<Action> {
+        let key_map = KeyMap::default();
+        self.render(area)?;
+        loop {
+            match event::read()? {
+                Event::Resize(width, height) => {
+                    self.dim = Dim::new(width, height);
+                    self.render(area)?;
+                }
+                Event::Key(ev) => {
+                    if let Some(action) = key_map.lookup(&ev) {
+                        return Ok(action);
+                    }
+                }
+                _ => (),
+            }
         }
-        Ok(ev)
     }
 
-    /// Asynchronous wait for input events
+    /// Render a grid area and wait asynchronously for an action
     #[cfg(feature = "async")]
-    pub async fn input(&mut self) -> Result<Event> {
-        self.out.flush()?;
-        let ev = (&mut self.ev_stream).await.unwrap()?;
-        if let Event::Resize(width, height) = ev {
-            self.dim = Dim::new(width, height);
+    pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
+        let key_map = KeyMap::default();
+        self.render(area)?;
+        loop {
+            let ev = (&mut self.ev_stream).await.unwrap()?;
+            match ev {
+                Event::Resize(width, height) => {
+                    self.dim = Dim::new(width, height);
+                    self.render(area)?;
+                }
+                Event::Key(ev) => {
+                    if let Some(action) = key_map.lookup(&ev) {
+                        return Ok(action);
+                    }
+                }
+                _ => (),
+            }
         }
-        Ok(ev)
     }
 
     /// Cleanup screen
