@@ -68,7 +68,12 @@ impl Screen {
         )?;
         #[cfg(not(feature = "async"))]
         {
-            Ok(Screen { out, dim, theme, key_map })
+            Ok(Screen {
+                out,
+                dim,
+                theme,
+                key_map,
+            })
         }
         #[cfg(feature = "async")]
         {
@@ -166,8 +171,7 @@ impl Screen {
     }
 
     /// Render a grid area layout
-    fn render(&mut self, area: &GridArea) -> Result<()> {
-        let widget_boxes = area.widget_boxes(self.bbox())?;
+    fn render(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
         let background = self.theme.background();
         self.set_background_color(background)?;
         self.clear()?;
@@ -187,21 +191,36 @@ impl Screen {
         Ok(())
     }
 
+    /// Check an event for an action
+    fn event_action(
+        &mut self,
+        ev: Event,
+        widget_boxes: &[(&dyn Widget, BBox)],
+    ) -> Result<Option<Action>> {
+        // FIXME: check widgets first
+        match ev {
+            Event::Resize(width, height) => {
+                self.dim = Dim::new(width, height);
+                self.render(&widget_boxes)?;
+            }
+            Event::Key(ev) => {
+                if let Some(action) = self.key_map.lookup(&ev) {
+                    return Ok(Some(action));
+                }
+            }
+            _ => (),
+        }
+        Ok(None)
+    }
+
     /// Render a grid area and wait for an action
     pub fn step(&mut self, area: &GridArea) -> Result<Action> {
-        self.render(area)?;
+        let widget_boxes = area.widget_boxes(self.bbox())?;
+        self.render(&widget_boxes)?;
         loop {
-            match event::read()? {
-                Event::Resize(width, height) => {
-                    self.dim = Dim::new(width, height);
-                    self.render(area)?;
-                }
-                Event::Key(ev) => {
-                    if let Some(action) = self.key_map.lookup(&ev) {
-                        return Ok(action);
-                    }
-                }
-                _ => (),
+            let ev = event::read()?;
+            if let Some(action) = self.event_action(ev, &widget_boxes)? {
+                return Ok(action);
             }
         }
     }
@@ -209,20 +228,12 @@ impl Screen {
     /// Render a grid area and wait asynchronously for an action
     #[cfg(feature = "async")]
     pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
-        self.render(area)?;
+        let widget_boxes = area.widget_boxes(self.bbox())?;
+        self.render(&widget_boxes)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?;
-            match ev {
-                Event::Resize(width, height) => {
-                    self.dim = Dim::new(width, height);
-                    self.render(area)?;
-                }
-                Event::Key(ev) => {
-                    if let Some(action) = self.key_map.lookup(&ev) {
-                        return Ok(action);
-                    }
-                }
-                _ => (),
+            if let Some(action) = self.event_action(ev, &widget_boxes)? {
+                return Ok(action);
             }
         }
     }
