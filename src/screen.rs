@@ -43,6 +43,8 @@ pub struct Screen {
     dim: Dim,
     /// Style theme
     theme: Theme,
+    /// Key / action map
+    key_map: KeyMap,
     #[cfg(feature = "async")]
     /// Event stream future.
     ev_stream: EvStreamFut,
@@ -54,6 +56,7 @@ impl Screen {
         let (width, height) = terminal::size()?;
         let dim = Dim::new(width, height);
         let theme = Theme::default();
+        let key_map = KeyMap::default();
         terminal::enable_raw_mode()?;
         let mut out = std::io::stdout();
         queue!(
@@ -65,7 +68,7 @@ impl Screen {
         )?;
         #[cfg(not(feature = "async"))]
         {
-            Ok(Screen { out, dim, theme })
+            Ok(Screen { out, dim, theme, key_map })
         }
         #[cfg(feature = "async")]
         {
@@ -74,9 +77,15 @@ impl Screen {
                 out,
                 dim,
                 theme,
+                key_map,
                 ev_stream,
             })
         }
+    }
+
+    /// Set the key / action map
+    pub fn set_key_map(&mut self, key_map: KeyMap) {
+        self.key_map = key_map;
     }
 
     /// Set the screen title
@@ -180,7 +189,6 @@ impl Screen {
 
     /// Render a grid area and wait for an action
     pub fn step(&mut self, area: &GridArea) -> Result<Action> {
-        let key_map = KeyMap::default();
         self.render(area)?;
         loop {
             match event::read()? {
@@ -189,7 +197,7 @@ impl Screen {
                     self.render(area)?;
                 }
                 Event::Key(ev) => {
-                    if let Some(action) = key_map.lookup(&ev) {
+                    if let Some(action) = self.key_map.lookup(&ev) {
                         return Ok(action);
                     }
                 }
@@ -201,7 +209,6 @@ impl Screen {
     /// Render a grid area and wait asynchronously for an action
     #[cfg(feature = "async")]
     pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
-        let key_map = KeyMap::default();
         self.render(area)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?;
@@ -211,7 +218,7 @@ impl Screen {
                     self.render(area)?;
                 }
                 Event::Key(ev) => {
-                    if let Some(action) = key_map.lookup(&ev) {
+                    if let Some(action) = self.key_map.lookup(&ev) {
                         return Ok(action);
                     }
                 }
