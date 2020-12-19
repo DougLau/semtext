@@ -78,6 +78,20 @@ pub enum Outline {
     ///   █████
     /// ```
     Block,
+    // Drop Shadow outline (legacy symbols?)
+    //
+    // ```text
+    //    ▒▒▒◣
+    //    ◥███
+    // ```
+    // Shadow,
+    // Meduim Shade Drop Shadow outline (legacy symbols)
+    //
+    // ```text
+    //    ███🮟
+    //    🮝▒▒▒
+    // ```
+    // MediumShadow,
 }
 
 impl Default for Outline {
@@ -98,8 +112,8 @@ impl Outline {
             DashedThick => '╍',
             Tight => '▁',
             HalfInner => '▄',
-            Block => '█',
             HalfOuter => '▀',
+            Block => '█',
         }
     }
 
@@ -113,9 +127,9 @@ impl Outline {
             Dashed => '┆',
             DashedThick => '┇',
             Tight => '▕',
-            Block => '█',
             HalfInner => '▐',
             HalfOuter => '▌',
+            Block => '█',
         }
     }
 
@@ -130,8 +144,8 @@ impl Outline {
             DashedThick => '╍',
             Tight => '▔',
             HalfInner => '▀',
-            Block => '█',
             HalfOuter => '▄',
+            Block => '█',
         }
     }
 
@@ -145,9 +159,9 @@ impl Outline {
             Dashed => '┆',
             DashedThick => '┇',
             Tight => '▏',
-            Block => '█',
             HalfInner => '▌',
             HalfOuter => '▐',
+            Block => '█',
         }
     }
 
