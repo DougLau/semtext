@@ -14,7 +14,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let a = Label::new("This is a bit of text in a label");
     let c = Label::new("This label has more text on the right side");
     loop {
-        let grid = grid_area!(screen.bbox(),
+        let grid = grid_area!(
             [. . . .]
             [a a . b]
             [. . . b]

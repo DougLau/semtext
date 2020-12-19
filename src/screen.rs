@@ -86,7 +86,7 @@ impl Screen {
     }
 
     /// Get the screen bounding box
-    pub fn bbox(&self) -> BBox {
+    fn bbox(&self) -> BBox {
         BBox::new(0, 0, self.dim.width, self.dim.height)
     }
 
@@ -159,9 +159,10 @@ impl Screen {
     /// Render a grid area layout
     pub fn render<'a>(&mut self, layout: &GridArea<'a>) -> Result<()> {
         let background = self.theme.background();
+        let bbox = self.bbox();
         self.set_background_color(background)?;
         self.clear()?;
-        for (widget, bbox) in layout.widgets.iter().zip(&layout.boxes) {
+        for (widget, bbox) in layout.widget_boxes(bbox)?.iter() {
             if let Some(border) = widget.border() {
                 if let Some(mut cells) = self.cells(*bbox) {
                     border.render(&mut cells)?;
