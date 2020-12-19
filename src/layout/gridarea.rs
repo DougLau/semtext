@@ -35,23 +35,23 @@ impl<'a> GridArea<'a> {
     /// Rather than using this function directly, the [grid_area] macro is
     /// recommended.
     ///
-    /// * `grid`: A `Vec` of [GridItem]s, laid out in row-major order.
+    /// * `grid`: A slice of [GridItem]s, laid out in row-major order.
     /// * `rows`: The number of rows in the grid.
     /// Create a new grid area layout
-    pub fn new(grid: Vec<GridItem<'a>>, rows: u16) -> Result<Self> {
+    pub fn new(grid: &[GridItem<'a>], rows: u16) -> Result<Self> {
         let len = grid.len() as u16; // FIXME
         let cols = len / rows;
         if cols * rows != len {
             return Err(Error::InvalidGridArea());
         }
-        let widgets = widgets_unique(&grid[..]);
+        let widgets = widgets_unique(grid);
         let mut area = GridArea {
             rows,
             cols,
             widgets,
             grid_boxes: vec![],
         };
-        area.grid_boxes = area.calculate_grid_boxes(&grid[..])?;
+        area.grid_boxes = area.calculate_grid_boxes(grid)?;
         Ok(area)
     }
 
@@ -350,13 +350,13 @@ macro_rules! grid_area {
     ($widget:ident) => { $crate::layout::GridItem::Widget(&$widget) };
     ($([ $($item:tt)+ ])+) => {
         {
-            let mut w = Vec::<$crate::layout::GridItem>::new();
+            let mut ga = Vec::<$crate::layout::GridItem>::new();
             let mut rows = 0;
             $(
-                $( w.push(grid_area!( $item )); )+
+                $( ga.push(grid_area!( $item )); )+
                 rows += 1;
             )?
-            $crate::layout::GridArea::new(w, rows)
+            $crate::layout::GridArea::new(&ga[..], rows)
         }
     };
 }
