@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 /// Action
 #[non_exhaustive]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
     /// Quit application
     Quit(),

@@ -9,11 +9,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         [. a .]
         [. . .]
     )?;
-    loop {
-        match screen.step(&grid)? {
-            Action::Quit() => break,
-            _ => (),
-        }
-    }
+    while screen.step(&grid)? != Action::Quit() {}
     Ok(())
 }
