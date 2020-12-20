@@ -2,7 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{AreaBound, Cells, Glyph, IntoGlyph};
+use crate::layout::{AreaBound, Cells};
+use crate::text::{Glyph, IntoGlyph};
 use crate::{Result, Widget};
 use std::ops::RangeBounds;
 
