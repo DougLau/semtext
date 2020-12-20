@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{BBox, Cells, Dim, GridArea};
-use crate::text::{Color, Theme};
+use crate::text::{Appearance, Color, Style, Theme};
 use crate::{Action, KeyMap, Result, Widget};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};
@@ -43,6 +43,8 @@ pub struct Screen {
     dim: Dim,
     /// Style theme
     theme: Theme,
+    /// Current text style
+    style: Style,
     /// Key / action map
     key_map: KeyMap,
     #[cfg(feature = "async")]
@@ -56,6 +58,7 @@ impl Screen {
         let (width, height) = terminal::size()?;
         let dim = Dim::new(width, height);
         let theme = Theme::default();
+        let style = Style::default();
         let key_map = KeyMap::default();
         terminal::enable_raw_mode()?;
         let mut out = std::io::stdout();
@@ -72,6 +75,7 @@ impl Screen {
                 out,
                 dim,
                 theme,
+                style,
                 key_map,
             })
         }
@@ -82,6 +86,7 @@ impl Screen {
                 out,
                 dim,
                 theme,
+                style,
                 key_map,
                 ev_stream,
             })
@@ -125,24 +130,37 @@ impl Screen {
         }
     }
 
-    /// Set a text attribute
-    pub(crate) fn set_attribute(
-        &mut self,
-        attr: style::Attribute,
-    ) -> Result<()> {
-        queue!(self.out, style::SetAttribute(attr))?;
+    /// Set the background color
+    fn set_background_color(&mut self, color: Color) -> Result<()> {
+        if color != self.style.background() {
+            queue!(self.out, style::SetBackgroundColor(color.into()))?;
+        }
         Ok(())
     }
 
     /// Set the foreground color
-    pub(crate) fn set_foreground_color(&mut self, color: Color) -> Result<()> {
-        queue!(self.out, style::SetForegroundColor(color.into()))?;
+    fn set_foreground_color(&mut self, color: Color) -> Result<()> {
+        if color != self.style.foreground() {
+            queue!(self.out, style::SetForegroundColor(color.into()))?;
+        }
         Ok(())
     }
 
-    /// Set the background color
-    pub(crate) fn set_background_color(&mut self, color: Color) -> Result<()> {
-        queue!(self.out, style::SetBackgroundColor(color.into()))?;
+    /// Set the text appearance
+    fn set_appearance(&mut self, app: Appearance) -> Result<()> {
+        if app != self.style.appearance() {
+            queue!(self.out, style::SetAttribute(style::Attribute::Reset))?;
+            queue!(self.out, style::SetAttributes(app.into()))?;
+        }
+        Ok(())
+    }
+
+    /// Set the text style
+    pub(crate) fn set_style(&mut self, st: Style) -> Result<()> {
+        self.set_background_color(st.background())?;
+        self.set_foreground_color(st.foreground())?;
+        self.set_appearance(st.appearance())?;
+        self.style = st;
         Ok(())
     }
 

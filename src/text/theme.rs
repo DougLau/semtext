@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::text::{Color, Intensity};
+use crate::text::{Color, Intensity, Style};
 
 /// Style theme
 #[derive(Clone, Debug, PartialEq)]
@@ -90,5 +90,12 @@ impl Theme {
     /// Get the tertiary color
     pub fn tertiary(&self) -> Color {
         self.tertiary
+    }
+
+    /// Get text style
+    pub fn style(&self) -> Style {
+        Style::default()
+            .with_background(self.background())
+            .with_foreground(self.foreground())
     }
 }

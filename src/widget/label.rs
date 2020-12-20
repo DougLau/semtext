@@ -14,11 +14,11 @@ use unicode_width::UnicodeWidthStr;
 /// Text Style        | Markdown
 /// ------------------|---------
 /// Normal            | `Normal`
-/// `Reverse`         | `` `Reverse` ``
 /// _Italic_          | `*Italic*` or `_Italic_`
 /// **Bold**          | `**Bold**` or `__Bold__`
 /// ~~Strikethrough~~ | `~~Strikethrough~~`
 /// <u>Underline</u>  | `<u>Underline</u>`
+/// `Reverse`         | `` `Reverse` ``
 ///
 pub struct Label {
     txt: String,
@@ -44,10 +44,8 @@ impl Widget for Label {
 
     /// Render the widget
     fn render(&self, cells: &mut Cells) -> Result<()> {
-        let foreground = cells.theme().foreground();
-        let background = cells.theme().background();
-        cells.set_foreground_color(foreground)?;
-        cells.set_background_color(background)?;
+        let style = cells.theme().style();
+        cells.set_style(style)?;
         let width = usize::from(cells.width());
         let height = usize::from(cells.height());
         for (row, txt) in wrap_iter(&self.txt, width).take(height).enumerate() {

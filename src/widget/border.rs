@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{AreaBound, BBox, Cells};
-use crate::text::Outline;
+use crate::text::{Outline, Style};
 use crate::{Result, Widget};
 
 /// Border widget
@@ -111,10 +111,11 @@ impl Widget for Border {
 
     /// Render the widget
     fn render(&self, cells: &mut Cells) -> Result<()> {
-        let primary = cells.theme().primary();
-        let background = cells.theme().background();
-        cells.set_foreground_color(primary)?;
-        cells.set_background_color(background)?;
+        let theme = cells.theme();
+        let style = Style::default()
+            .with_background(theme.background())
+            .with_foreground(theme.primary());
+        cells.set_style(style)?;
         let width = cells.width();
         let height = cells.height();
         if width == 0 || height == 0 {

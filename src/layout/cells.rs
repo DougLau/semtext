@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::BBox;
-use crate::text::{Color, Glyph, Theme};
+use crate::text::{Glyph, Style, Theme};
 use crate::{Result, Screen};
 
 /// Cells of text on a [Screen]
@@ -53,14 +53,9 @@ impl<'a> Cells<'a> {
         &self.screen.theme()
     }
 
-    /// Set the foreground color
-    pub fn set_foreground_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_foreground_color(color)
-    }
-
-    /// Set the background color
-    pub fn set_background_color(&mut self, color: Color) -> Result<()> {
-        self.screen.set_background_color(color)
+    /// Set the text style
+    pub fn set_style(&mut self, st: Style) -> Result<()> {
+        self.screen.set_style(st)
     }
 
     /// Move cursor to a cell
