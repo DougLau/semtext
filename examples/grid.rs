@@ -15,16 +15,11 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let grid = grid_area!(
         [. . . .]
         [a a . b]
-        [. . . b]
+        [. s . b]
         [. c c b]
-        [s . . b]
+        [. . . b]
     )?;
-    loop {
-        match screen.step_future(&grid).await? {
-            Action::Quit() => break,
-            _ => (),
-        }
-    }
+    while screen.step_future(&grid).await? != Action::Quit() {}
     Ok(())
 }
 

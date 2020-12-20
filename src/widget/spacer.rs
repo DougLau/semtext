@@ -68,6 +68,8 @@ impl Widget for Spacer {
 
     /// Render the widget
     fn render(&self, cells: &mut Cells) -> Result<()> {
+        let style = cells.theme().style();
+        cells.set_style(style)?;
         if let Some(fill) = &self.fill {
             cells.fill(fill)?;
         }
