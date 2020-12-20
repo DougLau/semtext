@@ -14,7 +14,7 @@ mod action;
 mod error;
 pub mod layout;
 mod screen;
-pub mod style;
+pub mod text;
 mod traits;
 pub mod widget;
 

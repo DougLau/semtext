@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{BBox, Cells, Dim, GridArea};
-use crate::style::{Color, Theme};
+use crate::text::{Color, Theme};
 use crate::{Action, KeyMap, Result, Widget};
 use crossterm::event::Event;
 use crossterm::{cursor, event, queue, style, terminal};

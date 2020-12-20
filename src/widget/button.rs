@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{AreaBound, Cells};
-use crate::style::Outline;
+use crate::text::Outline;
 use crate::widget::{Border, Label};
 use crate::{Result, Widget};
 

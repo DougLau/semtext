@@ -1,8 +1,8 @@
-// style/mod.rs
+// text/mod.rs
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-//! Style items
+//! Text styles and themes
 
 mod outline;
 mod theme;

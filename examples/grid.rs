@@ -1,4 +1,4 @@
-use semtext::style::Outline;
+use semtext::text::Outline;
 use semtext::widget::{Border, Label, Spacer};
 use semtext::{grid_area, Action, Screen};
 

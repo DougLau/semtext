@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{AreaBound, BBox, Cells};
-use crate::style::Outline;
+use crate::text::Outline;
 use crate::{Result, Widget};
 
 /// Border widget
@@ -25,7 +25,7 @@ pub struct Border {
 }
 
 impl Border {
-    /// Set outline style for all edges
+    /// Set outline for all edges
     pub fn with_outline(mut self, outline: Outline) -> Self {
         self.left = Some(outline);
         self.right = Some(outline);
@@ -34,25 +34,25 @@ impl Border {
         self
     }
 
-    /// Set outline style for left edge
+    /// Set outline for left edge
     pub fn with_left(mut self, outline: Option<Outline>) -> Self {
         self.left = outline;
         self
     }
 
-    /// Set outline style for right edge
+    /// Set outline for right edge
     pub fn with_right(mut self, outline: Option<Outline>) -> Self {
         self.right = outline;
         self
     }
 
-    /// Set outline style for top edge
+    /// Set outline for top edge
     pub fn with_top(mut self, outline: Option<Outline>) -> Self {
         self.top = outline;
         self
     }
 
-    /// Set outline style for bottom edge
+    /// Set outline for bottom edge
     pub fn with_bottom(mut self, outline: Option<Outline>) -> Self {
         self.bottom = outline;
         self
