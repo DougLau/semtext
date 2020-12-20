@@ -45,13 +45,12 @@ pub trait IntoGlyph {
 impl IntoGlyph for char {
     /// Create a Glyph from a `char`
     fn into_glyph(self) -> Result<Glyph> {
-        if let Some(width) = self.width() {
-            if width == 1 || width == 2 {
-                let inner = GlyphInner::Char(self);
-                return Ok(Glyph { inner, width });
-            }
+        let width = self.width().unwrap_or(0);
+        if width == 1 || width == 2 {
+            let inner = GlyphInner::Char(self);
+            return Ok(Glyph { inner, width });
         }
-        Err(Error::InvalidGlyph())
+        Err(Error::InvalidGlyphWidth(width))
     }
 }
 
@@ -63,7 +62,7 @@ impl IntoGlyph for &str {
             let inner = GlyphInner::Str(self.to_string());
             return Ok(Glyph { inner, width });
         }
-        Err(Error::InvalidGlyph())
+        Err(Error::InvalidGlyphWidth(width))
     }
 }
 

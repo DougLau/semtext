@@ -12,8 +12,10 @@ pub enum Error {
     /// Crossterm error
     Crossterm(crossterm::ErrorKind),
 
-    /// Invalid glyph
-    InvalidGlyph(),
+    /// A [Glyph] must have a column width of 1 or 2
+    ///
+    /// [Glyph]: text/struct.Glyph.html
+    InvalidGlyphWidth(usize),
 
     /// Invalid grid area layout
     InvalidGridArea(),
@@ -29,7 +31,9 @@ impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Crossterm(err) => err.fmt(fmt),
-            Error::InvalidGlyph() => write!(fmt, "Invalid glyph"),
+            Error::InvalidGlyphWidth(w) => {
+                write!(fmt, "Invalid glyph width: {}", w)
+            }
             Error::InvalidGridArea() => {
                 write!(fmt, "Invalid grid: all widgets must be rectangular")
             }
