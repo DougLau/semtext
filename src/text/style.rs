@@ -5,11 +5,27 @@
 use crate::text::{Color, Intensity};
 use crossterm::style::{Attribute, Attributes};
 
+/// Font weight
+///
+/// NOTE: Some terminals may treat this as intensity, altering the color rather
+///       than font weight.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Weight {
+    /// Normal weight (or intensity)
+    Normal,
+    /// Bold weight (or increased intensity)
+    Bold,
+    /// Thin weight (or faint / dim / decreased intensity)
+    Thin,
+}
+
 /// Text Appearance
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Appearance {
     /// Crossterm text attributes
     attributes: Attributes,
+    /// Font weight
+    weight: Weight,
 }
 
 /// Text Style
@@ -23,29 +39,35 @@ pub struct Style {
     appearance: Appearance,
 }
 
-impl From<Appearance> for Attributes {
-    fn from(app: Appearance) -> Self {
-        app.attributes
+impl Default for Weight {
+    fn default() -> Self {
+        Weight::Normal
+    }
+}
+
+impl Weight {
+    fn attribute(self) -> Option<Attribute> {
+        match self {
+            Weight::Bold => Some(Attribute::Bold),
+            Weight::Thin => Some(Attribute::Dim),
+            _ => None,
+        }
     }
 }
 
 impl Appearance {
+    /// Set font weight
+    pub fn with_weight(mut self, weight: Weight) -> Self {
+        self.weight = weight;
+        self
+    }
+
     /// Set `italic` text appearance
     pub fn with_italic(mut self, enable: bool) -> Self {
         if enable {
             self.attributes.set(Attribute::Italic);
         } else {
             self.attributes.unset(Attribute::Italic);
-        }
-        self
-    }
-
-    /// Set `bold` text appearance
-    pub fn with_bold(mut self, enable: bool) -> Self {
-        if enable {
-            self.attributes.set(Attribute::Bold);
-        } else {
-            self.attributes.unset(Attribute::Bold);
         }
         self
     }
@@ -79,6 +101,30 @@ impl Appearance {
         }
         self
     }
+
+    /// Get changed attributes
+    pub(crate) fn changed(&self, before: Self) -> Attributes {
+        let mut attr = self.attributes;
+        if self.weight != before.weight {
+            match self.weight.attribute() {
+                Some(w) => attr.set(w),
+                None => attr.set(Attribute::NormalIntensity),
+            }
+        }
+        if before.attributes.has(Attribute::Italic) {
+            attr.set(Attribute::NoItalic);
+        }
+        if before.attributes.has(Attribute::CrossedOut) {
+            attr.set(Attribute::NotCrossedOut);
+        }
+        if before.attributes.has(Attribute::Underlined) {
+            attr.set(Attribute::NoUnderline);
+        }
+        if before.attributes.has(Attribute::Reverse) {
+            attr.set(Attribute::NoReverse);
+        }
+        attr
+    }
 }
 
 impl Default for Style {
@@ -86,7 +132,11 @@ impl Default for Style {
         let background = Color::Black(Intensity::Normal);
         let foreground = Color::White(Intensity::Bright);
         let appearance = Appearance::default();
-        Self { background, foreground, appearance }
+        Self {
+            background,
+            foreground,
+            appearance,
+        }
     }
 }
 

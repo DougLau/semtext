@@ -4,7 +4,7 @@
 //
 use crossterm::style::Color as Clr;
 
-/// ANSI color intensity
+/// Color intensity
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Intensity {
     /// Normal (dark) color intensity

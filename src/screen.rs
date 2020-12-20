@@ -44,9 +44,9 @@ pub struct Screen {
     /// Style theme
     theme: Theme,
     /// Current text style
-    style: Style,
+    style: Option<Style>,
     /// Key / action map
-    key_map: KeyMap,
+    keymap: KeyMap,
     #[cfg(feature = "async")]
     /// Event stream future.
     ev_stream: EvStreamFut,
@@ -58,8 +58,8 @@ impl Screen {
         let (width, height) = terminal::size()?;
         let dim = Dim::new(width, height);
         let theme = Theme::default();
-        let style = Style::default();
-        let key_map = KeyMap::default();
+        let style = None;
+        let keymap = KeyMap::default();
         terminal::enable_raw_mode()?;
         let mut out = std::io::stdout();
         queue!(
@@ -76,7 +76,7 @@ impl Screen {
                 dim,
                 theme,
                 style,
-                key_map,
+                keymap,
             })
         }
         #[cfg(feature = "async")]
@@ -87,15 +87,15 @@ impl Screen {
                 dim,
                 theme,
                 style,
-                key_map,
+                keymap,
                 ev_stream,
             })
         }
     }
 
     /// Set the key / action map
-    pub fn set_key_map(&mut self, key_map: KeyMap) {
-        self.key_map = key_map;
+    pub fn set_keymap(&mut self, keymap: KeyMap) {
+        self.keymap = keymap;
     }
 
     /// Set the screen title
@@ -132,7 +132,7 @@ impl Screen {
 
     /// Set the background color
     fn set_background_color(&mut self, color: Color) -> Result<()> {
-        if color != self.style.background() {
+        if self.style.map_or(true, |s| s.background() != color) {
             queue!(self.out, style::SetBackgroundColor(color.into()))?;
         }
         Ok(())
@@ -140,7 +140,7 @@ impl Screen {
 
     /// Set the foreground color
     fn set_foreground_color(&mut self, color: Color) -> Result<()> {
-        if color != self.style.foreground() {
+        if self.style.map_or(true, |s| s.foreground() != color) {
             queue!(self.out, style::SetForegroundColor(color.into()))?;
         }
         Ok(())
@@ -148,9 +148,11 @@ impl Screen {
 
     /// Set the text appearance
     fn set_appearance(&mut self, app: Appearance) -> Result<()> {
-        if app != self.style.appearance() {
-            queue!(self.out, style::SetAttribute(style::Attribute::Reset))?;
-            queue!(self.out, style::SetAttributes(app.into()))?;
+        let attrs = app.changed(
+            self.style.map_or(Appearance::default(), |s| s.appearance()),
+        );
+        if !attrs.is_empty() {
+            queue!(self.out, style::SetAttributes(attrs))?;
         }
         Ok(())
     }
@@ -160,7 +162,7 @@ impl Screen {
         self.set_background_color(st.background())?;
         self.set_foreground_color(st.foreground())?;
         self.set_appearance(st.appearance())?;
-        self.style = st;
+        self.style = Some(st);
         Ok(())
     }
 
@@ -222,7 +224,7 @@ impl Screen {
                 self.render(&widget_boxes)?;
             }
             Event::Key(ev) => {
-                if let Some(action) = self.key_map.lookup(&ev) {
+                if let Some(action) = self.keymap.lookup(&ev) {
                     return Ok(Some(action));
                 }
             }
