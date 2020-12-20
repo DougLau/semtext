@@ -69,10 +69,10 @@ impl From<Color> for Clr {
 /// Style theme
 #[derive(Clone, Debug, PartialEq)]
 pub struct Theme {
-    /// Foreground text color
-    foreground: Color,
     /// Background color
     background: Color,
+    /// Foreground text color
+    foreground: Color,
     /// Primary widget color
     primary: Color,
     /// Secondary widget color
@@ -83,14 +83,14 @@ pub struct Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        let foreground = Color::White(Intensity::Bright);
         let background = Color::Black(Intensity::Normal);
+        let foreground = Color::White(Intensity::Bright);
         let primary = Color::Yellow(Intensity::Bright);
         let secondary = Color::Cyan(Intensity::Bright);
         let tertiary = Color::Magenta(Intensity::Bright);
         Self {
-            foreground,
             background,
+            foreground,
             primary,
             secondary,
             tertiary,
@@ -99,15 +99,15 @@ impl Default for Theme {
 }
 
 impl Theme {
-    /// Set the foreground color
-    pub fn with_foreground(mut self, clr: Color) -> Self {
-        self.foreground = clr;
-        self
-    }
-
     /// Set the background color
     pub fn with_background(mut self, clr: Color) -> Self {
         self.background = clr;
+        self
+    }
+
+    /// Set the foreground color
+    pub fn with_foreground(mut self, clr: Color) -> Self {
+        self.foreground = clr;
         self
     }
 
@@ -129,14 +129,14 @@ impl Theme {
         self
     }
 
-    /// Get the foreground color
-    pub fn foreground(&self) -> Color {
-        self.foreground
-    }
-
     /// Get the background color
     pub fn background(&self) -> Color {
         self.background
+    }
+
+    /// Get the foreground color
+    pub fn foreground(&self) -> Color {
+        self.foreground
     }
 
     /// Get the primary color
