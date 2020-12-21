@@ -6,7 +6,7 @@
 use crate::layout::{AreaBound, BBox, LengthBound};
 use crate::{Error, Result, Widget};
 
-/// Item in a grid area
+/// An item in a [GridArea]
 pub enum GridItem<'a> {
     /// [Widget] grid item
     Widget(&'a dyn Widget),
@@ -18,8 +18,8 @@ pub enum GridItem<'a> {
 
 /// Grid area layout
 ///
-/// A layout using a grid area, containing a set of borrowed [Widget]s.
-/// It is used when calling [Screen::step].
+/// A layout of an area divided into a grid, containing a set of borrowed
+/// [Widget]s.  It is used when calling [Screen::step].
 ///
 /// [Screen::step]: ../struct.Screen.html#method.step
 pub struct GridArea<'a> {
@@ -39,8 +39,8 @@ impl<'a> GridArea<'a> {
     /// Rather than using this function directly, the [grid_area] macro is
     /// recommended.
     ///
-    /// * `grid`: A slice of [GridItem]s, laid out in row-major order.
-    /// * `rows`: The number of rows in the grid.
+    /// * `grid`: A slice of [GridItem]s, in row-major order.
+    /// * `rows`: The count of rows in the grid.
     ///
     /// # Errors
     ///
@@ -328,10 +328,9 @@ fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
     BBox::new(col, row, width, height)
 }
 
-/// Lay out [Widget]s onto a grid area
+/// Lay out [Widget]s into a [GridArea]
 ///
 /// This macro is inspired by the concise CSS [grid-template-areas] property.
-/// It can be used to construct a [GridArea].
 ///
 /// ## Arguments
 ///
