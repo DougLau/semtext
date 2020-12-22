@@ -2,6 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+use std::ops::Sub;
 
 /// Text cell position
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -28,6 +29,16 @@ pub struct BBox {
     pos: Pos,
     /// Dimensions in text cells
     dim: Dim,
+}
+
+impl Sub for Pos {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let col = self.col - rhs.col;
+        let row = self.row - rhs.row;
+        Pos::new(col, row)
+    }
 }
 
 impl Pos {
@@ -90,6 +101,23 @@ impl BBox {
     /// Check if the bounding box is empty
     pub fn is_empty(self) -> bool {
         self.dim.is_empty()
+    }
+
+    /// Check if the bounding box contains a position
+    pub fn contains(self, pos: Pos) -> bool {
+        pos.col >= self.left()
+            && pos.col < self.right()
+            && pos.row >= self.top()
+            && pos.row < self.bottom()
+    }
+
+    /// Check if a position is within bounding box and get its offset
+    pub fn within(self, pos: Pos) -> Option<Pos> {
+        if self.contains(pos) {
+            Some(pos - self.pos)
+        } else {
+            None
+        }
     }
 
     /// Clip with another bounding box

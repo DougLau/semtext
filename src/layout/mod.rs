@@ -10,7 +10,7 @@ mod cells;
 mod gridarea;
 
 pub use bbox::BBox;
-pub(crate) use bbox::Dim;
+pub use bbox::{Dim, Pos};
 pub use bounds::AreaBound;
 use bounds::LengthBound;
 pub use cells::Cells;

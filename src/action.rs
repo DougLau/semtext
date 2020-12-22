@@ -2,29 +2,29 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crate::input::{KeyPress, ModKeys, NavigationKey};
 use std::collections::HashMap;
 
 /// Action
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
+    /// Terminal resized
+    Resize(),
     /// Quit application
     Quit(),
 }
 
 /// Key action mapping
-///
-/// FIXME: don't expose crossterm KeyEvent
 pub struct KeyMap {
-    /// Mapping of key events to actions
-    map: HashMap<KeyEvent, Action>,
+    /// Mapping of key presses to actions
+    map: HashMap<(KeyPress, ModKeys), Action>,
 }
 
 impl Default for KeyMap {
     fn default() -> Self {
         let mut map = HashMap::new();
-        let key = KeyEvent::new(KeyCode::Esc, KeyModifiers::empty());
+        let key = (KeyPress::Navigation(NavigationKey::Esc), ModKeys::Empty);
         map.insert(key, Action::Quit());
         Self { map }
     }
@@ -32,7 +32,7 @@ impl Default for KeyMap {
 
 impl KeyMap {
     /// Lookup an [Action] from a key event
-    pub fn lookup(&self, event: &KeyEvent) -> Option<Action> {
-        self.map.get(event).cloned()
+    pub fn lookup(&self, key: KeyPress, mods: ModKeys) -> Option<Action> {
+        self.map.get(&(key, mods)).cloned()
     }
 }

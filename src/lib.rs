@@ -12,6 +12,7 @@
 
 mod action;
 mod error;
+pub mod input;
 pub mod layout;
 mod screen;
 pub mod text;

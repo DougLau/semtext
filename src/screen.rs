@@ -2,10 +2,11 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+use crate::input::Event;
 use crate::layout::{BBox, Cells, Dim, GridArea};
 use crate::text::{Appearance, Color, Style, Theme};
 use crate::{Action, KeyMap, Result, Widget};
-use crossterm::event::Event;
+use crossterm::event::Event as CtEvent;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
 
@@ -21,11 +22,11 @@ use std::{
 
 #[cfg(feature = "async")]
 /// Needed in order to await the stream.
-struct EvStreamFut(Box<dyn Stream<Item = crossterm::Result<Event>> + Unpin>);
+struct EvStreamFut(Box<dyn Stream<Item = crossterm::Result<CtEvent>> + Unpin>);
 
 #[cfg(feature = "async")]
 impl Future for EvStreamFut {
-    type Output = Option<crossterm::Result<Event>>;
+    type Output = Option<crossterm::Result<CtEvent>>;
 
     fn poll(
         mut self: Pin<&mut Self>,
@@ -68,6 +69,7 @@ impl Screen {
             cursor::Hide,
             terminal::DisableLineWrap,
             terminal::Clear(terminal::ClearType::All),
+            event::EnableMouseCapture,
         )?;
         #[cfg(not(feature = "async"))]
         {
@@ -219,16 +221,22 @@ impl Screen {
     ) -> Result<Option<Action>> {
         // FIXME: check widgets first
         match ev {
-            Event::Resize(width, height) => {
-                self.dim = Dim::new(width, height);
-                self.render(&widget_boxes)?;
+            Event::Resize(dim) => {
+                self.dim = dim;
+                return Ok(Some(Action::Resize()));
             }
-            Event::Key(ev) => {
-                if let Some(action) = self.keymap.lookup(&ev) {
+            Event::Key(key, mods) => {
+                if let Some(action) = self.keymap.lookup(key, mods) {
                     return Ok(Some(action));
                 }
             }
-            _ => (),
+            Event::Mouse(_mev, _mods, pos) => {
+                for (_widget, bbox) in widget_boxes.iter() {
+                    if let Some(_p) = bbox.within(pos) {
+                        break;
+                    }
+                }
+            }
         }
         Ok(None)
     }
@@ -238,7 +246,7 @@ impl Screen {
         let widget_boxes = area.widget_boxes(self.bbox())?;
         self.render(&widget_boxes)?;
         loop {
-            let ev = event::read()?;
+            let ev = Event::read()?;
             if let Some(action) = self.event_action(ev, &widget_boxes)? {
                 return Ok(action);
             }
@@ -251,7 +259,7 @@ impl Screen {
         let widget_boxes = area.widget_boxes(self.bbox())?;
         self.render(&widget_boxes)?;
         loop {
-            let ev = (&mut self.ev_stream).await.unwrap()?;
+            let ev = (&mut self.ev_stream).await.unwrap()?.into();
             if let Some(action) = self.event_action(ev, &widget_boxes)? {
                 return Ok(action);
             }
@@ -262,6 +270,7 @@ impl Screen {
     fn cleanup(&mut self) -> Result<()> {
         queue!(
             self.out,
+            event::DisableMouseCapture,
             terminal::EnableLineWrap,
             terminal::LeaveAlternateScreen,
             cursor::Show,
