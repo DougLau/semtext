@@ -10,7 +10,6 @@
 
 #![forbid(unsafe_code)]
 
-mod action;
 mod error;
 pub mod input;
 pub mod layout;
@@ -19,7 +18,6 @@ pub mod text;
 mod traits;
 pub mod widget;
 
-pub use crate::action::{Action, KeyMap};
 pub use crate::error::Error;
 pub(crate) use crate::error::Result;
 pub use crate::screen::Screen;

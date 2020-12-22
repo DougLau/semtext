@@ -1,5 +1,6 @@
+use semtext::input::Action;
 use semtext::widget::Button;
-use semtext::{grid_area, Action, Screen};
+use semtext::{grid_area, Screen};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;

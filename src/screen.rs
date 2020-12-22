@@ -2,10 +2,10 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::Event;
+use crate::input::{Action, Event, KeyMap};
 use crate::layout::{BBox, Cells, Dim, GridArea};
 use crate::text::{Appearance, Color, Style, Theme};
-use crate::{Action, KeyMap, Result, Widget};
+use crate::{Result, Widget};
 use crossterm::event::Event as CtEvent;
 use crossterm::{cursor, event, queue, style, terminal};
 use std::io::{Stdout, Write};
