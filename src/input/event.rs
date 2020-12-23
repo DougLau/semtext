@@ -11,7 +11,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 
 /// Navigation keys
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub enum NavigationKey {
+pub enum NavKey {
     Esc,
     Enter,
     Backspace,
@@ -31,7 +31,7 @@ pub enum NavigationKey {
 
 /// Function Keys
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub enum FunctionKey {
+pub enum FunKey {
     F1,
     F2,
     F3,
@@ -80,8 +80,8 @@ pub enum ModKeys {
 /// Key press event
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum KeyPress {
-    Navigation(NavigationKey),
-    Function(FunctionKey),
+    Navigation(NavKey),
+    Function(FunKey),
     Character(char),
 }
 
@@ -97,33 +97,33 @@ impl From<KeyCode> for KeyPress {
     fn from(key: KeyCode) -> Self {
         use KeyCode::*;
         match key {
-            Esc => KeyPress::Navigation(NavigationKey::Esc),
-            Enter => KeyPress::Navigation(NavigationKey::Enter),
-            Backspace => KeyPress::Navigation(NavigationKey::Backspace),
-            Delete => KeyPress::Navigation(NavigationKey::Delete),
-            Insert => KeyPress::Navigation(NavigationKey::Insert),
-            Tab => KeyPress::Navigation(NavigationKey::Tab),
-            BackTab => KeyPress::Navigation(NavigationKey::BackTab),
-            Left => KeyPress::Navigation(NavigationKey::Left),
-            Right => KeyPress::Navigation(NavigationKey::Right),
-            Up => KeyPress::Navigation(NavigationKey::Up),
-            Down => KeyPress::Navigation(NavigationKey::Down),
-            Home => KeyPress::Navigation(NavigationKey::Home),
-            End => KeyPress::Navigation(NavigationKey::End),
-            PageUp => KeyPress::Navigation(NavigationKey::PageUp),
-            PageDown => KeyPress::Navigation(NavigationKey::PageDown),
-            F(1) => KeyPress::Function(FunctionKey::F1),
-            F(2) => KeyPress::Function(FunctionKey::F2),
-            F(3) => KeyPress::Function(FunctionKey::F3),
-            F(4) => KeyPress::Function(FunctionKey::F4),
-            F(5) => KeyPress::Function(FunctionKey::F5),
-            F(6) => KeyPress::Function(FunctionKey::F6),
-            F(7) => KeyPress::Function(FunctionKey::F7),
-            F(8) => KeyPress::Function(FunctionKey::F8),
-            F(9) => KeyPress::Function(FunctionKey::F9),
-            F(10) => KeyPress::Function(FunctionKey::F10),
-            F(11) => KeyPress::Function(FunctionKey::F11),
-            F(12) => KeyPress::Function(FunctionKey::F12),
+            Esc => KeyPress::Navigation(NavKey::Esc),
+            Enter => KeyPress::Navigation(NavKey::Enter),
+            Backspace => KeyPress::Navigation(NavKey::Backspace),
+            Delete => KeyPress::Navigation(NavKey::Delete),
+            Insert => KeyPress::Navigation(NavKey::Insert),
+            Tab => KeyPress::Navigation(NavKey::Tab),
+            BackTab => KeyPress::Navigation(NavKey::BackTab),
+            Left => KeyPress::Navigation(NavKey::Left),
+            Right => KeyPress::Navigation(NavKey::Right),
+            Up => KeyPress::Navigation(NavKey::Up),
+            Down => KeyPress::Navigation(NavKey::Down),
+            Home => KeyPress::Navigation(NavKey::Home),
+            End => KeyPress::Navigation(NavKey::End),
+            PageUp => KeyPress::Navigation(NavKey::PageUp),
+            PageDown => KeyPress::Navigation(NavKey::PageDown),
+            F(1) => KeyPress::Function(FunKey::F1),
+            F(2) => KeyPress::Function(FunKey::F2),
+            F(3) => KeyPress::Function(FunKey::F3),
+            F(4) => KeyPress::Function(FunKey::F4),
+            F(5) => KeyPress::Function(FunKey::F5),
+            F(6) => KeyPress::Function(FunKey::F6),
+            F(7) => KeyPress::Function(FunKey::F7),
+            F(8) => KeyPress::Function(FunKey::F8),
+            F(9) => KeyPress::Function(FunKey::F9),
+            F(10) => KeyPress::Function(FunKey::F10),
+            F(11) => KeyPress::Function(FunKey::F11),
+            F(12) => KeyPress::Function(FunKey::F12),
             Char(c) => KeyPress::Character(c),
             _ => KeyPress::Character('\0'),
         }

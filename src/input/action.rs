@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{KeyPress, ModKeys, NavigationKey};
+use crate::input::{KeyPress, ModKeys, NavKey};
 use std::collections::HashMap;
 
 /// Action
@@ -24,7 +24,7 @@ pub struct KeyMap {
 impl Default for KeyMap {
     fn default() -> Self {
         let mut map = HashMap::new();
-        let key = (KeyPress::Navigation(NavigationKey::Esc), ModKeys::Empty);
+        let key = (KeyPress::Navigation(NavKey::Esc), ModKeys::Empty);
         map.insert(key, Action::Quit());
         Self { map }
     }
