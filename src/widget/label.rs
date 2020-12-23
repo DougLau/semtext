@@ -4,22 +4,9 @@
 //
 use crate::layout::{AreaBound, Cells};
 use crate::{Result, Widget};
-use textwrap::wrap_iter;
 use unicode_width::UnicodeWidthStr;
 
 /// Text label widget
-///
-/// Inline styling using Markdown:
-///
-/// Text Style        | Markdown
-/// ------------------|---------
-/// Normal            | `Normal`
-/// _Italic_          | `*Italic*` or `_Italic_`
-/// **Bold**          | `**Bold**` or `__Bold__`
-/// ~~Strikethrough~~ | `~~Strikethrough~~`
-/// <u>Underline</u>  | `<u>Underline</u>`
-/// `Reverse`         | `` `Reverse` ``
-///
 pub struct Label {
     txt: String,
 }
@@ -29,6 +16,11 @@ impl Label {
     pub fn new(txt: &str) -> Self {
         let txt = txt.to_string();
         Label { txt }
+    }
+
+    /// Get text
+    pub fn txt(&self) -> &str {
+        &self.txt
     }
 }
 
@@ -46,13 +38,6 @@ impl Widget for Label {
     fn draw(&self, cells: &mut Cells) -> Result<()> {
         let style = cells.theme().style();
         cells.set_style(style)?;
-        let width = usize::from(cells.width());
-        let height = usize::from(cells.height());
-        for (row, txt) in wrap_iter(&self.txt, width).take(height).enumerate() {
-            let row = row as u16; // limited to u16 by take(height)
-            cells.move_to(0, row)?;
-            cells.print_str(&txt)?;
-        }
-        Ok(())
+        cells.print_text(&self.txt)
     }
 }

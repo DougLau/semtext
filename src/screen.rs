@@ -218,27 +218,30 @@ impl Screen {
         &mut self,
         ev: Event,
         widget_boxes: &[(&dyn Widget, BBox)],
-    ) -> Result<Option<Action>> {
-        // FIXME: check widgets first
+    ) -> Option<Action> {
         match ev {
             Event::Resize(dim) => {
                 self.dim = dim;
-                return Ok(Some(Action::Resize()));
+                Some(Action::Resize(dim))
             }
             Event::Key(key, mods) => {
-                if let Some(action) = self.keymap.lookup(key, mods) {
-                    return Ok(Some(action));
-                }
+                // FIXME: check focused widget first
+                self.keymap.lookup(key, mods)
             }
-            Event::Mouse(_mev, _mods, pos) => {
-                for (_widget, bbox) in widget_boxes.iter() {
-                    if let Some(_p) = bbox.within(pos) {
+            Event::Mouse(mev, mods, pos) => {
+                for (widget, bbox) in widget_boxes.iter() {
+                    if let Some(p) = bbox.within(pos) {
+                        if let Some(action) =
+                            widget.event_input(Event::Mouse(mev, mods, p))
+                        {
+                            return Some(action);
+                        }
                         break;
                     }
                 }
+                None
             }
         }
-        Ok(None)
     }
 
     /// Draw a grid area and wait for an action
@@ -247,7 +250,7 @@ impl Screen {
         self.draw(&widget_boxes)?;
         loop {
             let ev = Event::read()?;
-            if let Some(action) = self.event_action(ev, &widget_boxes)? {
+            if let Some(action) = self.event_action(ev, &widget_boxes) {
                 return Ok(action);
             }
         }
@@ -260,7 +263,7 @@ impl Screen {
         self.draw(&widget_boxes)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?.into();
-            if let Some(action) = self.event_action(ev, &widget_boxes)? {
+            if let Some(action) = self.event_action(ev, &widget_boxes) {
                 return Ok(action);
             }
         }

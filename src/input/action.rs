@@ -3,6 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::input::{KeyPress, ModKeys, NavKey};
+use crate::layout::Dim;
 use std::collections::HashMap;
 
 /// Action
@@ -10,7 +11,9 @@ use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
     /// Terminal resized
-    Resize(),
+    Resize(Dim),
+    /// Widget needs redrawing
+    Redraw(),
     /// Quit application
     Quit(),
 }

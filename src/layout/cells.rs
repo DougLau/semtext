@@ -5,6 +5,7 @@
 use crate::layout::BBox;
 use crate::text::{Glyph, Style, Theme};
 use crate::{Result, Screen};
+use textwrap::wrap_iter;
 
 /// Cells of text on a [Screen]
 ///
@@ -80,5 +81,28 @@ impl<'a> Cells<'a> {
     pub fn print_str(&mut self, st: &str) -> Result<()> {
         // FIXME: check width first
         self.screen.print_str(st)
+    }
+
+    /// Print some text
+    ///
+    /// Inline styling using Markdown:
+    ///
+    /// Text Style        | Markdown
+    /// ------------------|---------
+    /// Normal            | `Normal`
+    /// _Italic_          | `*Italic*` or `_Italic_`
+    /// **Bold**          | `**Bold**` or `__Bold__`
+    /// ~~Strikethrough~~ | `~~Strikethrough~~`
+    /// <u>Underline</u>  | `<u>Underline</u>`
+    /// `Reverse`         | `` `Reverse` ``
+    pub fn print_text(&mut self, text: &str) -> Result<()> {
+        let width = usize::from(self.width());
+        let height = usize::from(self.height());
+        for (row, txt) in wrap_iter(&text, width).take(height).enumerate() {
+            let row = row as u16; // limited to u16 by take(height)
+            self.move_to(0, row)?;
+            self.print_str(&txt)?;
+        }
+        Ok(())
     }
 }

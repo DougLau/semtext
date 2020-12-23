@@ -2,6 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
+use crate::input::{Action, Event};
 use crate::layout::{AreaBound, Cells};
 use crate::widget::Border;
 use crate::Result;
@@ -22,5 +23,11 @@ pub trait Widget {
     fn draw(&self, _cells: &mut Cells) -> Result<()> {
         // default implementation draws nothing
         Ok(())
+    }
+
+    /// Handle event input
+    fn event_input(&self, _event: Event) -> Option<Action> {
+        // ignore by default
+        None
     }
 }
