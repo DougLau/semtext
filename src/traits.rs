@@ -18,9 +18,9 @@ pub trait Widget {
         None
     }
 
-    /// Render the widget
-    fn render(&self, _cells: &mut Cells) -> Result<()> {
-        // default implementation renders nothing
+    /// Draw the widget
+    fn draw(&self, _cells: &mut Cells) -> Result<()> {
+        // default implementation draws nothing
         Ok(())
     }
 }

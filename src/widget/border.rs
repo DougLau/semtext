@@ -109,8 +109,8 @@ impl Widget for Border {
         AreaBound::default().with_columns(cols..).with_rows(rows..)
     }
 
-    /// Render the widget
-    fn render(&self, cells: &mut Cells) -> Result<()> {
+    /// Draw the widget
+    fn draw(&self, cells: &mut Cells) -> Result<()> {
         let theme = cells.theme();
         let style = Style::default()
             .with_background(theme.background())

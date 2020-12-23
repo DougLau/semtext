@@ -10,8 +10,7 @@ use std::ops::RangeBounds;
 /// Spacer widget
 ///
 /// A spacer can be used for fixed or variable width spacing between other
-/// widgets.  By default, it does not render anything, but a fill glyph may be
-/// provided.
+/// widgets.  By default it draws nothing, but a fill glyph may be provided.
 #[derive(Default)]
 pub struct Spacer {
     /// Area bounds
@@ -66,8 +65,8 @@ impl Widget for Spacer {
         self.bounds
     }
 
-    /// Render the widget
-    fn render(&self, cells: &mut Cells) -> Result<()> {
+    /// Draw the widget
+    fn draw(&self, cells: &mut Cells) -> Result<()> {
         let style = cells.theme().style();
         cells.set_style(style)?;
         if let Some(fill) = &self.fill {

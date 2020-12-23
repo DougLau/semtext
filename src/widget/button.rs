@@ -29,10 +29,14 @@ impl Widget for Button {
     /// Get the border
     fn border(&self) -> Option<Border> {
         Some(Border::default().with_outline(Outline::Solid))
+
+    /// Draw the widget
+    fn draw(&self, cells: &mut Cells) -> Result<()> {
+        let theme = cells.theme();
+        let style = self.style(theme);
+        cells.set_style(style)?;
+        cells.print_text(self.lbl.txt())
     }
 
-    /// Render the widget
-    fn render(&self, cells: &mut Cells) -> Result<()> {
-        self.lbl.render(cells)
     }
 }

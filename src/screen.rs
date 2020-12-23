@@ -192,21 +192,21 @@ impl Screen {
         Ok(())
     }
 
-    /// Render a grid area layout
-    fn render(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
+    /// Draw a grid area layout
+    fn draw(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
         let background = self.theme.background();
         self.set_background_color(background)?;
         self.clear()?;
         for (widget, bbox) in widget_boxes.iter() {
             if let Some(border) = widget.border() {
                 if let Some(mut cells) = self.cells(*bbox) {
-                    border.render(&mut cells)?;
+                    border.draw(&mut cells)?;
                 }
                 if let Some(mut cells) = self.cells(border.inset(*bbox)) {
-                    widget.render(&mut cells)?;
+                    widget.draw(&mut cells)?;
                 }
             } else if let Some(mut cells) = self.cells(*bbox) {
-                widget.render(&mut cells)?;
+                widget.draw(&mut cells)?;
             }
         }
         self.out.flush()?;
@@ -241,10 +241,10 @@ impl Screen {
         Ok(None)
     }
 
-    /// Render a grid area and wait for an action
+    /// Draw a grid area and wait for an action
     pub fn step(&mut self, area: &GridArea) -> Result<Action> {
         let widget_boxes = area.widget_boxes(self.bbox())?;
-        self.render(&widget_boxes)?;
+        self.draw(&widget_boxes)?;
         loop {
             let ev = Event::read()?;
             if let Some(action) = self.event_action(ev, &widget_boxes)? {
@@ -257,7 +257,7 @@ impl Screen {
     #[cfg(feature = "async")]
     pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
         let widget_boxes = area.widget_boxes(self.bbox())?;
-        self.render(&widget_boxes)?;
+        self.draw(&widget_boxes)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?.into();
             if let Some(action) = self.event_action(ev, &widget_boxes)? {

@@ -42,8 +42,8 @@ impl Widget for Label {
         b.with_columns(cols..=cols + 2).with_rows(rows..=rows)
     }
 
-    /// Render the widget
-    fn render(&self, cells: &mut Cells) -> Result<()> {
+    /// Draw the widget
+    fn draw(&self, cells: &mut Cells) -> Result<()> {
         let style = cells.theme().style();
         cells.set_style(style)?;
         let width = usize::from(cells.width());
