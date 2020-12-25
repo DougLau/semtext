@@ -36,11 +36,11 @@ impl Button {
     pub fn style(&self, theme: &Theme) -> Style {
         match self.state.get() {
             State::Enabled => Style::default()
-                .with_background(theme.background())
-                .with_foreground(theme.foreground()),
+                .with_background(theme.background)
+                .with_foreground(theme.foreground),
             State::Clicked => Style::default()
-                .with_background(theme.tertiary())
-                .with_foreground(theme.background()),
+                .with_background(theme.tertiary)
+                .with_foreground(theme.background),
         }
     }
 }

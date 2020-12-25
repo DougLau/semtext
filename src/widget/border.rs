@@ -113,8 +113,8 @@ impl Widget for Border {
     fn draw(&self, cells: &mut Cells) -> Result<()> {
         let theme = cells.theme();
         let style = Style::default()
-            .with_background(theme.background())
-            .with_foreground(theme.primary());
+            .with_background(theme.background)
+            .with_foreground(theme.primary);
         cells.set_style(style)?;
         let width = cells.width();
         let height = cells.height();

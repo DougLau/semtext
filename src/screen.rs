@@ -194,7 +194,7 @@ impl Screen {
 
     /// Draw a grid area layout
     fn draw(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
-        let background = self.theme.background();
+        let background = self.theme.background;
         self.set_background_color(background)?;
         self.clear()?;
         for (widget, bbox) in widget_boxes.iter() {

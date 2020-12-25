@@ -8,15 +8,19 @@ use crate::text::{Color, Intensity, Style};
 #[derive(Clone, Debug, PartialEq)]
 pub struct Theme {
     /// Background color
-    background: Color,
+    pub background: Color,
     /// Foreground text color
-    foreground: Color,
+    pub foreground: Color,
     /// Primary widget color
-    primary: Color,
+    pub primary: Color,
     /// Secondary widget color
-    secondary: Color,
+    pub secondary: Color,
     /// Tertiary widget color
-    tertiary: Color,
+    pub tertiary: Color,
+    /// Dark shadow color
+    pub dark_shadow: Color,
+    /// Light shadow color
+    pub light_shadow: Color,
 }
 
 impl Default for Theme {
@@ -26,12 +30,16 @@ impl Default for Theme {
         let primary = Color::Yellow(Intensity::Bright);
         let secondary = Color::Cyan(Intensity::Bright);
         let tertiary = Color::Magenta(Intensity::Bright);
+        let dark_shadow = Color::Black(Intensity::Bright);
+        let light_shadow = Color::White(Intensity::Normal);
         Self {
             background,
             foreground,
             primary,
             secondary,
             tertiary,
+            dark_shadow,
+            light_shadow,
         }
     }
 }
@@ -67,35 +75,10 @@ impl Theme {
         self
     }
 
-    /// Get the background color
-    pub fn background(&self) -> Color {
-        self.background
-    }
-
-    /// Get the foreground color
-    pub fn foreground(&self) -> Color {
-        self.foreground
-    }
-
-    /// Get the primary color
-    pub fn primary(&self) -> Color {
-        self.primary
-    }
-
-    /// Get the secondary color
-    pub fn secondary(&self) -> Color {
-        self.secondary
-    }
-
-    /// Get the tertiary color
-    pub fn tertiary(&self) -> Color {
-        self.tertiary
-    }
-
     /// Get text style
     pub fn style(&self) -> Style {
         Style::default()
-            .with_background(self.background())
-            .with_foreground(self.foreground())
+            .with_background(self.background)
+            .with_foreground(self.foreground)
     }
 }
