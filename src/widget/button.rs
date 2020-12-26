@@ -4,13 +4,13 @@
 //
 use crate::input::{Action, Event, MouseEvent};
 use crate::layout::{AreaBound, Cells};
-use crate::text::{Outline, Style, Theme};
-use crate::widget::{Border, Label};
+use crate::text::{Style, Theme};
+use crate::widget::{Border, BorderHeight, BorderStyle, Label};
 use crate::{Result, Widget};
 use std::cell::Cell;
 
 /// Button state
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum State {
     /// Enabled (with focus)
     Enabled,
@@ -54,12 +54,12 @@ impl Widget for Button {
     /// Get the border
     fn border(&self) -> Option<Border> {
         Some(match self.state.get() {
-            State::Enabled => Border::default()
-                .with_bottom(Some(Outline::HalfInner))
-                .with_right(Some(Outline::HalfInner)),
-            State::Clicked => Border::default()
-                .with_top(Some(Outline::HalfInner))
-                .with_right(Some(Outline::HalfInner)),
+            State::Enabled => {
+                Border::new(BorderStyle::Bevel(BorderHeight::Raised))
+            }
+            State::Clicked => {
+                Border::new(BorderStyle::Bevel(BorderHeight::Lowered))
+            }
         })
     }
 

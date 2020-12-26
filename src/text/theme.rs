@@ -3,6 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::text::{Color, Intensity, Style};
+use crate::widget::{BorderHeight, BorderStyle};
 
 /// Style theme
 #[derive(Clone, Debug, PartialEq)]
@@ -21,17 +22,20 @@ pub struct Theme {
     pub dark_shadow: Color,
     /// Light shadow color
     pub light_shadow: Color,
+    /// Button border style
+    pub button_border: BorderStyle,
 }
 
 impl Default for Theme {
     fn default() -> Self {
-        let background = Color::Black(Intensity::Normal);
+        let background = Color::Blue(Intensity::Normal);
         let foreground = Color::White(Intensity::Bright);
         let primary = Color::Yellow(Intensity::Bright);
         let secondary = Color::Cyan(Intensity::Bright);
-        let tertiary = Color::Magenta(Intensity::Bright);
+        let tertiary = Color::Yellow(Intensity::Bright);
         let dark_shadow = Color::Black(Intensity::Bright);
         let light_shadow = Color::White(Intensity::Normal);
+        let button_border = BorderStyle::Bevel(BorderHeight::Raised);
         Self {
             background,
             foreground,
@@ -40,6 +44,7 @@ impl Default for Theme {
             tertiary,
             dark_shadow,
             light_shadow,
+            button_border,
         }
     }
 }
