@@ -12,7 +12,7 @@ keywords = ["tui", "terminal", "ui"]
 edition = "2018"
 
 [dependencies]
-crossterm = "0.18"
+crossterm = "0.19"
 textwrap = "0.12"
 unicode-width = "0.1"
 futures-core = { optional = true, version = "0.3" }

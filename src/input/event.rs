@@ -7,7 +7,7 @@ use crate::Result;
 use crossterm::event::Event as CtEvent;
 use crossterm::event::MouseButton as CtMouseButton;
 use crossterm::event::MouseEvent as CtMouseEvent;
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers, MouseEventKind};
 
 /// Navigation keys
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
@@ -142,13 +142,14 @@ impl From<CtMouseButton> for MouseButton {
 
 impl From<CtMouseEvent> for MouseEvent {
     fn from(ev: CtMouseEvent) -> Self {
-        use CtMouseEvent::*;
-        match ev {
-            Down(btn, _, _, _) => Self::ButtonDown(btn.into()),
-            Up(btn, _, _, _) => Self::ButtonUp(btn.into()),
-            Drag(btn, _, _, _) => Self::Drag(Some(btn.into())),
-            ScrollDown(_, _, _) => Self::ScrollDown(),
-            ScrollUp(_, _, _) => Self::ScrollUp(),
+        use MouseEventKind::*;
+        match ev.kind {
+            Down(btn) => Self::ButtonDown(btn.into()),
+            Up(btn) => Self::ButtonUp(btn.into()),
+            Drag(btn) => Self::Drag(Some(btn.into())),
+            Moved => Self::Drag(None),
+            ScrollDown => Self::ScrollDown(),
+            ScrollUp => Self::ScrollUp(),
         }
     }
 }
@@ -178,29 +179,9 @@ impl From<KeyModifiers> for ModKeys {
     }
 }
 
-impl From<CtMouseEvent> for ModKeys {
-    fn from(ev: CtMouseEvent) -> Self {
-        use CtMouseEvent::*;
-        match ev {
-            Down(_, _, _, mods) => ModKeys::from(mods),
-            Up(_, _, _, mods) => ModKeys::from(mods),
-            Drag(_, _, _, mods) => ModKeys::from(mods),
-            ScrollDown(_, _, mods) => ModKeys::from(mods),
-            ScrollUp(_, _, mods) => ModKeys::from(mods),
-        }
-    }
-}
-
 impl From<CtMouseEvent> for Pos {
     fn from(ev: CtMouseEvent) -> Self {
-        use CtMouseEvent::*;
-        match ev {
-            Down(_, col, row, _) => Pos::new(col, row),
-            Up(_, col, row, _) => Pos::new(col, row),
-            Drag(_, col, row, _) => Pos::new(col, row),
-            ScrollDown(col, row, _) => Pos::new(col, row),
-            ScrollUp(col, row, _) => Pos::new(col, row),
-        }
+        Pos::new(ev.column, ev.row)
     }
 }
 
@@ -215,7 +196,7 @@ impl From<CtEvent> for Event {
             ),
             Mouse(mev) => Self::Mouse(
                 MouseEvent::from(mev),
-                ModKeys::from(mev),
+                ModKeys::from(mev.modifiers),
                 Pos::from(mev),
             ),
         }
