@@ -205,8 +205,8 @@ fn widget_is_same(a: &dyn Widget, b: &dyn Widget) -> bool {
 /// Taken from [here]
 ///
 /// [here]: https://github.com/rust-lang/rust/issues/27751#issuecomment-336554503
-fn data_pointer<T: ?Sized>(t: &T) -> *const u8 {
-    t as *const T as *const u8
+fn data_pointer<T: ?Sized>(t: &T) -> usize {
+    t as *const T as *const () as usize
 }
 
 /// Get the bounds of a widget (including border)
