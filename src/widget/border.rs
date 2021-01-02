@@ -18,6 +18,8 @@ pub enum BorderHeight {
 /// Border style
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum BorderStyle {
+    /// Empty border
+    Empty,
     /// Beveled appearance
     Bevel(BorderHeight),
     /// Something else
@@ -37,6 +39,7 @@ impl BorderStyle {
     pub fn outline_left(self) -> Option<Outline> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Outline::Empty),
             Bevel(_) => Some(Outline::Solid),
             ShadowRightBottom => None,
         }
@@ -46,6 +49,7 @@ impl BorderStyle {
     pub fn outline_right(self) -> Option<Outline> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Outline::Empty),
             Bevel(_) => Some(Outline::Solid),
             ShadowRightBottom => Some(Outline::Block),
         }
@@ -55,6 +59,7 @@ impl BorderStyle {
     pub fn outline_top(self) -> Option<Outline> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Outline::Empty),
             Bevel(_) => Some(Outline::Solid),
             ShadowRightBottom => None,
         }
@@ -64,6 +69,7 @@ impl BorderStyle {
     pub fn outline_bottom(self) -> Option<Outline> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Outline::Empty),
             Bevel(_) => Some(Outline::Solid),
             ShadowRightBottom => Some(Outline::Block),
         }
@@ -73,6 +79,7 @@ impl BorderStyle {
     pub fn style_left(self, theme: &Theme) -> Option<Style> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Style::default().with_background(theme.background)),
             Bevel(BorderHeight::Raised) => Some(
                 Style::default()
                     .with_background(theme.background)
@@ -91,6 +98,7 @@ impl BorderStyle {
     pub fn style_right(self, theme: &Theme) -> Option<Style> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Style::default().with_background(theme.background)),
             Bevel(BorderHeight::Raised) => Some(
                 Style::default()
                     .with_background(theme.background)
@@ -113,6 +121,7 @@ impl BorderStyle {
     pub fn style_top(self, theme: &Theme) -> Option<Style> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Style::default().with_background(theme.background)),
             Bevel(BorderHeight::Raised) => Some(
                 Style::default()
                     .with_background(theme.background)
@@ -131,6 +140,7 @@ impl BorderStyle {
     pub fn style_bottom(self, theme: &Theme) -> Option<Style> {
         use BorderStyle::*;
         match self {
+            Empty => Some(Style::default().with_background(theme.background)),
             Bevel(BorderHeight::Raised) => Some(
                 Style::default()
                     .with_background(theme.background)
@@ -153,7 +163,7 @@ impl BorderStyle {
     pub fn width(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Bevel(_) => 2,
+            Empty | Bevel(_) => 2,
             ShadowRightBottom => 1,
         }
     }
@@ -162,7 +172,7 @@ impl BorderStyle {
     pub fn height(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Bevel(_) => 2,
+            Empty | Bevel(_) => 2,
             ShadowRightBottom => 1,
         }
     }

@@ -6,6 +6,8 @@
 /// Styles for border outlines
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Outline {
+    /// Empty outline (all spaces)
+    Empty,
     /// Solid outline
     ///
     /// ```text
@@ -105,6 +107,7 @@ impl Outline {
     pub fn top(self) -> char {
         use Outline::*;
         match self {
+            Empty => ' ',
             Solid => '─',
             Thick => '━',
             Double => '═',
@@ -121,6 +124,7 @@ impl Outline {
     pub fn left(self) -> char {
         use Outline::*;
         match self {
+            Empty => ' ',
             Solid => '│',
             Thick => '┃',
             Double => '║',
@@ -137,6 +141,7 @@ impl Outline {
     pub fn bottom(self) -> char {
         use Outline::*;
         match self {
+            Empty => ' ',
             Solid => '─',
             Thick => '━',
             Double => '═',
@@ -153,6 +158,7 @@ impl Outline {
     pub fn right(self) -> char {
         use Outline::*;
         match self {
+            Empty => ' ',
             Solid => '│',
             Thick => '┃',
             Double => '║',

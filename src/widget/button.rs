@@ -12,10 +12,12 @@ use std::cell::Cell;
 /// Button state
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum State {
-    /// Enabled (with focus)
+    /// Button disabled
+    Disabled,
+    /// Button enabled
     Enabled,
-    /// Clicked (with focus)
-    Clicked,
+    /// Button pressed
+    Pressed,
 }
 
 /// Button widget
@@ -32,13 +34,21 @@ impl Button {
         Self { lbl, state }
     }
 
+    /// Disable the button
+    pub fn disable(&self) {
+        self.state.set(State::Disabled);
+    }
+
     /// Get button style based on current state
     pub fn style(&self, theme: &Theme) -> Style {
         match self.state.get() {
+            State::Disabled => Style::default()
+                .with_background(theme.background)
+                .with_foreground(theme.dark_shadow),
             State::Enabled => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.foreground),
-            State::Clicked => Style::default()
+            State::Pressed => Style::default()
                 .with_background(theme.tertiary)
                 .with_foreground(theme.background),
         }
@@ -54,10 +64,11 @@ impl Widget for Button {
     /// Get the border
     fn border(&self) -> Option<Border> {
         Some(match self.state.get() {
+            State::Disabled => Border::new(BorderStyle::Empty),
             State::Enabled => {
                 Border::new(BorderStyle::Bevel(BorderHeight::Raised))
             }
-            State::Clicked => {
+            State::Pressed => {
                 Border::new(BorderStyle::Bevel(BorderHeight::Lowered))
             }
         })
@@ -73,9 +84,12 @@ impl Widget for Button {
 
     /// Handle event input
     fn event_input(&self, event: Event) -> Option<Action> {
+        if self.state.get() == State::Disabled {
+            return None;
+        }
         use MouseEvent::*;
         match event {
-            Event::Mouse(ButtonDown(_), _, _) => Some(State::Clicked),
+            Event::Mouse(ButtonDown(_), _, _) => Some(State::Pressed),
             Event::Mouse(ButtonUp(_), _, _) => Some(State::Enabled),
             _ => None,
         }
