@@ -292,8 +292,9 @@ fn mouse_action(
     widget_boxes: &[(&dyn Widget, BBox)],
 ) -> Option<Action> {
     let mut action = None;
+    let mut redraw = None;
     for (widget, bbox) in widget_boxes.iter() {
-        let a = match (mev, bbox.within(pos)) {
+        let r = match (mev, bbox.within(pos)) {
             (MouseEvent::ButtonDown(_), Some(_)) => widget.focus_offer(),
             (MouseEvent::ButtonDown(_), None) => widget.focus_take(),
             (MouseEvent::Drag(None), Some(_)) => widget.hover_inside(),
@@ -301,12 +302,12 @@ fn mouse_action(
             (MouseEvent::ButtonUp(_), None) => widget.hover_outside(),
             _ => None,
         };
-        action = action.or(a);
+        redraw = redraw.or(r);
         // Only widget within bounds receives event
         if let Some(p) = bbox.within(pos) {
-            let a = widget.event_input(Event::Mouse(mev, mods, p));
+            let a = widget.mouse_event(mev, mods, p);
             action = action.or(a);
         }
     }
-    action
+    action.or(redraw)
 }

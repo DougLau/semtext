@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, Event, MouseEvent};
-use crate::layout::{AreaBound, Cells};
+use crate::input::{Action, ModKeys, MouseEvent};
+use crate::layout::{AreaBound, Cells, Pos};
 use crate::text::{Style, Theme};
 use crate::widget::{Border, BorderHeight, BorderStyle, Label};
 use crate::{Result, Widget};
@@ -85,9 +85,7 @@ impl Widget for Button {
             State::Pressed => {
                 Border::new(BorderStyle::Bevel(BorderHeight::Lowered))
             }
-            _ => {
-                Border::new(BorderStyle::Bevel(BorderHeight::Raised))
-            }
+            _ => Border::new(BorderStyle::Bevel(BorderHeight::Raised)),
         })
     }
 
@@ -97,28 +95,6 @@ impl Widget for Button {
         let style = self.style(theme);
         cells.set_style(style)?;
         cells.print_text(self.lbl.txt())
-    }
-
-    /// Handle event input
-    fn event_input(&self, event: Event) -> Option<Action> {
-        let state = self.state.get();
-        if state == State::Disabled {
-            return None;
-        }
-        use MouseEvent::*;
-        match event {
-            Event::Mouse(ButtonDown(_), _, _) => Some(State::Pressed),
-            Event::Mouse(ButtonUp(_), _, _) => Some(State::Focused),
-            _ => None,
-        }
-        .and_then(|s| {
-            if s != state {
-                self.state.set(s);
-                Some(Action::Redraw())
-            } else {
-                None
-            }
-        })
     }
 
     /// Offer focus to widget
@@ -166,5 +142,29 @@ impl Widget for Button {
             }
             _ => None,
         }
+    }
+
+    /// Handle mouse events
+    fn mouse_event(
+        &self,
+        mev: MouseEvent,
+        _mods: ModKeys,
+        _pos: Pos,
+    ) -> Option<Action> {
+        let state = self.state.get();
+        match (mev, state) {
+            (_, State::Disabled) => None,
+            (MouseEvent::ButtonDown(_), _) => Some(State::Pressed),
+            (MouseEvent::ButtonUp(_), State::Pressed) => Some(State::Focused),
+            _ => None,
+        }
+        .and_then(|s| {
+            if s != state {
+                self.state.set(s);
+                Some(Action::Redraw())
+            } else {
+                None
+            }
+        })
     }
 }

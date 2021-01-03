@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, Event};
-use crate::layout::{AreaBound, Cells};
+use crate::input::{Action, ModKeys, MouseEvent};
+use crate::layout::{AreaBound, Cells, Pos};
 use crate::widget::Border;
 use crate::Result;
 
@@ -25,12 +25,6 @@ pub trait Widget {
         Ok(())
     }
 
-    /// Handle event input
-    fn event_input(&self, _event: Event) -> Option<Action> {
-        // ignore by default
-        None
-    }
-
     /// Offer focus to widget
     fn focus_offer(&self) -> Option<Action> {
         None
@@ -48,6 +42,17 @@ pub trait Widget {
 
     /// Mouse hover outside widget bounds
     fn hover_outside(&self) -> Option<Action> {
+        None
+    }
+
+    /// Handle mouse events
+    fn mouse_event(
+        &self,
+        _mev: MouseEvent,
+        _mods: ModKeys,
+        _pos: Pos,
+    ) -> Option<Action> {
+        // ignore by default
         None
     }
 }
