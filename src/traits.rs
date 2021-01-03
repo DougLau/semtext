@@ -40,4 +40,9 @@ pub trait Widget {
     fn focus_take(&self) -> Option<Action> {
         None
     }
+
+    /// Mouse hover over widget
+    fn hover(&self) -> Option<Action> {
+        None
+    }
 }

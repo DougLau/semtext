@@ -16,6 +16,8 @@ enum State {
     Disabled,
     /// Button enabled
     Enabled,
+    /// Button hovered
+    Hovered,
     /// Button focused
     Focused,
     /// Button pressed
@@ -57,6 +59,9 @@ impl Button {
             State::Enabled | State::Focused => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.foreground),
+            State::Hovered => Style::default()
+                .with_background(theme.background)
+                .with_foreground(theme.secondary),
             State::Pressed => Style::default()
                 .with_background(theme.tertiary)
                 .with_foreground(theme.background),
@@ -74,11 +79,11 @@ impl Widget for Button {
     fn border(&self) -> Option<Border> {
         Some(match self.state.get() {
             State::Disabled => Border::new(BorderStyle::Empty),
-            State::Enabled | State::Focused => {
-                Border::new(BorderStyle::Bevel(BorderHeight::Raised))
-            }
             State::Pressed => {
                 Border::new(BorderStyle::Bevel(BorderHeight::Lowered))
+            }
+            _ => {
+                Border::new(BorderStyle::Bevel(BorderHeight::Raised))
             }
         })
     }
@@ -126,8 +131,19 @@ impl Widget for Button {
     /// Take focus from widget
     fn focus_take(&self) -> Option<Action> {
         match self.state.get() {
-            State::Focused | State::Pressed => {
+            State::Focused | State::Hovered | State::Pressed => {
                 self.state.set(State::Enabled);
+                Some(Action::Redraw())
+            }
+            _ => None,
+        }
+    }
+
+    /// Mouse hover over widget
+    fn hover(&self) -> Option<Action> {
+        match self.state.get() {
+            State::Enabled => {
+                self.state.set(State::Hovered);
                 Some(Action::Redraw())
             }
             _ => None,

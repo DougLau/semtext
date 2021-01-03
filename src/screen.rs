@@ -294,11 +294,9 @@ fn mouse_action(
     let mut action = None;
     for (widget, bbox) in widget_boxes.iter() {
         let a = match (mev, bbox.within(pos)) {
-            // Offer focus only on button down within bounds
             (MouseEvent::ButtonDown(_), Some(_)) => widget.focus_offer(),
-            // Otherwise, don't take focus within bounds
+            (MouseEvent::Drag(None), Some(_)) => widget.hover(),
             (_, Some(_)) => None,
-            // Take focus only outside bounds
             _ => widget.focus_take(),
         };
         action = action.or(a);
