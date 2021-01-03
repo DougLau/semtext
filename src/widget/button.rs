@@ -125,11 +125,12 @@ impl Widget for Button {
 
     /// Take focus from widget
     fn focus_take(&self) -> Option<Action> {
-        if self.state.get() != State::Disabled {
-            self.state.set(State::Enabled);
-            Some(Action::Redraw())
-        } else {
-            None
+        match self.state.get() {
+            State::Focused | State::Pressed => {
+                self.state.set(State::Enabled);
+                Some(Action::Redraw())
+            }
+            _ => None,
         }
     }
 }

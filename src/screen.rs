@@ -264,8 +264,8 @@ impl Screen {
         queue!(
             self.out,
             event::DisableMouseCapture,
-            terminal::EnableLineWrap,
             terminal::LeaveAlternateScreen,
+            terminal::EnableLineWrap,
             cursor::Show,
             style::ResetColor,
         )?;
