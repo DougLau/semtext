@@ -298,6 +298,7 @@ fn mouse_action(
             (MouseEvent::ButtonDown(_), None) => widget.focus_take(),
             (MouseEvent::Drag(None), Some(_)) => widget.hover_inside(),
             (MouseEvent::Drag(None), None) => widget.hover_outside(),
+            (MouseEvent::ButtonUp(_), None) => widget.hover_outside(),
             _ => None,
         };
         action = action.or(a);
