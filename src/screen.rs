@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, Event, KeyMap};
-use crate::layout::{BBox, Cells, Dim, GridArea};
+use crate::input::{Action, Event, KeyMap, ModKeys, MouseEvent};
+use crate::layout::{BBox, Cells, Dim, GridArea, Pos};
 use crate::text::{Appearance, Color, Style, Theme};
 use crate::{Result, Widget};
 use crossterm::event::Event as CtEvent;
@@ -229,17 +229,7 @@ impl Screen {
                 self.keymap.lookup(key, mods)
             }
             Event::Mouse(mev, mods, pos) => {
-                for (widget, bbox) in widget_boxes.iter() {
-                    if let Some(p) = bbox.within(pos) {
-                        if let Some(action) =
-                            widget.event_input(Event::Mouse(mev, mods, p))
-                        {
-                            return Some(action);
-                        }
-                        break;
-                    }
-                }
-                None
+                mouse_action(mev, mods, pos, widget_boxes)
             }
         }
     }
@@ -292,4 +282,28 @@ impl Drop for Screen {
             dbg!(err);
         }
     }
+}
+
+/// Handle a mouse action
+fn mouse_action(
+    mev: MouseEvent,
+    mods: ModKeys,
+    pos: Pos,
+    widget_boxes: &[(&dyn Widget, BBox)],
+) -> Option<Action> {
+    let mut action = None;
+    for (widget, bbox) in widget_boxes.iter() {
+        // Offer focus only on button down within widget bounds
+        let a = match (mev, bbox.within(pos)) {
+            (MouseEvent::ButtonDown(_), Some(_)) => widget.focus_offer(),
+            _ => widget.focus_take(),
+        };
+        action = action.or(a);
+        // Only widget within bounds receives event
+        if let Some(p) = bbox.within(pos) {
+            let a = widget.event_input(Event::Mouse(mev, mods, p));
+            action = action.or(a);
+        }
+    }
+    action
 }

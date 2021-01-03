@@ -12,7 +12,7 @@ use std::collections::HashMap;
 pub enum Action {
     /// Terminal resized
     Resize(Dim),
-    /// Widget needs redrawing
+    /// Redraw required
     Redraw(),
     /// Quit application
     Quit(),

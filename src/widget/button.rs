@@ -16,6 +16,8 @@ enum State {
     Disabled,
     /// Button enabled
     Enabled,
+    /// Button focused
+    Focused,
     /// Button pressed
     Pressed,
 }
@@ -39,13 +41,20 @@ impl Button {
         self.state.set(State::Disabled);
     }
 
+    /// Enable the button
+    pub fn enable(&self) {
+        if self.state.get() == State::Disabled {
+            self.state.set(State::Enabled);
+        }
+    }
+
     /// Get button style based on current state
     pub fn style(&self, theme: &Theme) -> Style {
         match self.state.get() {
             State::Disabled => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.dark_shadow),
-            State::Enabled => Style::default()
+            State::Enabled | State::Focused => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.foreground),
             State::Pressed => Style::default()
@@ -65,7 +74,7 @@ impl Widget for Button {
     fn border(&self) -> Option<Border> {
         Some(match self.state.get() {
             State::Disabled => Border::new(BorderStyle::Empty),
-            State::Enabled => {
+            State::Enabled | State::Focused => {
                 Border::new(BorderStyle::Bevel(BorderHeight::Raised))
             }
             State::Pressed => {
@@ -84,18 +93,43 @@ impl Widget for Button {
 
     /// Handle event input
     fn event_input(&self, event: Event) -> Option<Action> {
-        if self.state.get() == State::Disabled {
+        let state = self.state.get();
+        if state == State::Disabled {
             return None;
         }
         use MouseEvent::*;
         match event {
             Event::Mouse(ButtonDown(_), _, _) => Some(State::Pressed),
-            Event::Mouse(ButtonUp(_), _, _) => Some(State::Enabled),
+            Event::Mouse(ButtonUp(_), _, _) => Some(State::Focused),
             _ => None,
         }
         .and_then(|s| {
-            self.state.set(s);
-            Some(Action::Redraw())
+            if s != state {
+                self.state.set(s);
+                Some(Action::Redraw())
+            } else {
+                None
+            }
         })
+    }
+
+    /// Offer focus to widget
+    fn focus_offer(&self) -> Option<Action> {
+        if self.state.get() == State::Enabled {
+            self.state.set(State::Focused);
+            Some(Action::Redraw())
+        } else {
+            None
+        }
+    }
+
+    /// Take focus from widget
+    fn focus_take(&self) -> Option<Action> {
+        if self.state.get() != State::Disabled {
+            self.state.set(State::Enabled);
+            Some(Action::Redraw())
+        } else {
+            None
+        }
     }
 }

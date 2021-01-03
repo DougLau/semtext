@@ -30,4 +30,14 @@ pub trait Widget {
         // ignore by default
         None
     }
+
+    /// Offer focus to widget
+    fn focus_offer(&self) -> Option<Action> {
+        None
+    }
+
+    /// Take focus from widget
+    fn focus_take(&self) -> Option<Action> {
+        None
+    }
 }
