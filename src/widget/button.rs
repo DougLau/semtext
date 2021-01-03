@@ -56,9 +56,12 @@ impl Button {
             State::Disabled => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.dark_shadow),
-            State::Enabled | State::Focused => Style::default()
+            State::Enabled => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.foreground),
+            State::Focused => Style::default()
+                .with_background(theme.secondary)
+                .with_foreground(theme.background),
             State::Hovered => Style::default()
                 .with_background(theme.background)
                 .with_foreground(theme.secondary),
@@ -139,11 +142,26 @@ impl Widget for Button {
         }
     }
 
-    /// Mouse hover over widget
-    fn hover(&self) -> Option<Action> {
+    /// Mouse hover inside widget bounds
+    fn hover_inside(&self) -> Option<Action> {
         match self.state.get() {
             State::Enabled => {
                 self.state.set(State::Hovered);
+                Some(Action::Redraw())
+            }
+            _ => None,
+        }
+    }
+
+    /// Mouse hover outside widget bounds
+    fn hover_outside(&self) -> Option<Action> {
+        match self.state.get() {
+            State::Pressed => {
+                self.state.set(State::Focused);
+                Some(Action::Redraw())
+            }
+            State::Hovered => {
+                self.state.set(State::Enabled);
                 Some(Action::Redraw())
             }
             _ => None,

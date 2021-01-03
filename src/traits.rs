@@ -41,8 +41,13 @@ pub trait Widget {
         None
     }
 
-    /// Mouse hover over widget
-    fn hover(&self) -> Option<Action> {
+    /// Mouse hover inside widget bounds
+    fn hover_inside(&self) -> Option<Action> {
+        None
+    }
+
+    /// Mouse hover outside widget bounds
+    fn hover_outside(&self) -> Option<Action> {
         None
     }
 }

@@ -295,9 +295,10 @@ fn mouse_action(
     for (widget, bbox) in widget_boxes.iter() {
         let a = match (mev, bbox.within(pos)) {
             (MouseEvent::ButtonDown(_), Some(_)) => widget.focus_offer(),
-            (MouseEvent::Drag(None), Some(_)) => widget.hover(),
-            (_, Some(_)) => None,
-            _ => widget.focus_take(),
+            (MouseEvent::ButtonDown(_), None) => widget.focus_take(),
+            (MouseEvent::Drag(None), Some(_)) => widget.hover_inside(),
+            (MouseEvent::Drag(None), None) => widget.hover_outside(),
+            _ => None,
         };
         action = action.or(a);
         // Only widget within bounds receives event
