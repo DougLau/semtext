@@ -21,7 +21,7 @@ pub enum BorderStyle {
     /// Empty border
     Empty,
     /// Beveled appearance
-    Bevel(BorderHeight),
+    Bevel(Outline, BorderHeight),
     /// Something else
     ShadowRightBottom,
 }
@@ -40,7 +40,7 @@ impl BorderStyle {
         use BorderStyle::*;
         match self {
             Empty => Some(Outline::Empty),
-            Bevel(_) => Some(Outline::Solid),
+            Bevel(outline, _) => Some(outline),
             ShadowRightBottom => None,
         }
     }
@@ -50,7 +50,7 @@ impl BorderStyle {
         use BorderStyle::*;
         match self {
             Empty => Some(Outline::Empty),
-            Bevel(_) => Some(Outline::Solid),
+            Bevel(outline, _) => Some(outline),
             ShadowRightBottom => Some(Outline::Block),
         }
     }
@@ -60,7 +60,7 @@ impl BorderStyle {
         use BorderStyle::*;
         match self {
             Empty => Some(Outline::Empty),
-            Bevel(_) => Some(Outline::Solid),
+            Bevel(outline, _) => Some(outline),
             ShadowRightBottom => None,
         }
     }
@@ -70,92 +70,72 @@ impl BorderStyle {
         use BorderStyle::*;
         match self {
             Empty => Some(Outline::Empty),
-            Bevel(_) => Some(Outline::Solid),
+            Bevel(outline, _) => Some(outline),
             ShadowRightBottom => Some(Outline::Block),
         }
     }
 
     /// Get the left style
     pub fn style_left(self, theme: &Theme) -> Option<Style> {
-        use BorderStyle::*;
+        let style = Style::default().with_background(theme.background);
         match self {
-            Empty => Some(Style::default().with_background(theme.background)),
-            Bevel(BorderHeight::Raised) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.light_shadow),
-            ),
-            Bevel(BorderHeight::Lowered) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
-            ShadowRightBottom => None,
+            BorderStyle::Empty => Some(style),
+            BorderStyle::Bevel(_, BorderHeight::Raised) => {
+                Some(style.with_foreground(theme.light_shadow))
+            }
+            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
+            _ => None,
         }
     }
 
     /// Get the right style
     pub fn style_right(self, theme: &Theme) -> Option<Style> {
-        use BorderStyle::*;
+        let style = Style::default().with_background(theme.background);
         match self {
-            Empty => Some(Style::default().with_background(theme.background)),
-            Bevel(BorderHeight::Raised) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
-            Bevel(BorderHeight::Lowered) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.light_shadow),
-            ),
-            ShadowRightBottom => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
+            BorderStyle::Empty => Some(style),
+            BorderStyle::Bevel(_, BorderHeight::Raised) => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
+            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
+                Some(style.with_foreground(theme.light_shadow))
+            }
+            BorderStyle::ShadowRightBottom => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
         }
     }
 
     /// Get the top style
     pub fn style_top(self, theme: &Theme) -> Option<Style> {
-        use BorderStyle::*;
+        let style = Style::default().with_background(theme.background);
         match self {
-            Empty => Some(Style::default().with_background(theme.background)),
-            Bevel(BorderHeight::Raised) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.light_shadow),
-            ),
-            Bevel(BorderHeight::Lowered) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
-            ShadowRightBottom => None,
+            BorderStyle::Empty => Some(style),
+            BorderStyle::Bevel(_, BorderHeight::Raised) => {
+                Some(style.with_foreground(theme.light_shadow))
+            }
+            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
+            _ => None,
         }
     }
 
     /// Get the bottom style
     pub fn style_bottom(self, theme: &Theme) -> Option<Style> {
-        use BorderStyle::*;
+        let style = Style::default().with_background(theme.background);
         match self {
-            Empty => Some(Style::default().with_background(theme.background)),
-            Bevel(BorderHeight::Raised) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
-            Bevel(BorderHeight::Lowered) => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.light_shadow),
-            ),
-            ShadowRightBottom => Some(
-                Style::default()
-                    .with_background(theme.background)
-                    .with_foreground(theme.dark_shadow),
-            ),
+            BorderStyle::Empty => Some(style),
+            BorderStyle::Bevel(_, BorderHeight::Raised) => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
+            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
+                Some(style.with_foreground(theme.light_shadow))
+            }
+            BorderStyle::ShadowRightBottom => {
+                Some(style.with_foreground(theme.dark_shadow))
+            }
         }
     }
 
@@ -163,7 +143,7 @@ impl BorderStyle {
     pub fn width(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Empty | Bevel(_) => 2,
+            Empty | Bevel(_, _) => 2,
             ShadowRightBottom => 1,
         }
     }
@@ -172,7 +152,7 @@ impl BorderStyle {
     pub fn height(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Empty | Bevel(_) => 2,
+            Empty | Bevel(_, _) => 2,
             ShadowRightBottom => 1,
         }
     }
@@ -307,7 +287,10 @@ mod test {
 
     #[test]
     fn border() {
-        let bdr = Border::new(BorderStyle::Bevel(BorderHeight::Raised));
+        let bdr = Border::new(BorderStyle::Bevel(
+            Outline::default(),
+            BorderHeight::Raised,
+        ));
         let bbox = BBox::new(0, 0, 10, 10);
         assert_eq!(bdr.inset(bbox), BBox::new(1, 1, 8, 8));
     }

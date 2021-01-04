@@ -4,7 +4,7 @@
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
-use crate::text::{Style, Theme};
+use crate::text::{Outline, Style, Theme};
 use crate::widget::{Border, BorderHeight, BorderStyle, Label};
 use crate::{Result, Widget};
 use std::cell::Cell;
@@ -28,6 +28,7 @@ enum State {
 pub struct Button {
     lbl: Label,
     state: Cell<State>,
+    border_style: Cell<BorderStyle>,
 }
 
 impl Button {
@@ -35,7 +36,15 @@ impl Button {
     pub fn new(txt: &str) -> Self {
         let lbl = Label::new(txt);
         let state = Cell::new(State::Enabled);
-        Self { lbl, state }
+        let border_style = Cell::new(BorderStyle::Bevel(
+            Outline::default(),
+            BorderHeight::Raised,
+        ));
+        Self {
+            lbl,
+            state,
+            border_style,
+        }
     }
 
     /// Disable the button
@@ -52,6 +61,7 @@ impl Button {
 
     /// Get button style based on current state
     pub fn style(&self, theme: &Theme) -> Style {
+        self.border_style.set(theme.button_border);
         match self.state.get() {
             State::Disabled => Style::default()
                 .with_background(theme.background)
@@ -80,12 +90,17 @@ impl Widget for Button {
 
     /// Get the border
     fn border(&self) -> Option<Border> {
-        Some(match self.state.get() {
-            State::Disabled => Border::new(BorderStyle::Empty),
-            State::Pressed => {
-                Border::new(BorderStyle::Bevel(BorderHeight::Lowered))
+        let state = self.state.get();
+        let border_style = self.border_style.get();
+        Some(match (state, border_style) {
+            (State::Disabled, _) => Border::new(BorderStyle::Empty),
+            (State::Pressed, BorderStyle::Bevel(outline, _)) => {
+                Border::new(BorderStyle::Bevel(outline, BorderHeight::Lowered))
             }
-            _ => Border::new(BorderStyle::Bevel(BorderHeight::Raised)),
+            (_, BorderStyle::Bevel(outline, _)) => {
+                Border::new(BorderStyle::Bevel(outline, BorderHeight::Raised))
+            }
+            (_, border_style) => Border::new(border_style),
         })
     }
 

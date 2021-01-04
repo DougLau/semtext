@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::text::{Color, Intensity, Style};
+use crate::text::{Color, Intensity, Outline, Style};
 use crate::widget::{BorderHeight, BorderStyle};
 
 /// Style theme
@@ -35,7 +35,8 @@ impl Default for Theme {
         let tertiary = Color::Yellow(Intensity::Bright);
         let dark_shadow = Color::Black(Intensity::Bright);
         let light_shadow = Color::White(Intensity::Normal);
-        let button_border = BorderStyle::Bevel(BorderHeight::Raised);
+        let button_border =
+            BorderStyle::Bevel(Outline::default(), BorderHeight::Raised);
         Self {
             background,
             foreground,
