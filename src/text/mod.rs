@@ -12,6 +12,6 @@ mod theme;
 
 pub use color::{Color, Intensity};
 pub use glyph::{Glyph, IntoGlyph};
-pub use outline::Outline;
+pub use outline::{Corner, Outline, Stroke};
 pub use style::{Appearance, Style, Weight};
 pub use theme::Theme;
