@@ -3,10 +3,23 @@
 // Copyright (c) 2020  Douglas Lau
 //
 //! Semtext is a Rust library for building text user interfaces, or **TUI**s.
-//! It depends on the excellent [crossterm] library, which supports Linux, Mac
-//! and Windows.
 //!
-//! [crossterm]: https://github.com/crossterm-rs/crossterm
+//! ## Example
+//! ```no_run
+//! use semtext::{grid_area, input::Action, widget::Button, Screen};
+//!
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let mut screen = Screen::new()?;
+//!     let a = Button::new("Hello!");
+//!     let grid = grid_area!(
+//!         [. . .]
+//!         [. a .]
+//!         [. . .]
+//!     )?;
+//!     while screen.step(&grid)? != Action::Quit() {}
+//!     Ok(())
+//! }
+//! ```
 
 #![forbid(unsafe_code)]
 
