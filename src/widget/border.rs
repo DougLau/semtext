@@ -249,6 +249,9 @@ impl Widget for Border {
                 cells.print_char(top.top())?;
             }
             if let Some(right) = bs.outline_right() {
+                if let Some(style) = style_right {
+                    cells.set_style(style)?;
+                }
                 cells.print_char(top.top_right(right))?;
             }
             row += 1;
