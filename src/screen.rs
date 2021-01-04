@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, Event, KeyMap, ModKeys, MouseEvent};
+use crate::input::{Action, Event, FocusEvent, KeyMap, ModKeys, MouseEvent};
 use crate::layout::{BBox, Cells, Dim, GridArea, Pos};
 use crate::text::{Appearance, Color, Style, Theme};
 use crate::{Result, Widget};
@@ -294,12 +294,13 @@ fn mouse_action(
     let mut action = None;
     let mut redraw = None;
     for (widget, bbox) in widget_boxes.iter() {
+        use MouseEvent::*;
         let r = match (mev, bbox.within(pos)) {
-            (MouseEvent::ButtonDown(_), Some(_)) => widget.focus_offer(),
-            (MouseEvent::ButtonDown(_), None) => widget.focus_take(),
-            (MouseEvent::Drag(None), Some(_)) => widget.hover_inside(),
-            (MouseEvent::Drag(None), None) => widget.hover_outside(),
-            (MouseEvent::ButtonUp(_), None) => widget.hover_outside(),
+            (ButtonDown(_), Some(_)) => widget.focus(FocusEvent::Offer),
+            (ButtonDown(_), None) => widget.focus(FocusEvent::Take),
+            (Drag(None), Some(_)) => widget.focus(FocusEvent::HoverInside),
+            (Drag(_), None) => widget.focus(FocusEvent::HoverOutside),
+            (ButtonUp(_), None) => widget.focus(FocusEvent::HoverOutside),
             _ => None,
         };
         redraw = redraw.or(r);

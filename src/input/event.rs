@@ -9,6 +9,19 @@ use crossterm::event::MouseButton as CtMouseButton;
 use crossterm::event::MouseEvent as CtMouseEvent;
 use crossterm::event::{KeyCode, KeyModifiers, MouseEventKind};
 
+/// Widget focus event
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FocusEvent {
+    /// Offer focus to widget
+    Offer,
+    /// Take focus from widget
+    Take,
+    /// Mouse hover inside widget bounds
+    HoverInside,
+    /// Mouse hover outside widget bounds
+    HoverOutside,
+}
+
 /// Navigation keys
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum NavKey {

@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, ModKeys, MouseEvent};
+use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
 use crate::widget::Border;
 use crate::Result;
@@ -25,23 +25,8 @@ pub trait Widget {
         Ok(())
     }
 
-    /// Offer focus to widget
-    fn focus_offer(&self) -> Option<Action> {
-        None
-    }
-
-    /// Take focus from widget
-    fn focus_take(&self) -> Option<Action> {
-        None
-    }
-
-    /// Mouse hover inside widget bounds
-    fn hover_inside(&self) -> Option<Action> {
-        None
-    }
-
-    /// Mouse hover outside widget bounds
-    fn hover_outside(&self) -> Option<Action> {
+    /// Handle focus event
+    fn focus(&self, _fev: FocusEvent) -> Option<Action> {
         None
     }
 

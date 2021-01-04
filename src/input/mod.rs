@@ -8,6 +8,7 @@ mod action;
 mod event;
 
 pub use action::{Action, KeyMap};
+pub(crate) use event::Event;
 pub use event::{
-    Event, FunKey, KeyPress, ModKeys, MouseButton, MouseEvent, NavKey,
+    FocusEvent, FunKey, KeyPress, ModKeys, MouseButton, MouseEvent, NavKey,
 };

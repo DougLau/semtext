@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::input::{Action, ModKeys, MouseEvent};
+use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
 use crate::text::{Style, Theme};
 use crate::widget::{Border, BorderHeight, BorderStyle, Label};
@@ -97,46 +97,30 @@ impl Widget for Button {
         cells.print_text(self.lbl.txt())
     }
 
-    /// Offer focus to widget
-    fn focus_offer(&self) -> Option<Action> {
-        if self.state.get() == State::Enabled {
-            self.state.set(State::Focused);
-            Some(Action::Redraw())
-        } else {
-            None
-        }
-    }
-
-    /// Take focus from widget
-    fn focus_take(&self) -> Option<Action> {
-        match self.state.get() {
-            State::Focused | State::Hovered | State::Pressed => {
-                self.state.set(State::Enabled);
+    /// Handle focus event
+    fn focus(&self, fev: FocusEvent) -> Option<Action> {
+        let state = self.state.get();
+        use State::*;
+        match (fev, state) {
+            (FocusEvent::Offer, Enabled) => {
+                self.state.set(Focused);
                 Some(Action::Redraw())
             }
-            _ => None,
-        }
-    }
-
-    /// Mouse hover inside widget bounds
-    fn hover_inside(&self) -> Option<Action> {
-        match self.state.get() {
-            State::Enabled => {
-                self.state.set(State::Hovered);
+            (FocusEvent::Take, Focused)
+            | (FocusEvent::Take, Hovered)
+            | (FocusEvent::Take, Pressed) => {
+                self.state.set(Enabled);
                 Some(Action::Redraw())
             }
-            _ => None,
-        }
-    }
-
-    /// Mouse hover outside widget bounds
-    fn hover_outside(&self) -> Option<Action> {
-        match self.state.get() {
-            State::Pressed => {
+            (FocusEvent::HoverInside, Enabled) => {
+                self.state.set(Hovered);
+                Some(Action::Redraw())
+            }
+            (FocusEvent::HoverOutside, Pressed) => {
                 self.state.set(State::Focused);
                 Some(Action::Redraw())
             }
-            State::Hovered => {
+            (FocusEvent::HoverOutside, Hovered) => {
                 self.state.set(State::Enabled);
                 Some(Action::Redraw())
             }
