@@ -4,7 +4,7 @@
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
-use crate::text::{Outline, Style, Theme};
+use crate::text::{IntoGlyph, Outline, Style, Theme};
 use crate::widget::{Border, BorderHeight, BorderStyle, Label};
 use crate::{Result, Widget};
 use std::cell::Cell;
@@ -109,6 +109,8 @@ impl Widget for Button {
         let theme = cells.theme();
         let style = self.style(theme);
         cells.set_style(style)?;
+        // FIXME: maybe add a print_text variant that fills...
+        cells.fill(&' '.into_glyph()?)?;
         cells.print_text(self.lbl.txt())
     }
 
