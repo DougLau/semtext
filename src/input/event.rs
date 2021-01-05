@@ -3,7 +3,6 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{Dim, Pos};
-use crate::Result;
 use crossterm::event::Event as CtEvent;
 use crossterm::event::MouseButton as CtMouseButton;
 use crossterm::event::MouseEvent as CtMouseEvent;
@@ -213,11 +212,5 @@ impl From<CtEvent> for Event {
                 Pos::from(mev),
             ),
         }
-    }
-}
-
-impl Event {
-    pub(crate) fn read() -> Result<Self> {
-        Ok(crossterm::event::read()?.into())
     }
 }

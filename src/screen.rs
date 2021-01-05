@@ -8,23 +8,17 @@ use crate::text::{Appearance, Color, StyleGroup, TextStyle, Theme};
 use crate::{Result, Widget};
 use crossterm::event::Event as CtEvent;
 use crossterm::{cursor, event, queue, style, terminal};
-use std::io::{Stdout, Write};
-
-#[cfg(feature = "async")]
 use futures_core::stream::Stream;
-
-#[cfg(feature = "async")]
+use std::io::{Stdout, Write};
 use std::{
     future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
 
-#[cfg(feature = "async")]
 /// Needed in order to await the stream.
 struct EvStreamFut(Box<dyn Stream<Item = crossterm::Result<CtEvent>> + Unpin>);
 
-#[cfg(feature = "async")]
 impl Future for EvStreamFut {
     type Output = Option<crossterm::Result<CtEvent>>;
 
@@ -48,7 +42,6 @@ pub struct Screen {
     style: Option<TextStyle>,
     /// Key / action map
     keymap: KeyMap,
-    #[cfg(feature = "async")]
     /// Event stream future.
     ev_stream: EvStreamFut,
 }
@@ -71,28 +64,15 @@ impl Screen {
             terminal::Clear(terminal::ClearType::All),
             event::EnableMouseCapture,
         )?;
-        #[cfg(not(feature = "async"))]
-        {
-            Ok(Screen {
-                out,
-                dim,
-                theme,
-                style,
-                keymap,
-            })
-        }
-        #[cfg(feature = "async")]
-        {
-            let ev_stream = EvStreamFut(Box::new(event::EventStream::new()));
-            Ok(Screen {
-                out,
-                dim,
-                theme,
-                style,
-                keymap,
-                ev_stream,
-            })
-        }
+        let ev_stream = EvStreamFut(Box::new(event::EventStream::new()));
+        Ok(Screen {
+            out,
+            dim,
+            theme,
+            style,
+            keymap,
+            ev_stream,
+        })
     }
 
     /// Set the key / action map
@@ -232,21 +212,8 @@ impl Screen {
         }
     }
 
-    /// Draw a grid area and wait for an action
-    pub fn step(&mut self, area: &GridArea) -> Result<Action> {
-        let widget_boxes = area.widget_boxes(self.bbox(), &self.theme)?;
-        self.draw(&widget_boxes)?;
-        loop {
-            let ev = Event::read()?;
-            if let Some(action) = self.event_action(ev, &widget_boxes) {
-                return Ok(action);
-            }
-        }
-    }
-
     /// Render a grid area and wait asynchronously for an action
-    #[cfg(feature = "async")]
-    pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
+    pub async fn step(&mut self, area: &GridArea<'_>) -> Result<Action> {
         let widget_boxes = area.widget_boxes(self.bbox(), &self.theme)?;
         self.draw(&widget_boxes)?;
         loop {

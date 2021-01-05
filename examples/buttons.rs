@@ -1,8 +1,9 @@
 use semtext::input::Action;
 use semtext::widget::Button;
 use semtext::{grid_area, Screen};
+use std::error::Error;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn async_main() -> Result<(), Box<dyn Error>> {
     let mut screen = Screen::new()?;
     let a = Button::new("A").with_border();
     let b = Button::new("B").with_border();
@@ -22,6 +23,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         [c g k]
         [d h l]
     )?;
-    while screen.step(&grid)? != Action::Quit() {}
+    while screen.step(&grid).await? != Action::Quit() {}
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    futures::executor::block_on(async_main())
 }
