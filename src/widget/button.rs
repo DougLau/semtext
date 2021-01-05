@@ -4,8 +4,8 @@
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
-use crate::text::{IntoGlyph, Outline, Style, Theme};
-use crate::widget::{Border, BorderHeight, BorderStyle, Label};
+use crate::text::{IntoGlyph, StyleGroup, Theme};
+use crate::widget::{Border, Label};
 use crate::{Result, Widget};
 use std::cell::Cell;
 
@@ -26,9 +26,10 @@ enum State {
 
 /// Button widget
 pub struct Button {
+    /// Contained label widget
     lbl: Label,
+    /// Button state
     state: Cell<State>,
-    border_style: Cell<BorderStyle>,
 }
 
 impl Button {
@@ -36,15 +37,12 @@ impl Button {
     pub fn new(txt: &str) -> Self {
         let lbl = Label::new(txt);
         let state = Cell::new(State::Enabled);
-        let border_style = Cell::new(BorderStyle::Bevel(
-            Outline::default(),
-            BorderHeight::Raised,
-        ));
-        Self {
-            lbl,
-            state,
-            border_style,
-        }
+        Self { lbl, state }
+    }
+
+    /// Add a border around a button
+    pub fn with_border(self) -> Border<Self> {
+        Border::new(self)
     }
 
     /// Disable the button
@@ -58,56 +56,29 @@ impl Button {
             self.state.set(State::Enabled);
         }
     }
-
-    /// Get button style based on current state
-    pub fn style(&self, theme: &Theme) -> Style {
-        self.border_style.set(theme.button_border);
-        match self.state.get() {
-            State::Disabled => Style::default()
-                .with_background(theme.background)
-                .with_foreground(theme.dark_shadow),
-            State::Enabled => Style::default()
-                .with_background(theme.background)
-                .with_foreground(theme.foreground),
-            State::Focused => Style::default()
-                .with_background(theme.secondary)
-                .with_foreground(theme.background),
-            State::Hovered => Style::default()
-                .with_background(theme.background)
-                .with_foreground(theme.secondary),
-            State::Pressed => Style::default()
-                .with_background(theme.tertiary)
-                .with_foreground(theme.background),
-        }
-    }
 }
 
 impl Widget for Button {
-    /// Get the area bounds
-    fn bounds(&self) -> AreaBound {
-        self.lbl.bounds()
+    /// Get the style group
+    fn style_group(&self) -> StyleGroup {
+        match self.state.get() {
+            State::Disabled => StyleGroup::Disabled,
+            State::Enabled => StyleGroup::Enabled,
+            State::Focused => StyleGroup::Focused,
+            State::Hovered => StyleGroup::Hovered,
+            State::Pressed => StyleGroup::Interacted,
+        }
     }
 
-    /// Get the border
-    fn border(&self) -> Option<Border> {
-        let state = self.state.get();
-        let border_style = self.border_style.get();
-        Some(match (state, border_style) {
-            (State::Disabled, _) => Border::new(BorderStyle::Empty),
-            (State::Pressed, BorderStyle::Bevel(outline, _)) => {
-                Border::new(BorderStyle::Bevel(outline, BorderHeight::Lowered))
-            }
-            (_, BorderStyle::Bevel(outline, _)) => {
-                Border::new(BorderStyle::Bevel(outline, BorderHeight::Raised))
-            }
-            (_, border_style) => Border::new(border_style),
-        })
+    /// Get the area bounds
+    fn bounds(&self, theme: &Theme) -> AreaBound {
+        self.lbl.bounds(theme)
     }
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells) -> Result<()> {
         let theme = cells.theme();
-        let style = self.style(theme);
+        let style = theme.style(self.style_group());
         cells.set_style(style)?;
         // FIXME: maybe add a print_text variant that fills...
         cells.fill(&' '.into_glyph()?)?;

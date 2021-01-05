@@ -4,18 +4,18 @@ use semtext::{grid_area, Screen};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut screen = Screen::new()?;
-    let a = Button::new("A");
-    let b = Button::new("B");
-    let c = Button::new("C");
-    let d = Button::new("D");
-    let e = Button::new("E Wider");
-    let f = Button::new("F");
-    let g = Button::new("G");
-    let h = Button::new("H");
-    let i = Button::new("I");
-    let j = Button::new("J");
-    let k = Button::new("K");
-    let l = Button::new("L");
+    let a = Button::new("A").with_border();
+    let b = Button::new("B").with_border();
+    let c = Button::new("C").with_border();
+    let d = Button::new("D").with_border();
+    let e = Button::new("E Wider").with_border();
+    let f = Button::new("F").with_border();
+    let g = Button::new("G").with_border();
+    let h = Button::new("H").with_border();
+    let i = Button::new("I").with_border();
+    let j = Button::new("J").with_border();
+    let k = Button::new("K").with_border();
+    let l = Button::new("L").with_border();
     let grid = grid_area!(
         [a e i]
         [b f j]

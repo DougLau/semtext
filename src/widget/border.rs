@@ -2,8 +2,9 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{AreaBound, BBox, Cells};
-use crate::text::{Outline, Style, Theme};
+use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
+use crate::layout::{AreaBound, BBox, Cells, Pos};
+use crate::text::{Outline, StyleGroup, Theme};
 use crate::{Result, Widget};
 
 /// Border height
@@ -18,124 +19,101 @@ pub enum BorderHeight {
 /// Border style
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum BorderStyle {
-    /// Empty border
-    Empty,
+    /// Simple border
+    Simple(Outline),
     /// Beveled appearance
     Bevel(Outline, BorderHeight),
-    /// Something else
-    ShadowRightBottom,
+    /// Drop shadow
+    Shadow(Outline, BorderHeight),
 }
 
-/// Border widget
+/// Border widget wrapper
 ///
-/// One or more edges are drawn around a bounding box.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Border {
-    bdr_style: BorderStyle,
+/// One or more outline edges are drawn around a wrapped widget.
+pub struct Border<W: Widget> {
+    /// Wrapped widget
+    wrapped: W,
+    /// Border style
+    border_style: Option<BorderStyle>,
 }
 
 impl BorderStyle {
-    /// Get the left border outline
-    pub fn outline_left(self) -> Option<Outline> {
-        use BorderStyle::*;
+    /// Get the fallback outline
+    fn outline(self) -> Option<Outline> {
         match self {
-            Empty => Some(Outline::Empty),
-            Bevel(outline, _) => Some(outline),
-            ShadowRightBottom => None,
+            BorderStyle::Simple(outline) => Some(outline),
+            BorderStyle::Bevel(outline, _) => Some(outline),
+            _ => None,
         }
     }
 
+    /// Get the left border outline
+    fn outline_left(self) -> Option<Outline> {
+        self.outline()
+    }
+
     /// Get the right border outline
-    pub fn outline_right(self) -> Option<Outline> {
-        use BorderStyle::*;
+    fn outline_right(self) -> Option<Outline> {
         match self {
-            Empty => Some(Outline::Empty),
-            Bevel(outline, _) => Some(outline),
-            ShadowRightBottom => Some(Outline::Block),
+            BorderStyle::Shadow(outline, _) => Some(outline),
+            _ => self.outline(),
         }
     }
 
     /// Get the top border outline
-    pub fn outline_top(self) -> Option<Outline> {
-        use BorderStyle::*;
-        match self {
-            Empty => Some(Outline::Empty),
-            Bevel(outline, _) => Some(outline),
-            ShadowRightBottom => None,
-        }
+    fn outline_top(self) -> Option<Outline> {
+        self.outline()
     }
 
     /// Get the bottom border outline
-    pub fn outline_bottom(self) -> Option<Outline> {
+    fn outline_bottom(self) -> Option<Outline> {
+        match self {
+            BorderStyle::Shadow(outline, _) => Some(outline),
+            _ => self.outline(),
+        }
+    }
+
+    /// Get the left style group
+    fn group_left(self) -> StyleGroup {
+        use BorderHeight::*;
         use BorderStyle::*;
         match self {
-            Empty => Some(Outline::Empty),
-            Bevel(outline, _) => Some(outline),
-            ShadowRightBottom => Some(Outline::Block),
+            Bevel(_, Raised) | Shadow(_, Raised) => StyleGroup::LightShadow,
+            Bevel(_, Lowered) | Shadow(_, Lowered) => StyleGroup::DarkShadow,
+            _ => StyleGroup::Enabled,
         }
     }
 
-    /// Get the left style
-    pub fn style_left(self, theme: &Theme) -> Option<Style> {
-        let style = Style::default().with_background(theme.background);
+    /// Get the right style group
+    fn group_right(self) -> StyleGroup {
+        use BorderHeight::*;
+        use BorderStyle::*;
         match self {
-            BorderStyle::Empty => Some(style),
-            BorderStyle::Bevel(_, BorderHeight::Raised) => {
-                Some(style.with_foreground(theme.light_shadow))
-            }
-            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
-            _ => None,
+            Bevel(_, Raised) | Shadow(_, Raised) => StyleGroup::DarkShadow,
+            Bevel(_, Lowered) | Shadow(_, Lowered) => StyleGroup::LightShadow,
+            _ => StyleGroup::Enabled,
         }
     }
 
-    /// Get the right style
-    pub fn style_right(self, theme: &Theme) -> Option<Style> {
-        let style = Style::default().with_background(theme.background);
+    /// Get the top style group
+    fn group_top(self) -> StyleGroup {
+        use BorderHeight::*;
+        use BorderStyle::*;
         match self {
-            BorderStyle::Empty => Some(style),
-            BorderStyle::Bevel(_, BorderHeight::Raised) => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
-            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
-                Some(style.with_foreground(theme.light_shadow))
-            }
-            BorderStyle::ShadowRightBottom => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
+            Bevel(_, Raised) | Shadow(_, Raised) => StyleGroup::LightShadow,
+            Bevel(_, Lowered) | Shadow(_, Lowered) => StyleGroup::DarkShadow,
+            _ => StyleGroup::Enabled,
         }
     }
 
-    /// Get the top style
-    pub fn style_top(self, theme: &Theme) -> Option<Style> {
-        let style = Style::default().with_background(theme.background);
+    /// Get the bottom style group
+    fn group_bottom(self) -> StyleGroup {
+        use BorderHeight::*;
+        use BorderStyle::*;
         match self {
-            BorderStyle::Empty => Some(style),
-            BorderStyle::Bevel(_, BorderHeight::Raised) => {
-                Some(style.with_foreground(theme.light_shadow))
-            }
-            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
-            _ => None,
-        }
-    }
-
-    /// Get the bottom style
-    pub fn style_bottom(self, theme: &Theme) -> Option<Style> {
-        let style = Style::default().with_background(theme.background);
-        match self {
-            BorderStyle::Empty => Some(style),
-            BorderStyle::Bevel(_, BorderHeight::Raised) => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
-            BorderStyle::Bevel(_, BorderHeight::Lowered) => {
-                Some(style.with_foreground(theme.light_shadow))
-            }
-            BorderStyle::ShadowRightBottom => {
-                Some(style.with_foreground(theme.dark_shadow))
-            }
+            Bevel(_, Raised) | Shadow(_, Raised) => StyleGroup::DarkShadow,
+            Bevel(_, Lowered) | Shadow(_, Lowered) => StyleGroup::LightShadow,
+            _ => StyleGroup::Enabled,
         }
     }
 
@@ -143,8 +121,8 @@ impl BorderStyle {
     pub fn width(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Empty | Bevel(_, _) => 2,
-            ShadowRightBottom => 1,
+            Simple(_) | Bevel(_, _) => 2,
+            Shadow(_, _) => 1,
         }
     }
 
@@ -152,54 +130,67 @@ impl BorderStyle {
     pub fn height(self) -> u16 {
         use BorderStyle::*;
         match self {
-            Empty | Bevel(_, _) => 2,
-            ShadowRightBottom => 1,
+            Simple(_) | Bevel(_, _) => 2,
+            Shadow(_, _) => 1,
         }
-    }
-}
-
-impl Border {
-    /// Create a new border
-    pub fn new(bdr_style: BorderStyle) -> Self {
-        Self { bdr_style }
-    }
-
-    /// Get the total width in cells (left and right edges)
-    pub fn width(self) -> u16 {
-        self.bdr_style.width()
-    }
-
-    /// Get the total height in cells (top and bottom edges)
-    pub fn height(self) -> u16 {
-        self.bdr_style.height()
     }
 
     /// Get the bbox inside the border
-    pub fn inset(self, mut bbox: BBox) -> BBox {
+    fn inset(self, mut bbox: BBox) -> BBox {
         let trim = 1;
-        let bs = self.bdr_style;
-        if bs.outline_left().is_some() {
+        if self.outline_left().is_some() {
             bbox = bbox.trim_left(trim);
         }
-        if bs.outline_right().is_some() {
+        if self.outline_right().is_some() {
             bbox = bbox.trim_right(trim);
         }
-        if bs.outline_top().is_some() {
+        if self.outline_top().is_some() {
             bbox = bbox.trim_top(trim);
         }
-        if bs.outline_bottom().is_some() {
+        if self.outline_bottom().is_some() {
             bbox = bbox.trim_bottom(trim);
         }
         bbox
     }
 }
 
-impl Widget for Border {
+impl<W: Widget> Border<W> {
+    /// Create a new border
+    pub fn new(wrapped: W) -> Self {
+        let border_style = None;
+        Self {
+            wrapped,
+            border_style,
+        }
+    }
+
+    /// Get the wrapped widget
+    pub fn wrapped(&self) -> &W {
+        &self.wrapped
+    }
+
+    /// Set the border style
+    ///
+    /// - `border_style`: Style to override [Theme], or `None`
+    pub fn set_border_style(&mut self, border_style: Option<BorderStyle>) {
+        self.border_style = border_style;
+    }
+
+    /// Get the border style
+    fn border_style(&self, theme: &Theme) -> BorderStyle {
+        self.border_style
+            .unwrap_or_else(|| theme.border_style(self.wrapped.style_group()))
+    }
+}
+
+impl<W: Widget> Widget for Border<W> {
     /// Get the area bounds
-    fn bounds(&self) -> AreaBound {
-        let cols = self.width();
-        let rows = self.height();
-        AreaBound::default().with_columns(cols..).with_rows(rows..)
+    fn bounds(&self, theme: &Theme) -> AreaBound {
+        let bounds = self.wrapped.bounds(theme);
+        let bs = self.border_style(theme);
+        let cols = bs.width();
+        let rows = bs.height();
+        bounds + AreaBound::default().with_columns(cols..).with_rows(rows..)
     }
 
     /// Draw the widget
@@ -210,17 +201,20 @@ impl Widget for Border {
             return Ok(());
         }
         let theme = cells.theme();
-        let bs = self.bdr_style;
-        let style_top = bs.style_top(&theme);
-        let style_left = bs.style_left(&theme);
-        let style_right = bs.style_right(&theme);
-        let style_bottom = bs.style_bottom(&theme);
-        let inset = self.inset(BBox::new(0, 0, width, height));
+        let bs = self.border_style(theme);
+        let disabled = if self.wrapped.style_group() == StyleGroup::Disabled {
+            Some(StyleGroup::Disabled)
+        } else {
+            None
+        };
+        let style_top = theme.style(disabled.unwrap_or(bs.group_top()));
+        let style_left = theme.style(disabled.unwrap_or(bs.group_left()));
+        let style_right = theme.style(disabled.unwrap_or(bs.group_right()));
+        let style_bottom = theme.style(disabled.unwrap_or(bs.group_bottom()));
+        let inset = bs.inset(BBox::new(0, 0, width, height));
         let mut row = 0;
         if let Some(top) = bs.outline_top() {
-            if let Some(style) = style_top {
-                cells.set_style(style)?;
-            }
+            cells.set_style(style_top)?;
             cells.move_to(0, 0)?;
             if let Some(left) = bs.outline_left() {
                 cells.print_char(top.top_left(left))?;
@@ -229,18 +223,14 @@ impl Widget for Border {
                 cells.print_char(top.top())?;
             }
             if let Some(right) = bs.outline_right() {
-                if let Some(style) = style_right {
-                    cells.set_style(style)?;
-                }
+                cells.set_style(style_right)?;
                 cells.print_char(top.top_right(right))?;
             }
             row += 1;
         }
         for _ in 0..inset.height() {
             if let Some(left) = bs.outline_left() {
-                if let Some(style) = style_left {
-                    cells.set_style(style)?;
-                }
+                cells.set_style(style_left)?;
                 cells.move_to(0, row)?;
                 cells.print_char(left.left())?;
             }
@@ -250,26 +240,24 @@ impl Widget for Border {
                 } else {
                     cells.move_to(inset.width(), row)?;
                 }
-                if let Some(style) = style_right {
-                    cells.set_style(style)?;
+                if bs.outline_right().is_some() {
+                    cells.set_style(style_right)?;
                 }
                 cells.print_char(right.right())?;
             }
             row += 1;
         }
         if let Some(bottom) = bs.outline_bottom() {
-            if let Some(style) = style_left {
-                cells.set_style(style)?;
-            } else if let Some(style) = style_bottom {
-                cells.set_style(style)?;
+            if bs.outline_left().is_some() {
+                cells.set_style(style_left)?;
+            } else {
+                cells.set_style(style_bottom)?;
             }
             cells.move_to(0, row)?;
             if let Some(left) = bs.outline_left() {
                 cells.print_char(bottom.bottom_left(left))?;
             }
-            if let Some(style) = style_bottom {
-                cells.set_style(style)?;
-            }
+            cells.set_style(style_bottom)?;
             for _ in 0..inset.width() {
                 cells.print_char(bottom.bottom())?;
             }
@@ -277,21 +265,22 @@ impl Widget for Border {
                 cells.print_char(bottom.bottom_right(right))?;
             }
         }
-        Ok(())
+        cells.clip(inset);
+        self.wrapped.draw(cells)
     }
-}
 
-#[cfg(test)]
-mod test {
-    use super::*;
+    /// Handle focus event
+    fn focus(&self, fev: FocusEvent) -> Option<Action> {
+        self.wrapped.focus(fev)
+    }
 
-    #[test]
-    fn border() {
-        let bdr = Border::new(BorderStyle::Bevel(
-            Outline::default(),
-            BorderHeight::Raised,
-        ));
-        let bbox = BBox::new(0, 0, 10, 10);
-        assert_eq!(bdr.inset(bbox), BBox::new(1, 1, 8, 8));
+    /// Handle mouse events
+    fn mouse_event(
+        &self,
+        mev: MouseEvent,
+        mods: ModKeys,
+        pos: Pos,
+    ) -> Option<Action> {
+        self.wrapped.mouse_event(mev, mods, pos)
     }
 }

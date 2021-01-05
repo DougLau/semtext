@@ -4,7 +4,7 @@
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
-use crate::widget::Border;
+use crate::text::{StyleGroup, Theme};
 use crate::Result;
 
 /// User interface component
@@ -14,14 +14,14 @@ use crate::Result;
 /// [GridArea]: layout/struct.GridArea.html
 /// [Screen]: struct.Screen.html
 pub trait Widget {
-    /// Get the area bounds
-    fn bounds(&self) -> AreaBound {
-        AreaBound::default()
+    /// Get the style group
+    fn style_group(&self) -> StyleGroup {
+        StyleGroup::Enabled
     }
 
-    /// Get the border (if any)
-    fn border(&self) -> Option<Border> {
-        None
+    /// Get the area bounds
+    fn bounds(&self, _theme: &Theme) -> AreaBound {
+        AreaBound::default()
     }
 
     /// Draw the widget

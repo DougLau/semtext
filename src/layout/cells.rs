@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::BBox;
-use crate::text::{Glyph, Style, Theme};
+use crate::text::{Glyph, TextStyle, Theme};
 use crate::{Result, Screen};
 use textwrap::wrap_iter;
 
@@ -33,6 +33,16 @@ impl<'a> Cells<'a> {
         self.bbox.height()
     }
 
+    /// Clip to bounding box
+    pub fn clip(&mut self, inset: BBox) {
+        let col = self.bbox.left() + inset.left();
+        let row = self.bbox.top() + inset.top();
+        let width = inset.width();
+        let height = inset.height();
+        let bbox = BBox::new(col, row, width, height);
+        self.bbox = self.bbox.clip(bbox);
+    }
+
     /// Fill the cells with a glyph
     pub fn fill(&mut self, glyph: &Glyph) -> Result<()> {
         let bbox = self.bbox;
@@ -55,7 +65,7 @@ impl<'a> Cells<'a> {
     }
 
     /// Set the text style
-    pub fn set_style(&mut self, st: Style) -> Result<()> {
+    pub fn set_style(&mut self, st: TextStyle) -> Result<()> {
         self.screen.set_style(st)
     }
 

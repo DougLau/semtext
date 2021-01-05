@@ -3,14 +3,18 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{AreaBound, Cells};
-use crate::text::{Glyph, IntoGlyph};
+use crate::text::{Glyph, IntoGlyph, StyleGroup, Theme};
+use crate::widget::Border;
 use crate::{Result, Widget};
 use std::ops::RangeBounds;
 
 /// Spacer widget
 ///
 /// A spacer can be used for fixed or variable width spacing between other
-/// widgets.  By default it draws nothing, but a fill glyph may be provided.
+/// widgets.  By default it draws nothing, but a fill glyph may be provided
+/// using [with_fill].
+///
+/// [with_fill]: struct.Spacer.html#method.with_fill
 #[derive(Default)]
 pub struct Spacer {
     /// Area bounds
@@ -57,17 +61,22 @@ impl Spacer {
         self.fill = Some(fill.into_glyph()?);
         Ok(self)
     }
+
+    /// Add a border around a spacer
+    pub fn with_border(self) -> Border<Self> {
+        Border::new(self)
+    }
 }
 
 impl Widget for Spacer {
     /// Get the area bounds
-    fn bounds(&self) -> AreaBound {
+    fn bounds(&self, _theme: &Theme) -> AreaBound {
         self.bounds
     }
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells) -> Result<()> {
-        let style = cells.theme().style();
+        let style = cells.theme().style(StyleGroup::Enabled);
         cells.set_style(style)?;
         if let Some(fill) = &self.fill {
             cells.fill(fill)?;

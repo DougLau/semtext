@@ -19,7 +19,7 @@ pub enum Weight {
     Thin,
 }
 
-/// Text Appearance
+/// Text appearance
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Appearance {
     /// Crossterm text attributes
@@ -28,9 +28,9 @@ pub struct Appearance {
     weight: Weight,
 }
 
-/// Text Style
+/// Text style
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Style {
+pub struct TextStyle {
     /// Background color
     background: Color,
     /// Foreground text color
@@ -46,6 +46,7 @@ impl Default for Weight {
 }
 
 impl Weight {
+    /// Get weight attribute
     fn attribute(self) -> Option<Attribute> {
         match self {
             Weight::Bold => Some(Attribute::Bold),
@@ -127,7 +128,7 @@ impl Appearance {
     }
 }
 
-impl Default for Style {
+impl Default for TextStyle {
     fn default() -> Self {
         let background = Color::Black(Intensity::Normal);
         let foreground = Color::White(Intensity::Bright);
@@ -140,7 +141,7 @@ impl Default for Style {
     }
 }
 
-impl Style {
+impl TextStyle {
     /// Set the background color
     pub fn with_background(mut self, clr: Color) -> Self {
         self.background = clr;

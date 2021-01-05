@@ -10,7 +10,7 @@
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let mut screen = Screen::new()?;
-//!     let a = Button::new("Hello!");
+//!     let a = Button::new("Hello!").with_border();
 //!     let grid = grid_area!(
 //!         [. . .]
 //!         [. a .]

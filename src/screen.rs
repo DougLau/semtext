@@ -4,7 +4,7 @@
 //
 use crate::input::{Action, Event, FocusEvent, KeyMap, ModKeys, MouseEvent};
 use crate::layout::{BBox, Cells, Dim, GridArea, Pos};
-use crate::text::{Appearance, Color, Style, Theme};
+use crate::text::{Appearance, Color, StyleGroup, TextStyle, Theme};
 use crate::{Result, Widget};
 use crossterm::event::Event as CtEvent;
 use crossterm::{cursor, event, queue, style, terminal};
@@ -45,7 +45,7 @@ pub struct Screen {
     /// Style theme
     theme: Theme,
     /// Current text style
-    style: Option<Style>,
+    style: Option<TextStyle>,
     /// Key / action map
     keymap: KeyMap,
     #[cfg(feature = "async")]
@@ -106,6 +106,11 @@ impl Screen {
         Ok(())
     }
 
+    /// Set the theme
+    pub fn set_theme(&mut self, theme: Theme) {
+        self.theme = theme;
+    }
+
     /// Get the screen bounding box
     fn bbox(&self) -> BBox {
         BBox::new(0, 0, self.dim.width, self.dim.height)
@@ -160,7 +165,7 @@ impl Screen {
     }
 
     /// Set the text style
-    pub(crate) fn set_style(&mut self, st: Style) -> Result<()> {
+    pub(crate) fn set_style(&mut self, st: TextStyle) -> Result<()> {
         self.set_background_color(st.background())?;
         self.set_foreground_color(st.foreground())?;
         self.set_appearance(st.appearance())?;
@@ -194,18 +199,11 @@ impl Screen {
 
     /// Draw a grid area layout
     fn draw(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
-        let background = self.theme.background;
-        self.set_background_color(background)?;
+        let style = self.theme.style(StyleGroup::Enabled);
+        self.set_style(style)?;
         self.clear()?;
         for (widget, bbox) in widget_boxes.iter() {
-            if let Some(border) = widget.border() {
-                if let Some(mut cells) = self.cells(*bbox) {
-                    border.draw(&mut cells)?;
-                }
-                if let Some(mut cells) = self.cells(border.inset(*bbox)) {
-                    widget.draw(&mut cells)?;
-                }
-            } else if let Some(mut cells) = self.cells(*bbox) {
+            if let Some(mut cells) = self.cells(*bbox) {
                 widget.draw(&mut cells)?;
             }
         }
@@ -236,7 +234,7 @@ impl Screen {
 
     /// Draw a grid area and wait for an action
     pub fn step(&mut self, area: &GridArea) -> Result<Action> {
-        let widget_boxes = area.widget_boxes(self.bbox())?;
+        let widget_boxes = area.widget_boxes(self.bbox(), &self.theme)?;
         self.draw(&widget_boxes)?;
         loop {
             let ev = Event::read()?;
@@ -249,7 +247,7 @@ impl Screen {
     /// Render a grid area and wait asynchronously for an action
     #[cfg(feature = "async")]
     pub async fn step_future(&mut self, area: &GridArea<'_>) -> Result<Action> {
-        let widget_boxes = area.widget_boxes(self.bbox())?;
+        let widget_boxes = area.widget_boxes(self.bbox(), &self.theme)?;
         self.draw(&widget_boxes)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?.into();
