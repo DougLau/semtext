@@ -14,4 +14,4 @@ pub use color::{Color, Intensity};
 pub use glyph::{Glyph, IntoGlyph};
 pub use outline::{Corner, Outline, Stroke};
 pub use style::{Appearance, TextStyle, Weight};
-pub use theme::{StyleGroup, Theme};
+pub use theme::{StyleGroup, Theme, WidgetGroup};

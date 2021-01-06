@@ -184,6 +184,8 @@ impl Screen {
         self.clear()?;
         for (widget, bbox) in widget_boxes.iter() {
             if let Some(mut cells) = self.cells(*bbox) {
+                let style = cells.theme().style(widget.style_group());
+                cells.set_style(style)?;
                 widget.draw(&mut cells)?;
             }
         }

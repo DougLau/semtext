@@ -2,10 +2,17 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::text::{
-    Appearance, Color, Corner, Intensity, Outline, Stroke, TextStyle,
-};
-use crate::widget::{BorderHeight, BorderStyle};
+use crate::text::{Appearance, Color, Intensity, Outline, TextStyle};
+use crate::widget::BorderStyle;
+
+/// Widget group
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum WidgetGroup {
+    /// Normal widget group
+    Normal,
+    /// Button widget group
+    Button,
+}
 
 /// Style group
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -43,14 +50,10 @@ pub struct Theme {
     pub dark_shadow: Color,
     /// Light shadow color
     pub light_shadow: Color,
-    /// Enabled border style
-    pub enabled_border: BorderStyle,
-    /// Disabled border style
-    pub disabled_border: BorderStyle,
-    /// Button released border style
-    pub button_released_border: BorderStyle,
-    /// Button pressed border style
-    pub button_pressed_border: BorderStyle,
+    /// Normal border style
+    pub normal_border: BorderStyle,
+    /// Button border style
+    pub button_border: BorderStyle,
 }
 
 impl Default for Theme {
@@ -62,13 +65,8 @@ impl Default for Theme {
         let interacting = Color::Yellow(Intensity::Bright);
         let dark_shadow = Color::Black(Intensity::Bright);
         let light_shadow = Color::White(Intensity::Normal);
-        let enabled_border = BorderStyle::Simple(Outline::default());
-        let disabled_border =
-            BorderStyle::Simple(Outline::Light(Stroke::Dashed, Corner::Square));
-        let button_released_border =
-            BorderStyle::Bevel(Outline::default(), BorderHeight::Raised);
-        let button_pressed_border =
-            BorderStyle::Bevel(Outline::default(), BorderHeight::Lowered);
+        let normal_border = BorderStyle::Simple(Outline::default());
+        let button_border = BorderStyle::Bevel(Outline::default());
         Self {
             background,
             foreground,
@@ -77,10 +75,8 @@ impl Default for Theme {
             interacting,
             dark_shadow,
             light_shadow,
-            enabled_border,
-            disabled_border,
-            button_released_border,
-            button_pressed_border,
+            normal_border,
+            button_border,
         }
     }
 }
@@ -121,6 +117,7 @@ impl Theme {
         let style = TextStyle::default().with_background(self.background);
         match group {
             StyleGroup::Disabled => style.with_foreground(self.light_shadow),
+            StyleGroup::Primary => style.with_foreground(self.primary),
             StyleGroup::Hovered => style.with_foreground(self.interacting),
             StyleGroup::Focused => style
                 .with_foreground(self.focused)
@@ -135,11 +132,10 @@ impl Theme {
     }
 
     /// Get the border style
-    pub fn border_style(&self, group: StyleGroup) -> BorderStyle {
+    pub fn border_style(&self, group: WidgetGroup) -> BorderStyle {
         match group {
-            StyleGroup::Disabled => self.disabled_border,
-            StyleGroup::Interacted => self.button_pressed_border,
-            _ => self.button_released_border,
+            WidgetGroup::Normal => self.normal_border,
+            WidgetGroup::Button => self.button_border,
         }
     }
 }

@@ -3,8 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::layout::{AreaBound, Cells};
-use crate::text::{Glyph, IntoGlyph, StyleGroup, Theme};
-use crate::widget::Border;
+use crate::text::{Glyph, IntoGlyph, Theme};
 use crate::{Result, Widget};
 use std::ops::RangeBounds;
 
@@ -61,11 +60,6 @@ impl Spacer {
         self.fill = Some(fill.into_glyph()?);
         Ok(self)
     }
-
-    /// Add a border around a spacer
-    pub fn with_border(self) -> Border<Self> {
-        Border::new(self)
-    }
 }
 
 impl Widget for Spacer {
@@ -76,8 +70,6 @@ impl Widget for Spacer {
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells) -> Result<()> {
-        let style = cells.theme().style(StyleGroup::Enabled);
-        cells.set_style(style)?;
         if let Some(fill) = &self.fill {
             cells.fill(fill)?;
         }

@@ -1,7 +1,6 @@
 use semtext::input::Action;
-use semtext::text::{Outline, Stroke};
-use semtext::widget::{BorderHeight, BorderStyle, Label, Spacer};
-use semtext::{grid_area, Screen};
+use semtext::widget::{Label, Spacer};
+use semtext::{grid_area, Screen, Widget};
 use std::error::Error;
 
 async fn async_main() -> Result<(), Box<dyn Error>> {
@@ -9,12 +8,8 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     screen.set_title("Layout Test")?;
     let s = Spacer::default().with_fill('.')?;
     let a = Label::new("This is a bit of text in a label");
-    let mut c =
-        Label::new("This label has more text on the right side").with_border();
-    c.set_border_style(Some(BorderStyle::Bevel(
-        Outline::Heavy(Stroke::Dashed),
-        BorderHeight::Raised,
-    )));
+    let c = Label::new("This label has more text on the right side")
+        .into_border();
     let grid = grid_area!(
         [. a a . .]
         [. . s . .]

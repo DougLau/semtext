@@ -4,8 +4,7 @@
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
 use crate::layout::{AreaBound, Cells, Pos};
-use crate::text::{IntoGlyph, StyleGroup, Theme};
-use crate::widget::{Border, Label};
+use crate::text::{IntoGlyph, StyleGroup, Theme, WidgetGroup};
 use crate::{Result, Widget};
 use std::cell::Cell;
 
@@ -25,24 +24,18 @@ enum State {
 }
 
 /// Button widget
-pub struct Button {
-    /// Contained label widget
-    lbl: Label,
+pub struct Button<W: Widget> {
+    /// Wrapped widget
+    wrapped: W,
     /// Button state
     state: Cell<State>,
 }
 
-impl Button {
+impl<W: Widget> Button<W> {
     /// Create a new button widget
-    pub fn new(txt: &str) -> Self {
-        let lbl = Label::new(txt);
+    pub fn new(wrapped: W) -> Self {
         let state = Cell::new(State::Enabled);
-        Self { lbl, state }
-    }
-
-    /// Add a border around a button
-    pub fn with_border(self) -> Border<Self> {
-        Border::new(self)
+        Self { wrapped, state }
     }
 
     /// Disable the button
@@ -58,7 +51,12 @@ impl Button {
     }
 }
 
-impl Widget for Button {
+impl<W: Widget> Widget for Button<W> {
+    /// Get the widget group
+    fn widget_group(&self) -> WidgetGroup {
+        WidgetGroup::Button
+    }
+
     /// Get the style group
     fn style_group(&self) -> StyleGroup {
         match self.state.get() {
@@ -72,17 +70,14 @@ impl Widget for Button {
 
     /// Get the area bounds
     fn bounds(&self, theme: &Theme) -> AreaBound {
-        self.lbl.bounds(theme)
+        self.wrapped.bounds(theme)
     }
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells) -> Result<()> {
-        let theme = cells.theme();
-        let style = theme.style(self.style_group());
-        cells.set_style(style)?;
         // FIXME: maybe add a print_text variant that fills...
         cells.fill(&' '.into_glyph()?)?;
-        cells.print_text(self.lbl.txt())
+        self.wrapped.draw(cells)
     }
 
     /// Handle focus event

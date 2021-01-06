@@ -9,7 +9,7 @@ mod button;
 mod label;
 mod spacer;
 
-pub use border::{Border, BorderHeight, BorderStyle};
+pub use border::{Border, BorderStyle};
 pub use button::Button;
 pub use label::Label;
 pub use spacer::Spacer;

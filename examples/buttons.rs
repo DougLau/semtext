@@ -1,22 +1,22 @@
 use semtext::input::Action;
-use semtext::widget::Button;
-use semtext::{grid_area, Screen};
+use semtext::widget::Label;
+use semtext::{grid_area, Screen, Widget};
 use std::error::Error;
 
 async fn async_main() -> Result<(), Box<dyn Error>> {
     let mut screen = Screen::new()?;
-    let a = Button::new("A").with_border();
-    let b = Button::new("B").with_border();
-    let c = Button::new("C").with_border();
-    let d = Button::new("D").with_border();
-    let e = Button::new("E Wider").with_border();
-    let f = Button::new("F").with_border();
-    let g = Button::new("G").with_border();
-    let h = Button::new("H").with_border();
-    let i = Button::new("I").with_border();
-    let j = Button::new("J").with_border();
-    let k = Button::new("K").with_border();
-    let l = Button::new("L").with_border();
+    let a = Label::new("A").into_button();
+    let b = Label::new("B").into_button();
+    let c = Label::new("C").into_button();
+    let d = Label::new("D").into_button();
+    let e = Label::new("E Wider").into_button();
+    let f = Label::new("F").into_button();
+    let g = Label::new("G").into_button();
+    let h = Label::new("H").into_button();
+    let i = Label::new("I").into_button();
+    let j = Label::new("J").into_button();
+    let k = Label::new("K").into_button();
+    let l = Label::new("L").into_button();
     let grid = grid_area!(
         [a e i]
         [b f j]
