@@ -21,6 +21,8 @@ pub enum StyleGroup {
     Enabled,
     /// Disabled widget style
     Disabled,
+    /// Primary accent style
+    Primary,
     /// Hovered style
     Hovered,
     /// Focused style
