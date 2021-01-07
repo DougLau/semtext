@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 
-/// Outline corner
+/// Outline corner style
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Corner {
     /// Square corners
@@ -12,7 +12,7 @@ pub enum Corner {
     Rounded,
 }
 
-/// Outline stroke
+/// Outline stroke style
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Stroke {
     /// Solid outline
@@ -21,7 +21,7 @@ pub enum Stroke {
     Dashed,
 }
 
-/// Styles for outlines
+/// Outline style
 ///
 /// Outlines require font support for one of more **Unicode Blocks**:
 /// - **Basic Latin** (U+0000 - U+007F)
