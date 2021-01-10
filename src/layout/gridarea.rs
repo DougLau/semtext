@@ -420,9 +420,9 @@ mod test {
         .unwrap()
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
-        assert!(widget_is_same(l[0].0, &a));
-        assert!(widget_is_same(l[1].0, &b));
-        assert!(widget_is_same(l[2].0, &c));
+        assert_eq!(data_pointer(l[0].0), data_pointer(&a));
+        assert_eq!(data_pointer(l[1].0), data_pointer(&b));
+        assert_eq!(data_pointer(l[2].0), data_pointer(&c));
         assert_eq!(l.len(), 3);
         assert_eq!(l[0].1, BBox::new(0, 0, 40, 25));
         assert_eq!(l[1].1, BBox::new(40, 0, 40, 12));
@@ -441,9 +441,9 @@ mod test {
         .unwrap()
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
-        assert!(widget_is_same(l[0].0, &a));
-        assert!(widget_is_same(l[1].0, &b));
-        assert!(widget_is_same(l[2].0, &c));
+        assert_eq!(data_pointer(l[0].0), data_pointer(&a));
+        assert_eq!(data_pointer(l[1].0), data_pointer(&b));
+        assert_eq!(data_pointer(l[2].0), data_pointer(&c));
         assert_eq!(l.len(), 3);
         assert_eq!(l[0].1, BBox::new(0, 0, 53, 25));
         assert_eq!(l[1].1, BBox::new(53, 0, 27, 12));
@@ -462,9 +462,9 @@ mod test {
         .unwrap()
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
-        assert!(widget_is_same(l[0].0, &a));
-        assert!(widget_is_same(l[1].0, &b));
-        assert!(widget_is_same(l[2].0, &c));
+        assert_eq!(data_pointer(l[0].0), data_pointer(&a));
+        assert_eq!(data_pointer(l[1].0), data_pointer(&b));
+        assert_eq!(data_pointer(l[2].0), data_pointer(&c));
         assert_eq!(l.len(), 3);
         assert_eq!(l[0].1, BBox::new(0, 0, 40, 25));
         assert_eq!(l[1].1, BBox::new(40, 0, 40, 12));
@@ -484,9 +484,9 @@ mod test {
         .unwrap()
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
-        assert!(widget_is_same(l[0].0, &a));
-        assert!(widget_is_same(l[1].0, &b));
-        assert!(widget_is_same(l[2].0, &c));
+        assert_eq!(data_pointer(l[0].0), data_pointer(&a));
+        assert_eq!(data_pointer(l[1].0), data_pointer(&b));
+        assert_eq!(data_pointer(l[2].0), data_pointer(&c));
         assert_eq!(l.len(), 3);
         assert_eq!(l[0].1, BBox::new(0, 0, 40, 25));
         assert_eq!(l[1].1, BBox::new(40, 0, 40, 16));

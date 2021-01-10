@@ -38,7 +38,7 @@ impl Widget for Label {
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
-        assert!(pos == Pos::default(), "FIXME");
+        assert_eq!(pos, Pos::default(), "FIXME");
         cells.print_text(&self.text)
     }
 }

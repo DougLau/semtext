@@ -189,7 +189,7 @@ impl<W: Widget> Widget for Border<W> {
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
-        assert!(pos == Pos::default(), "FIXME");
+        assert_eq!(pos, Pos::default(), "FIXME");
         let width = cells.width();
         let height = cells.height();
         if width == 0 || height == 0 {
