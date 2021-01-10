@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{AreaBound, Cells};
+use crate::layout::{AreaBound, Cells, Pos};
 use crate::text::Theme;
 use crate::{Result, Widget};
 use unicode_width::UnicodeWidthStr;
@@ -37,7 +37,8 @@ impl Widget for Label {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells) -> Result<()> {
+    fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
+        assert!(pos == Pos::default(), "FIXME");
         cells.print_text(&self.text)
     }
 }

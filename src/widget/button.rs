@@ -74,10 +74,10 @@ impl<W: Widget> Widget for Button<W> {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells) -> Result<()> {
+    fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
         // FIXME: maybe add a print_text variant that fills...
         cells.fill(&' '.into_glyph()?)?;
-        self.wrapped.draw(cells)
+        self.wrapped.draw(cells, pos)
     }
 
     /// Handle focus event

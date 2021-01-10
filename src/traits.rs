@@ -33,7 +33,8 @@ pub trait Widget {
     /// Draw the widget
     ///
     /// * `_cells`: Text cells to draw onto
-    fn draw(&self, _cells: &mut Cells) -> Result<()> {
+    /// * `_pos`: Top-left position within widget
+    fn draw(&self, _cells: &mut Cells, _pos: Pos) -> Result<()> {
         // default implementation draws nothing
         Ok(())
     }

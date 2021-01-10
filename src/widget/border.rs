@@ -188,7 +188,8 @@ impl<W: Widget> Widget for Border<W> {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells) -> Result<()> {
+    fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
+        assert!(pos == Pos::default(), "FIXME");
         let width = cells.width();
         let height = cells.height();
         if width == 0 || height == 0 {
@@ -260,7 +261,7 @@ impl<W: Widget> Widget for Border<W> {
         // Set style for wrapped widget draw
         let style = cells.theme().style(group);
         cells.set_style(style)?;
-        self.wrapped.draw(cells)
+        self.wrapped.draw(cells, pos)
     }
 
     /// Handle focus event

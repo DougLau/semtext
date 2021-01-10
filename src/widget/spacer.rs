@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::{AreaBound, Cells};
+use crate::layout::{AreaBound, Cells, Pos};
 use crate::text::{Glyph, IntoGlyph, Theme};
 use crate::{Result, Widget};
 use std::ops::RangeBounds;
@@ -69,7 +69,7 @@ impl Widget for Spacer {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells) -> Result<()> {
+    fn draw(&self, cells: &mut Cells, _pos: Pos) -> Result<()> {
         if let Some(fill) = &self.fill {
             cells.fill(fill)?;
         }

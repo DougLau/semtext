@@ -179,6 +179,7 @@ impl Screen {
 
     /// Draw a grid area layout
     fn draw(&mut self, widget_boxes: &[(&dyn Widget, BBox)]) -> Result<()> {
+        let pos = Pos::default();
         let style = self.theme.style(StyleGroup::Enabled);
         self.set_style(style)?;
         self.clear()?;
@@ -186,7 +187,7 @@ impl Screen {
             if let Some(mut cells) = self.cells(*bbox) {
                 let style = cells.theme().style(widget.style_group());
                 cells.set_style(style)?;
-                widget.draw(&mut cells)?;
+                widget.draw(&mut cells, pos)?;
             }
         }
         self.out.flush()?;
