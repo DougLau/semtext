@@ -62,7 +62,7 @@ impl Default for Theme {
     fn default() -> Self {
         let background = Color::Blue(Intensity::Normal);
         let foreground = Color::White(Intensity::Bright);
-        let primary = Color::Magenta(Intensity::Bright);
+        let primary = Color::Yellow(Intensity::Normal);
         let focused = Color::Cyan(Intensity::Bright);
         let interacting = Color::Yellow(Intensity::Bright);
         let dark_shadow = Color::Black(Intensity::Bright);

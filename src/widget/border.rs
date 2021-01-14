@@ -3,7 +3,7 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, BBox, Cells, Pos};
+use crate::layout::{AreaBound, BBox, Cells, Dim, Pos};
 use crate::text::{Outline, StyleGroup, Theme};
 use crate::{Result, Widget};
 
@@ -188,8 +188,8 @@ impl<W: Widget> Widget for Border<W> {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
-        assert_eq!(pos, Pos::default(), "FIXME");
+    fn draw(&self, cells: &mut Cells, offset: Pos) -> Result<()> {
+        assert_eq!(offset, Pos::default(), "FIXME");
         let width = cells.width();
         let height = cells.height();
         if width == 0 || height == 0 {
@@ -257,11 +257,11 @@ impl<W: Widget> Widget for Border<W> {
                 cells.print_char(bottom.bottom_right(right))?;
             }
         }
-        cells.clip(inset);
+        cells.clip(Some(inset));
         // Set style for wrapped widget draw
         let style = cells.theme().style(group);
         cells.set_style(style)?;
-        self.wrapped.draw(cells, pos)
+        self.wrapped.draw(cells, offset)
     }
 
     /// Handle focus event
@@ -274,8 +274,9 @@ impl<W: Widget> Widget for Border<W> {
         &self,
         mev: MouseEvent,
         mods: ModKeys,
+        dim: Dim,
         pos: Pos,
     ) -> Option<Action> {
-        self.wrapped.mouse_event(mev, mods, pos)
+        self.wrapped.mouse_event(mev, mods, dim, pos)
     }
 }

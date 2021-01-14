@@ -110,7 +110,7 @@ impl Screen {
     /// Get cells contained by a bounding box
     fn cells(&mut self, bbox: BBox) -> Option<Cells> {
         let bbox = self.bbox().clip(bbox);
-        if bbox.is_empty() {
+        if bbox.dim().is_empty() {
             None
         } else {
             Some(Cells::new(self, bbox))
@@ -268,13 +268,14 @@ fn mouse_action(
             (ButtonDown(_), None) => widget.focus(FocusEvent::Take),
             (Drag(None), Some(_)) => widget.focus(FocusEvent::HoverInside),
             (Drag(_), None) => widget.focus(FocusEvent::HoverOutside),
+            (ButtonUp(_), Some(_)) => widget.focus(FocusEvent::HoverInside),
             (ButtonUp(_), None) => widget.focus(FocusEvent::HoverOutside),
             _ => None,
         };
         redraw = redraw.or(r);
         // Only widget within bounds receives event
         if let Some(p) = bbox.within(pos) {
-            let a = widget.mouse_event(mev, mods, p);
+            let a = widget.mouse_event(mev, mods, bbox.dim(), p);
             action = action.or(a);
         }
     }

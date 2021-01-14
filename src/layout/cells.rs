@@ -15,37 +15,43 @@ pub struct Cells<'a> {
     screen: &'a mut Screen,
     /// Bounding box of cells
     bbox: BBox,
+    /// Bounding box of clip area
+    clip: BBox,
 }
 
 impl<'a> Cells<'a> {
     /// Create cells
     pub fn new(screen: &'a mut Screen, bbox: BBox) -> Self {
-        Self { screen, bbox }
+        let clip = bbox;
+        Self { screen, bbox, clip }
     }
 
     /// Get the width
     pub fn width(&self) -> u16 {
-        self.bbox.width()
+        self.clip.width()
     }
 
     /// Get the height
     pub fn height(&self) -> u16 {
-        self.bbox.height()
+        self.clip.height()
     }
 
     /// Clip to bounding box
-    pub fn clip(&mut self, inset: BBox) {
-        let col = self.bbox.left() + inset.left();
-        let row = self.bbox.top() + inset.top();
-        let width = inset.width();
-        let height = inset.height();
-        let bbox = BBox::new(col, row, width, height);
-        self.bbox = self.bbox.clip(bbox);
+    pub fn clip(&mut self, inset: Option<BBox>) {
+        if let Some(inset) = inset {
+            let col = self.bbox.left() + inset.left();
+            let row = self.bbox.top() + inset.top();
+            let width = inset.width();
+            let height = inset.height();
+            self.clip = self.bbox.clip(BBox::new(col, row, width, height));
+        } else {
+            self.clip = self.bbox;
+        }
     }
 
     /// Fill the cells with a glyph
     pub fn fill(&mut self, glyph: &Glyph) -> Result<()> {
-        let bbox = self.bbox;
+        let bbox = self.clip;
         let fill_width = bbox.width() / glyph.width() as u16;
         if bbox.height() > 0 && fill_width > 0 {
             self.move_to(0, 0)?;
@@ -71,8 +77,8 @@ impl<'a> Cells<'a> {
 
     /// Move cursor to a cell
     pub fn move_to(&mut self, col: u16, row: u16) -> Result<()> {
-        let col = self.bbox.left() + col;
-        let row = self.bbox.top() + row;
+        let col = self.clip.left() + col;
+        let row = self.clip.top() + row;
         self.screen.move_to(col, row)
     }
 

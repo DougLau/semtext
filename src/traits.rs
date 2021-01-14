@@ -3,9 +3,9 @@
 // Copyright (c) 2020  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, Cells, Pos};
+use crate::layout::{AreaBound, Cells, Dim, Pos};
 use crate::text::{StyleGroup, Theme, WidgetGroup};
-use crate::widget::{Border, Button};
+use crate::widget::{Border, Button, ScrollView};
 use crate::Result;
 
 /// User interface component
@@ -33,8 +33,8 @@ pub trait Widget {
     /// Draw the widget
     ///
     /// * `_cells`: Text cells to draw onto
-    /// * `_pos`: Top-left position within widget
-    fn draw(&self, _cells: &mut Cells, _pos: Pos) -> Result<()> {
+    /// * `_offset`: Offset from top-left position within widget
+    fn draw(&self, _cells: &mut Cells, _offset: Pos) -> Result<()> {
         // default implementation draws nothing
         Ok(())
     }
@@ -54,6 +54,7 @@ pub trait Widget {
     ///
     /// * `_mev`: The mouse event
     /// * `_mods`: Pressed modifier keys
+    /// * `_dim`: Dimensions of widget
     /// * `_pos`: Position relative to top-left of widget
     ///
     /// ## Return
@@ -63,6 +64,7 @@ pub trait Widget {
         &self,
         _mev: MouseEvent,
         _mods: ModKeys,
+        _dim: Dim,
         _pos: Pos,
     ) -> Option<Action> {
         // ignore by default
@@ -83,5 +85,13 @@ pub trait Widget {
         Self: Sized,
     {
         Border::new(Button::new(self))
+    }
+
+    /// Wrap the widget with a scroll view
+    fn into_scroll_view(self) -> ScrollView<Self>
+    where
+        Self: Sized,
+    {
+        ScrollView::new(self)
     }
 }

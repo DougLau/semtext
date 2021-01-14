@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use std::ops::Sub;
+use std::ops::{Add, Sub};
 
 /// Text cell position
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -29,6 +29,16 @@ pub struct BBox {
     pos: Pos,
     /// Dimensions in text cells
     dim: Dim,
+}
+
+impl Add for Pos {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let col = self.col + rhs.col;
+        let row = self.row + rhs.row;
+        Pos::new(col, row)
+    }
 }
 
 impl Sub for Pos {
@@ -98,9 +108,9 @@ impl BBox {
         self.top() + self.height()
     }
 
-    /// Check if the bounding box is empty
-    pub fn is_empty(self) -> bool {
-        self.dim.is_empty()
+    /// Get dimensions of bounding box
+    pub fn dim(self) -> Dim {
+        self.dim
     }
 
     /// Check if the bounding box contains a position

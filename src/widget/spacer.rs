@@ -69,7 +69,7 @@ impl Widget for Spacer {
     }
 
     /// Draw the widget
-    fn draw(&self, cells: &mut Cells, _pos: Pos) -> Result<()> {
+    fn draw(&self, cells: &mut Cells, _offset: Pos) -> Result<()> {
         if let Some(fill) = &self.fill {
             cells.fill(fill)?;
         }
