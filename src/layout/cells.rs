@@ -2,10 +2,10 @@
 //
 // Copyright (c) 2020  Douglas P Lau
 //
-use crate::layout::BBox;
+use crate::layout::{BBox, Pos};
 use crate::text::{Glyph, TextStyle, Theme};
 use crate::{Result, Screen};
-use textwrap::wrap_iter;
+use textwrap::wrap;
 
 /// Cells of text on a [Screen]
 ///
@@ -111,10 +111,14 @@ impl<'a> Cells<'a> {
     /// ~~Strikethrough~~ | `~~Strikethrough~~`
     /// <u>Underline</u>  | `<u>Underline</u>`
     /// `Reverse`         | `` `Reverse` ``
-    pub fn print_text(&mut self, text: &str) -> Result<()> {
+    pub fn print_text(&mut self, text: &str, offset: Pos) -> Result<()> {
+        assert_eq!(offset.col, 0, "FIXME");
+        let top = usize::from(offset.row);
         let width = usize::from(self.width());
         let height = usize::from(self.height());
-        for (row, txt) in wrap_iter(&text, width).take(height).enumerate() {
+        for (row, txt) in
+            wrap(&text, width).iter().skip(top).take(height).enumerate()
+        {
             let row = row as u16; // limited to u16 by take(height)
             self.move_to(0, row)?;
             self.print_str(&txt)?;

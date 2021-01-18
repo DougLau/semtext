@@ -12,7 +12,7 @@ keywords = ["tui", "terminal", "ui"]
 edition = "2018"
 
 [dependencies]
-textwrap = "0.12"
+textwrap = "0.13"
 unicode-width = "0.1"
 futures-core = "0.3"
 

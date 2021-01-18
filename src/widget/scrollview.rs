@@ -61,7 +61,7 @@ pub struct ScrollView<W: Widget> {
     /// Horizontal scroll bar
     h_bar: Option<HorizontalScrollBar>,
     /// Offset within wrapped widget
-    offset: Pos,
+    offset: Cell<Pos>,
     /// Widget state
     state: Cell<State>,
 }
@@ -75,6 +75,18 @@ impl VerticalScrollBar {
             state,
             height,
         }
+    }
+
+    /// Get the start and end rows of the thumb
+    ///
+    /// * `bar_height`: Scroll bar height
+    /// * `pos`: Position within wrapped widget
+    fn thumb_rows(&self, bar_height: u16, pos: Pos) -> (u16, u16) {
+        let height = self.height.get();
+        let tfrac = f32::from(bar_height) / f32::from(height);
+        let start = (f32::from(pos.row) * tfrac).ceil() as u16;
+        let end = (f32::from(pos.row + bar_height) * tfrac).floor() as u16;
+        (start, end)
     }
 }
 
@@ -96,19 +108,16 @@ impl Widget for VerticalScrollBar {
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
-        assert_eq!(pos, Pos::default(), "FIXME");
         let height = self.height.get();
-        if height > 0 && cells.height() <= height {
-            let frow = f32::from(height) / f32::from(cells.height());
-            let start =
-                ((f32::from(pos.row) / frow) as u16).min(pos.row.max(1));
-            let end = (f32::from(pos.row + cells.height()) / frow) as u16;
-            for row in 0..cells.height() {
+        let bar_height = cells.height();
+        if height > 0 && bar_height <= height {
+            let (start, end) = self.thumb_rows(bar_height, pos);
+            for row in 0..bar_height {
                 cells.move_to(0, row)?;
-                if row < start || row >= end {
-                    cells.print_char('░')?;
+                if row < start || row > end {
+                    cells.print_char('▓')?;
                 } else {
-                    cells.print_char('▒')?;
+                    cells.print_char('░')?;
                 }
             }
         }
@@ -170,7 +179,7 @@ impl<W: Widget> ScrollView<W> {
     pub fn new(wrapped: W) -> Self {
         let v_bar = Some(VerticalScrollBar::new(8));
         let h_bar = None;
-        let offset = Pos::default();
+        let offset = Cell::new(Pos::default());
         let state = Cell::new(State::Enabled);
         Self {
             wrapped,
@@ -258,6 +267,7 @@ impl<W: Widget> Widget for ScrollView<W> {
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, offset: Pos) -> Result<()> {
         assert_eq!(offset, Pos::default(), "FIXME");
+        let offset = self.offset.get();
         let mut width = cells.width();
         let mut height = cells.height();
         if width == 0 || height == 0 {
@@ -278,17 +288,17 @@ impl<W: Widget> Widget for ScrollView<W> {
             let style = cells.theme().style(v_bar.style_group());
             cells.clip(Some(BBox::new(width, 0, 1, height)));
             cells.set_style(style)?;
-            v_bar.draw(cells, self.offset)?;
+            v_bar.draw(cells, offset)?;
         }
         if let Some(h_bar) = &self.h_bar {
             let style = cells.theme().style(h_bar.style_group());
             cells.clip(Some(BBox::new(0, height, width, 1)));
             cells.set_style(style)?;
-            h_bar.draw(cells, self.offset)?;
+            h_bar.draw(cells, offset)?;
         }
         cells.clip(Some(BBox::new(0, 0, width, height)));
         cells.set_style(w_style)?;
-        self.wrapped.draw(cells, self.offset)
+        self.wrapped.draw(cells, offset)
     }
 
     /// Handle focus event
@@ -322,6 +332,15 @@ impl<W: Widget> Widget for ScrollView<W> {
                     let pos = Pos::new(0, pos.row);
                     let act = v_bar.mouse_event(mev, mods, dim, pos);
                     if act.is_some() {
+                        let offset = self.offset.get();
+                        let (start, end) = v_bar.thumb_rows(dim.height, offset);
+                        let mut row = offset.row;
+                        if pos.row < start {
+                            row -= 1;
+                        } else if pos.row > end {
+                            row += 1;
+                        }
+                        self.offset.set(Pos::new(offset.col, row));
                         self.set_state(v_bar.state.get());
                     }
                     return act;
@@ -345,6 +364,7 @@ impl<W: Widget> Widget for ScrollView<W> {
                 }
             }
         }
-        self.wrapped.mouse_event(mev, mods, dim, self.offset + pos)
+        self.wrapped
+            .mouse_event(mev, mods, dim, self.offset.get() + pos)
     }
 }

@@ -8,8 +8,8 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     screen.set_title("Layout Test")?;
     let s = Spacer::default().with_fill('.')?;
     let a = Label::new("This is a bit of text in a label");
-    let c = Label::new("This label has more text on the right side")
-        .into_border();
+    let c = Label::new("This label has more text on the right side blah blah, more text to display in the widget so that we can show off the scroll view features, plus some more mindless text with no particular meaning or purpose.")
+        .into_scroll_view();
     let grid = grid_area!(
         [. a a . .]
         [. . s . .]
