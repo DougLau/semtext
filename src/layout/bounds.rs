@@ -1,6 +1,6 @@
 // bounds.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use std::ops::{Add, Bound, RangeBounds};
 
@@ -19,28 +19,6 @@ pub struct LengthBound {
     ///
     /// The `Unbounded` case uses the `MAX` value
     maximum: u16,
-}
-
-/// Bounds restricting cell area
-///
-/// This includes column and row length bounds for [Widget]s, in cells.
-/// They can be specified using range syntax.
-///
-/// ### Example
-///
-/// ```rust
-/// use semtext::layout::AreaBound;
-///
-/// let b = AreaBound::default().with_columns(6..=10).with_rows(1..);
-/// ```
-/// [Widget]: trait.Widget.html
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct AreaBound {
-    /// Cell column bounds
-    pub(crate) col: LengthBound,
-
-    /// Cell row bounds
-    pub(crate) row: LengthBound,
 }
 
 impl Default for LengthBound {
@@ -123,78 +101,20 @@ fn max_bound(bound: Bound<&u16>) -> u16 {
     }
 }
 
-impl Default for AreaBound {
-    fn default() -> Self {
-        AreaBound {
-            col: LengthBound::default(),
-            row: LengthBound::default(),
-        }
-    }
-}
-
-impl Add for AreaBound {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        let col = self.col + rhs.col;
-        let row = self.row + rhs.row;
-        AreaBound { col, row }
-    }
-}
-
-impl AreaBound {
-    /// Adjust column bounds
-    ///
-    /// ### Example
-    ///
-    /// ```rust
-    /// use semtext::layout::AreaBound;
-    ///
-    /// let b0 = AreaBound::default().with_columns(..10);
-    /// let b1 = AreaBound::default().with_columns(2..);
-    /// ```
-    pub fn with_columns<R>(mut self, col: R) -> Self
-    where
-        R: RangeBounds<u16>,
-    {
-        self.col = LengthBound::new(col);
-        self
-    }
-
-    /// Adjust row bounds
-    ///
-    /// ### Example
-    ///
-    /// ```rust
-    /// use semtext::layout::AreaBound;
-    ///
-    /// let b0 = AreaBound::default().with_rows(1..8);
-    /// let b1 = AreaBound::default().with_rows(2..=4);
-    /// ```
-    pub fn with_rows<R>(mut self, row: R) -> Self
-    where
-        R: RangeBounds<u16>,
-    {
-        self.row = LengthBound::new(row);
-        self
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn bounds() {
-        let bnd = AreaBound::default();
-        assert_eq!(bnd.col.minimum, 0);
-        assert_eq!(bnd.col.maximum, u16::MAX);
-        assert_eq!(bnd.row.minimum, 0);
-        assert_eq!(bnd.row.maximum, u16::MAX);
-        let bnd = AreaBound::default().with_columns(..5).with_rows(2..=2);
-        assert_eq!(bnd.col.minimum, 0);
-        assert_eq!(bnd.col.maximum, 5);
-        assert_eq!(bnd.row.minimum, 2);
-        assert_eq!(bnd.row.maximum, 3);
+        let bnd = LengthBound::default();
+        assert_eq!(bnd.minimum, 0);
+        assert_eq!(bnd.maximum, u16::MAX);
+        let bnd = LengthBound::new(..5);
+        assert_eq!(bnd.minimum, 0);
+        assert_eq!(bnd.maximum, 5);
+        let bnd = LengthBound::new(2..=2);
+        assert_eq!(bnd.minimum, 2);
+        assert_eq!(bnd.maximum, 3);
     }
 }

@@ -1,8 +1,8 @@
 // label.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
-use crate::layout::{AreaBound, Cells, Pos};
+use crate::layout::{Cells, LengthBound, Pos};
 use crate::text::Theme;
 use crate::{Result, Widget};
 use textwrap::wrap;
@@ -25,30 +25,23 @@ impl Label {
     pub fn text(&self) -> &str {
         &self.text
     }
-
-    /// Calculate the label column width
-    fn columns(&self) -> u16 {
-        match self.text.width() {
-            0..=2 => 2,
-            3..=4 => 4,
-            5..=6 => 6,
-            6..=12 => 8,
-            12..=20 => 10,
-            20..=32 => 12,
-            32..=48 => 14,
-            _ => 16,
-        }
-    }
 }
 
 impl Widget for Label {
-    /// Get the area bounds
-    fn bounds(&self, _theme: &Theme) -> AreaBound {
-        let cols = self.columns();
-        let rows = wrap(&self.text, usize::from(cols)).iter().count() as u16;
-        AreaBound::default()
-            .with_columns(cols..=cols)
-            .with_rows(rows..=rows)
+    /// Get the width bounds
+    fn width_bounds(&self, _theme: &Theme) -> LengthBound {
+        let w = self.text.width() as u16;
+        match w {
+            0..=8 => LengthBound::new(w..),
+            9..=20 => LengthBound::new(10..),
+            _ => LengthBound::new(12..),
+        }
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, _theme: &Theme, width: u16) -> LengthBound {
+        let rows = wrap(&self.text, usize::from(width)).iter().count() as u16;
+        LengthBound::new(rows..=rows)
     }
 
     /// Draw the widget

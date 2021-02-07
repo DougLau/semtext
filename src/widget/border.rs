@@ -1,9 +1,9 @@
 // border.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, BBox, Cells, Dim, Pos};
+use crate::layout::{BBox, Cells, Dim, LengthBound, Pos};
 use crate::text::{Outline, StyleGroup, Theme};
 use crate::{Result, Widget};
 
@@ -178,13 +178,18 @@ impl<W: Widget> Border<W> {
 }
 
 impl<W: Widget> Widget for Border<W> {
-    /// Get the area bounds
-    fn bounds(&self, theme: &Theme) -> AreaBound {
-        let bounds = self.wrapped.bounds(theme);
+    /// Get the width bounds
+    fn width_bounds(&self, theme: &Theme) -> LengthBound {
         let bs = self.border_style(theme);
         let cols = bs.width();
+        LengthBound::new(cols..) + self.wrapped.width_bounds(theme)
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, theme: &Theme, width: u16) -> LengthBound {
+        let bs = self.border_style(theme);
         let rows = bs.height();
-        bounds + AreaBound::default().with_columns(cols..).with_rows(rows..)
+        LengthBound::new(rows..) + self.wrapped.height_bounds(theme, width)
     }
 
     /// Draw the widget

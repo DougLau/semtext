@@ -1,9 +1,9 @@
 // button.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, Cells, Dim, Pos};
+use crate::layout::{Cells, Dim, LengthBound, Pos};
 use crate::text::{IntoGlyph, StyleGroup, Theme, WidgetGroup};
 use crate::{Result, Widget};
 use std::cell::Cell;
@@ -68,9 +68,14 @@ impl<W: Widget> Widget for Button<W> {
         }
     }
 
-    /// Get the area bounds
-    fn bounds(&self, theme: &Theme) -> AreaBound {
-        self.wrapped.bounds(theme)
+    /// Get the width bounds
+    fn width_bounds(&self, theme: &Theme) -> LengthBound {
+        self.wrapped.width_bounds(theme)
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, theme: &Theme, width: u16) -> LengthBound {
+        self.wrapped.height_bounds(theme, width)
     }
 
     /// Draw the widget

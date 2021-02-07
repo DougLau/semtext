@@ -1,9 +1,9 @@
 // traits.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, Cells, Dim, Pos};
+use crate::layout::{Cells, Dim, LengthBound, Pos};
 use crate::text::{StyleGroup, Theme, WidgetGroup};
 use crate::widget::{Border, Button, ScrollView};
 use crate::Result;
@@ -25,9 +25,14 @@ pub trait Widget {
         StyleGroup::Enabled
     }
 
-    /// Get the area bounds
-    fn bounds(&self, _theme: &Theme) -> AreaBound {
-        AreaBound::default()
+    /// Get the width bounds
+    fn width_bounds(&self, _theme: &Theme) -> LengthBound {
+        LengthBound::default()
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, _theme: &Theme, _width: u16) -> LengthBound {
+        LengthBound::default()
     }
 
     /// Draw the widget

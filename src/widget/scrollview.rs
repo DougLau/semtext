@@ -1,9 +1,9 @@
 // scrollview.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use crate::input::{Action, FocusEvent, ModKeys, MouseEvent};
-use crate::layout::{AreaBound, BBox, Cells, Dim, Pos};
+use crate::layout::{BBox, Cells, Dim, LengthBound, Pos};
 use crate::text::{StyleGroup, Theme};
 use crate::{Result, Widget};
 use std::cell::Cell;
@@ -101,9 +101,9 @@ impl Widget for VerticalScrollBar {
         }
     }
 
-    /// Get the area bounds
-    fn bounds(&self, _theme: &Theme) -> AreaBound {
-        AreaBound::default().with_columns(1..=1)
+    /// Get the width bounds
+    fn width_bounds(&self, _theme: &Theme) -> LengthBound {
+        LengthBound::new(1..=1)
     }
 
     /// Draw the widget
@@ -158,9 +158,9 @@ impl HorizontalScrollBar {
 }
 
 impl Widget for HorizontalScrollBar {
-    /// Get the area bounds
-    fn bounds(&self, _theme: &Theme) -> AreaBound {
-        AreaBound::default().with_rows(1..=1)
+    /// Get the height bounds
+    fn height_bounds(&self, _theme: &Theme, _width: u16) -> LengthBound {
+        LengthBound::new(1..=1)
     }
 
     /// Draw the widget
@@ -238,30 +238,34 @@ impl<W: Widget> ScrollView<W> {
 }
 
 impl<W: Widget> Widget for ScrollView<W> {
-    /// Get the area bounds
-    fn bounds(&self, theme: &Theme) -> AreaBound {
-        let mut bounds = self.wrapped.bounds(theme);
+    /// Get the width bounds
+    fn width_bounds(&self, theme: &Theme) -> LengthBound {
+        let mut bounds = self.wrapped.width_bounds(theme);
         if let Some(v_bar) = &self.v_bar {
-            v_bar.height.set(bounds.row.minimum());
-            bounds = bounds + v_bar.bounds(theme);
+            bounds = bounds + v_bar.width_bounds(theme);
         }
+        let mut min_col = bounds.minimum();
         if let Some(h_bar) = &self.h_bar {
-            h_bar.width.set(bounds.col.minimum());
-            bounds = bounds + h_bar.bounds(theme);
-        }
-        let mut min_row = bounds.row.minimum();
-        let max_row = bounds.row.maximum();
-        let mut min_col = bounds.col.minimum();
-        let max_col = bounds.col.maximum();
-        if let Some(v_bar) = &self.v_bar {
-            min_row = min_row.min(v_bar.rows);
-        }
-        if let Some(h_bar) = &self.h_bar {
+            h_bar.width.set(bounds.minimum());
             min_col = min_col.min(h_bar.cols);
         }
-        AreaBound::default()
-            .with_columns(min_col..=max_col)
-            .with_rows(min_row..=max_row)
+        let max_col = bounds.maximum();
+        LengthBound::new(min_col..=max_col)
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, theme: &Theme, width: u16) -> LengthBound {
+        let mut bounds = self.wrapped.height_bounds(theme, width);
+        if let Some(h_bar) = &self.h_bar {
+            bounds = bounds + h_bar.height_bounds(theme, width);
+        }
+        let mut min_row = bounds.minimum();
+        if let Some(v_bar) = &self.v_bar {
+            v_bar.height.set(bounds.minimum());
+            min_row = min_row.min(v_bar.rows);
+        }
+        let max_row = bounds.maximum();
+        LengthBound::new(min_row..=max_row)
     }
 
     /// Draw the widget
@@ -279,8 +283,12 @@ impl<W: Widget> Widget for ScrollView<W> {
         if self.h_bar.is_some() {
             height -= 1;
         }
-        let bounds = self.wrapped.bounds(cells.theme());
-        if bounds.row.minimum() <= height && bounds.col.minimum() <= width {
+        let width_bounds = self.wrapped.width_bounds(cells.theme());
+        let height_bounds = self
+            .wrapped
+            .height_bounds(cells.theme(), width_bounds.minimum());
+        if height_bounds.minimum() <= height && width_bounds.minimum() <= width
+        {
             self.set_state(State::Disabled);
         }
         let w_style = cells.theme().style(self.wrapped.style_group());

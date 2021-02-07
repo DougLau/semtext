@@ -1,6 +1,6 @@
 // layout/mod.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 //! Layouts
 
@@ -11,7 +11,6 @@ mod gridarea;
 
 pub use bbox::BBox;
 pub use bbox::{Dim, Pos};
-pub use bounds::AreaBound;
-use bounds::LengthBound;
+pub use bounds::LengthBound;
 pub use cells::Cells;
 pub use gridarea::{GridArea, GridItem};

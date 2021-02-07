@@ -1,8 +1,8 @@
 // spacer.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
-use crate::layout::{AreaBound, Cells, Pos};
+use crate::layout::{Cells, LengthBound, Pos};
 use crate::text::{Glyph, IntoGlyph, Theme};
 use crate::{Result, Widget};
 use std::ops::RangeBounds;
@@ -16,8 +16,10 @@ use std::ops::RangeBounds;
 /// [with_fill]: struct.Spacer.html#method.with_fill
 #[derive(Default)]
 pub struct Spacer {
-    /// Area bounds
-    bounds: AreaBound,
+    /// Width bounds
+    width_bounds: LengthBound,
+    /// Height bounds
+    height_bounds: LengthBound,
     /// Fill character
     fill: Option<Glyph>,
 }
@@ -35,7 +37,7 @@ impl Spacer {
     where
         R: RangeBounds<u16>,
     {
-        self.bounds = self.bounds.with_columns(col);
+        self.width_bounds = LengthBound::new(col);
         self
     }
 
@@ -51,7 +53,7 @@ impl Spacer {
     where
         R: RangeBounds<u16>,
     {
-        self.bounds = self.bounds.with_rows(row);
+        self.height_bounds = LengthBound::new(row);
         self
     }
 
@@ -63,9 +65,14 @@ impl Spacer {
 }
 
 impl Widget for Spacer {
-    /// Get the area bounds
-    fn bounds(&self, _theme: &Theme) -> AreaBound {
-        self.bounds
+    /// Get the width bounds
+    fn width_bounds(&self, _theme: &Theme) -> LengthBound {
+        self.width_bounds
+    }
+
+    /// Get the height bounds
+    fn height_bounds(&self, _theme: &Theme, _width: u16) -> LengthBound {
+        self.height_bounds
     }
 
     /// Draw the widget

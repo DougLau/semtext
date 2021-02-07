@@ -1,8 +1,8 @@
 // gridarea.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
-use crate::layout::{AreaBound, BBox, LengthBound};
+use crate::layout::{BBox, LengthBound};
 use crate::text::Theme;
 use crate::{Error, Result, Widget};
 
@@ -121,64 +121,89 @@ impl<'a> GridArea<'a> {
         Ok(wb)
     }
 
-    /// Calculate cell bounding boxes
+    /// Calculate cell bounding boxes for all widgets
     fn calculate_cell_boxes(
         &self,
         bx: BBox,
         theme: &Theme,
     ) -> Result<Vec<BBox>> {
-        let w_bounds: Vec<AreaBound> =
-            self.widgets.iter().map(|w| w.bounds(theme)).collect();
-        let col_bounds = self.col_bounds(&w_bounds[..]);
-        let columns = distribute_bounds(col_bounds, bx.width());
-        let row_bounds = self.row_bounds(&w_bounds[..]);
-        let rows = distribute_bounds(row_bounds, bx.height());
+        let width_bounds = self.width_bounds(theme);
+        let columns = self.grid_columns(&width_bounds[..], bx);
+        let height_bounds = self.height_bounds(theme, &columns[..]);
+        let rows = self.grid_rows(&height_bounds[..], bx);
         let cell_boxes: Vec<BBox> = self
             .grid_boxes
             .iter()
-            .map(|gb| widget_cell_bbox(bx, *gb, &columns[..], &rows[..]))
+            .zip(width_bounds)
+            .zip(height_bounds)
+            .map(|((gb, wb), hb)| {
+                widget_cell_bbox(bx, *gb, wb, &columns[..], hb, &rows[..])
+            })
             .collect();
         Ok(cell_boxes)
     }
 
-    /// Create bounds for all columns
-    fn col_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
+    /// Calculate the width bounds for all widgets
+    fn width_bounds(&self, theme: &Theme) -> Vec<LengthBound> {
+        self.widgets.iter().map(|w| w.width_bounds(theme)).collect()
+    }
+
+    /// Calculate grid column widths
+    fn grid_columns(&self, width_bounds: &[LengthBound], bx: BBox) -> Vec<u16> {
+        // Bounds for each grid column
         let mut col_bounds = vec![LengthBound::default(); self.cols.into()];
         let mut done = 0; // number of widgets completed
         let mut grid_width = 1; // widget grid width
-        while done < w_bounds.len() && grid_width <= self.cols {
-            for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
+        while done < width_bounds.len() && grid_width <= self.cols {
+            for (wbnd, gb) in width_bounds.iter().zip(&self.grid_boxes) {
                 if gb.width() == grid_width {
                     let start = gb.left().into();
                     let end = gb.right().into();
                     let mut bounds = &mut col_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, wbnd.col);
+                    adjust_length_bounds(&mut bounds, *wbnd);
                     done += 1;
                 }
             }
             grid_width += 1;
         }
-        col_bounds
+        distribute_bounds(col_bounds, bx.width())
     }
 
-    /// Create bounds for all rows
-    fn row_bounds(&self, w_bounds: &[AreaBound]) -> Vec<LengthBound> {
+    /// Calculate the height bounds for all widgets
+    fn height_bounds(&self, theme: &Theme, cols: &[u16]) -> Vec<LengthBound> {
+        let widths: Vec<u16> = self
+            .grid_boxes
+            .iter()
+            .map(|gb| {
+                cols[gb.left() as usize..gb.right() as usize].iter().sum()
+            })
+            .collect();
+        self.widgets
+            .iter()
+            .zip(widths)
+            .map(|(w, wd)| w.height_bounds(theme, wd))
+            .collect()
+    }
+
+    /// Calculate grid row heights
+    fn grid_rows(&self, height_bounds: &[LengthBound], bx: BBox) -> Vec<u16> {
+        // Bounds for each grid row
         let mut row_bounds = vec![LengthBound::default(); self.rows.into()];
         let mut done = 0; // number of widgets completed
         let mut grid_height = 1; // widget grid height
-        while done < w_bounds.len() && grid_height <= self.rows {
-            for (wbnd, gb) in w_bounds.iter().zip(&self.grid_boxes) {
+        while done < height_bounds.len() && grid_height <= self.rows {
+            for (wbnd, gb) in height_bounds.iter().zip(&self.grid_boxes) {
                 if gb.height() == grid_height {
                     let start = gb.top().into();
                     let end = gb.bottom().into();
                     let mut bounds = &mut row_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, wbnd.row);
+                    adjust_length_bounds(&mut bounds, *wbnd);
                     done += 1;
                 }
             }
             grid_height += 1;
         }
-        row_bounds
+        distribute_bounds(row_bounds, bx.height())
     }
 }
 
@@ -316,12 +341,31 @@ fn distribute_bounds(mut bounds: Vec<LengthBound>, total: u16) -> Vec<u16> {
 }
 
 /// Calculate a widget cell bounding box from grid data
-fn widget_cell_bbox(bx: BBox, gb: BBox, cols: &[u16], rows: &[u16]) -> BBox {
+///
+/// * `bx`: Cell Bounding box of grid area
+/// * `gb`: Grid bounding box of widget
+/// * `wb`: Width bounds
+/// * `cols`: Widths of all grid columns
+/// * `hb`: Height bounds
+/// * `rows`: Heights of all grid rows
+fn widget_cell_bbox(
+    bx: BBox,
+    gb: BBox,
+    wb: LengthBound,
+    cols: &[u16],
+    hb: LengthBound,
+    rows: &[u16],
+) -> BBox {
     let col = bx.left() + cols[..gb.left() as usize].iter().sum::<u16>();
     let row = bx.top() + rows[..gb.top() as usize].iter().sum::<u16>();
-    let width = cols[gb.left() as usize..gb.right() as usize].iter().sum();
-    let height = rows[gb.top() as usize..gb.bottom() as usize].iter().sum();
-    BBox::new(col, row, width, height)
+    let width: u16 = cols[gb.left() as usize..gb.right() as usize].iter().sum();
+    let height: u16 = rows[gb.top() as usize..gb.bottom() as usize].iter().sum();
+    BBox::new(
+        col,
+        row,
+        width.min(wb.maximum()),
+        height.min(hb.maximum()),
+    )
 }
 
 /// Lay out [Widget]s into a [GridArea]
@@ -369,7 +413,7 @@ macro_rules! grid_area {
             $(
                 $( ga.push(grid_area!( $item )); )+
                 rows += 1;
-            )?
+            )+
             $crate::layout::GridArea::new(&ga[..], rows)
         }
     };
@@ -501,12 +545,12 @@ mod test {
             .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
             .unwrap();
         assert_eq!(l.len(), 1);
-        assert_eq!(l[0].1, BBox::new(0, 24, 9, 1));
+        assert_eq!(l[0].1, BBox::new(0, 24, 80, 1));
     }
 
     #[test]
     fn grid2() {
-        let a = Label::new("Label");
+        let a = Label::new("Label").into_button();
         let l = grid_area!(
             [. a]
         )
@@ -514,7 +558,7 @@ mod test {
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
         assert_eq!(l.len(), 1);
-        assert_eq!(l[0].1, BBox::new(74, 0, 6, 2));
+        assert_eq!(l[0].1, BBox::new(40, 0, 40, 1));
     }
 
     #[test]
@@ -528,7 +572,7 @@ mod test {
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
         assert_eq!(l.len(), 1);
-        assert_eq!(l[0].1, BBox::new(74, 24, 6, 1));
+        assert_eq!(l[0].1, BBox::new(40, 24, 40, 1));
     }
 
     #[test]
@@ -543,7 +587,7 @@ mod test {
         .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
         .unwrap();
         assert_eq!(l.len(), 2);
-        assert_eq!(l[0].1, BBox::new(0, 23, 18, 2));
-        assert_eq!(l[1].1, BBox::new(46, 23, 6, 2));
+        assert_eq!(l[0].1, BBox::new(0, 23, 20, 2));
+        assert_eq!(l[1].1, BBox::new(40, 23, 20, 1));
     }
 }

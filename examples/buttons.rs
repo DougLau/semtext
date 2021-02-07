@@ -18,10 +18,11 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     let k = Label::new("K").into_button();
     let l = Label::new("L").into_button();
     let grid = grid_area!(
-        [a e i]
-        [b f j]
-        [c g k]
-        [d h l]
+        [. a e i .]
+        [. b f j .]
+        [. c g k .]
+        [. d h l .]
+        [. . . . .]
     )?;
     while screen.step(&grid).await? != Action::Quit() {}
     Ok(())
