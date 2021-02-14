@@ -88,7 +88,7 @@ fn min_bound(bound: Bound<&u16>) -> u16 {
     match bound {
         Bound::Unbounded => u16::MIN,
         Bound::Included(x) => *x,
-        Bound::Excluded(x) => *x + 1,
+        Bound::Excluded(x) => (*x).saturating_add(1),
     }
 }
 
@@ -96,7 +96,7 @@ fn min_bound(bound: Bound<&u16>) -> u16 {
 fn max_bound(bound: Bound<&u16>) -> u16 {
     match bound {
         Bound::Unbounded => u16::MAX,
-        Bound::Included(x) => *x + 1,
+        Bound::Included(x) => (*x).saturating_add(1),
         Bound::Excluded(x) => *x,
     }
 }
