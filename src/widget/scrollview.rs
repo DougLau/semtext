@@ -80,13 +80,30 @@ impl VerticalScrollBar {
     /// Get the start and end rows of the thumb
     ///
     /// * `bar_height`: Scroll bar height
-    /// * `pos`: Position within wrapped widget
-    fn thumb_rows(&self, bar_height: u16, pos: Pos) -> (u16, u16) {
+    /// * `offset`: Offset within wrapped widget
+    fn thumb_rows(&self, bar_height: u16, offset: Pos) -> (u16, u16) {
         let height = self.height.get();
         let tfrac = f32::from(bar_height) / f32::from(height);
-        let start = (f32::from(pos.row) * tfrac).ceil() as u16;
-        let end = (f32::from(pos.row + bar_height) * tfrac).floor() as u16;
+        let start = (f32::from(offset.row) * tfrac).ceil() as u16;
+        let trows = (height / bar_height * bar_height).min(1);
+        let end = start + trows;
         (start, end)
+    }
+
+    /// Adjust row offset based on a click
+    ///
+    /// * `bar_height`: Scroll bar height
+    /// * `offset`: Offset within wrapped widget
+    /// * `crow`: Clicked row
+    fn thumb_offset(&self, bar_height: u16, offset: Pos, crow: u16) -> Pos {
+        let (start, end) = self.thumb_rows(bar_height, offset);
+        let mut row = offset.row;
+        if crow < start {
+            row -= 1;
+        } else if crow > end {
+            row += 1;
+        }
+        Pos::new(offset.col, row)
     }
 }
 
@@ -108,9 +125,10 @@ impl Widget for VerticalScrollBar {
 
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
+        debug_assert!(cells.height() > 0);
         let height = self.height.get();
         let bar_height = cells.height();
-        if height > 0 && bar_height <= height {
+        if bar_height <= height {
             let (start, end) = self.thumb_rows(bar_height, pos);
             for row in 0..bar_height {
                 cells.move_to(0, row)?;
@@ -123,30 +141,6 @@ impl Widget for VerticalScrollBar {
         }
         Ok(())
     }
-
-    /// Handle mouse events
-    fn mouse_event(
-        &self,
-        mev: MouseEvent,
-        _mods: ModKeys,
-        _dim: Dim,
-        _pos: Pos,
-    ) -> Option<Action> {
-        let state = self.state.get();
-        match (mev, state) {
-            (_, State::Disabled) => None,
-            (MouseEvent::ButtonDown(_), _) => Some(State::Held),
-            _ => None,
-        }
-        .and_then(|st| {
-            if st != state {
-                self.state.set(st);
-                Some(Action::Redraw())
-            } else {
-                None
-            }
-        })
-    }
 }
 
 impl HorizontalScrollBar {
@@ -154,6 +148,35 @@ impl HorizontalScrollBar {
         let state = Cell::new(State::Enabled);
         let width = Cell::new(0);
         Self { cols, state, width }
+    }
+
+    /// Get the start and end columns of the thumb
+    ///
+    /// * `bar_width`: Scroll bar width
+    /// * `offset`: Offset within wrapped widget
+    fn thumb_cols(&self, bar_width: u16, offset: Pos) -> (u16, u16) {
+        let width = self.width.get();
+        let tfrac = f32::from(bar_width) / f32::from(width);
+        let start = (f32::from(offset.col) * tfrac).ceil() as u16;
+        let tcols = (width / bar_width * bar_width).min(1);
+        let end = start + tcols;
+        (start, end)
+    }
+
+    /// Adjust column offset based on a click
+    ///
+    /// * `bar_width`: Scroll bar width
+    /// * `offset`: Offset within wrapped widget
+    /// * `ccol`: Clicked column
+    fn thumb_offset(&self, bar_width: u16, offset: Pos, ccol: u16) -> Pos {
+        let (start, end) = self.thumb_cols(bar_width, offset);
+        let mut col = offset.col;
+        if ccol < start {
+            col -= 1;
+        } else if ccol > end {
+            col += 1;
+        }
+        Pos::new(col, offset.row)
     }
 }
 
@@ -166,9 +189,18 @@ impl Widget for HorizontalScrollBar {
     /// Draw the widget
     fn draw(&self, cells: &mut Cells, pos: Pos) -> Result<()> {
         assert_eq!(pos, Pos::default(), "FIXME");
-        cells.move_to(0, 0)?;
-        for _ in 0..cells.width() {
-            cells.print_char('░')?;
+        let width = self.width.get();
+        let bar_width = cells.width();
+        if bar_width <= width {
+            cells.move_to(0, 0)?;
+            let (start, end) = self.thumb_cols(bar_width, pos);
+            for col in 0..bar_width {
+                if col < start || col > end {
+                    cells.print_char('▓')?;
+                } else {
+                    cells.print_char('░')?;
+                }
+            }
         }
         Ok(())
     }
@@ -235,6 +267,84 @@ impl<W: Widget> ScrollView<W> {
         }
         action
     }
+
+    /// Handle mouse button down events
+    fn mouse_button_down(
+        &self,
+        mev: MouseEvent,
+        mods: ModKeys,
+        mut dim: Dim,
+        pos: Pos,
+    ) -> Option<Action> {
+        if let Some(v_bar) = &self.v_bar {
+            debug_assert!(dim.width > 0);
+            if pos.col >= dim.width - 1 {
+                dim = Dim::new(1, dim.height);
+                let offset = self.offset.get();
+                self.offset
+                    .set(v_bar.thumb_offset(dim.height, offset, pos.row));
+                self.set_state(State::Held);
+                // Don't set horizontal scroll bar to Held state
+                if let Some(h_bar) = &self.h_bar {
+                    h_bar.state.set(State::Focused);
+                }
+                return Some(Action::Redraw());
+            } else {
+                dim = Dim::new(dim.width - 1, dim.height);
+            }
+        }
+        if let Some(h_bar) = &self.h_bar {
+            debug_assert!(dim.height > 0);
+            if pos.row >= dim.height - 1 {
+                dim = Dim::new(dim.width, 1);
+                let offset = self.offset.get();
+                self.offset
+                    .set(h_bar.thumb_offset(dim.width, offset, pos.col));
+                self.set_state(State::Held);
+                // Don't set vertical scroll bar to Held state
+                if let Some(v_bar) = &self.v_bar {
+                    v_bar.state.set(State::Focused);
+                }
+                return Some(Action::Redraw());
+            } else {
+                dim = Dim::new(dim.width, dim.height - 1);
+            }
+        }
+        self.wrapped
+            .mouse_event(mev, mods, dim, self.offset.get() + pos)
+    }
+
+    /// Handle scroll down events
+    fn scroll_down(&self, mods: ModKeys, dim: Dim) -> Option<Action> {
+        if let (Some(v_bar), ModKeys::Empty) = (&self.v_bar, mods) {
+            let offset = self.offset.get();
+            let row = dim.height - 1;
+            self.offset.set(v_bar.thumb_offset(dim.height, offset, row));
+            return Some(Action::Redraw());
+        }
+        if let (Some(h_bar), ModKeys::Shift) = (&self.h_bar, mods) {
+            let offset = self.offset.get();
+            let col = dim.width - 1;
+            self.offset.set(h_bar.thumb_offset(dim.width, offset, col));
+            return Some(Action::Redraw());
+        }
+        None
+    }
+
+    /// Handle scroll up events
+    fn scroll_up(&self, mods: ModKeys, dim: Dim) -> Option<Action> {
+        if let (Some(v_bar), ModKeys::Empty) = (&self.v_bar, mods) {
+            let offset = self.offset.get();
+            self.offset.set(v_bar.thumb_offset(dim.height, offset, 0));
+            return Some(Action::Redraw());
+        }
+        if let (Some(h_bar), ModKeys::Shift) = (&self.h_bar, mods) {
+            let offset = self.offset.get();
+            self.offset.set(h_bar.thumb_offset(dim.width, offset, 0));
+            return Some(Action::Redraw());
+        }
+        None
+    }
 }
 
 impl<W: Widget> Widget for ScrollView<W> {
@@ -274,9 +384,8 @@ impl<W: Widget> Widget for ScrollView<W> {
         let offset = self.offset.get();
         let mut width = cells.width();
         let mut height = cells.height();
-        if width == 0 || height == 0 {
-            return Ok(());
-        }
+        debug_assert!(width > 0);
+        debug_assert!(height > 0);
         if self.v_bar.is_some() {
             width -= 1;
         }
@@ -330,49 +439,24 @@ impl<W: Widget> Widget for ScrollView<W> {
         &self,
         mev: MouseEvent,
         mods: ModKeys,
-        mut dim: Dim,
+        dim: Dim,
         pos: Pos,
     ) -> Option<Action> {
-        if let Some(v_bar) = &self.v_bar {
-            if dim.width > 0 {
-                if pos.col >= dim.width - 1 {
-                    dim = Dim::new(1, dim.height);
-                    let pos = Pos::new(0, pos.row);
-                    let act = v_bar.mouse_event(mev, mods, dim, pos);
-                    if act.is_some() {
-                        let offset = self.offset.get();
-                        let (start, end) = v_bar.thumb_rows(dim.height, offset);
-                        let mut row = offset.row;
-                        if pos.row < start {
-                            row -= 1;
-                        } else if pos.row > end {
-                            row += 1;
-                        }
-                        self.offset.set(Pos::new(offset.col, row));
-                        self.set_state(v_bar.state.get());
-                    }
-                    return act;
-                } else {
-                    dim = Dim::new(dim.width - 1, dim.height);
-                }
+        let state = self.state.get();
+        match (mev, state) {
+            (_, State::Disabled) => None,
+            (MouseEvent::ButtonDown(_), _) => {
+                self.mouse_button_down(mev, mods, dim, pos)
             }
+            (MouseEvent::ButtonUp(_), _) => self.wrapped.mouse_event(
+                mev,
+                mods,
+                dim,
+                self.offset.get() + pos,
+            ),
+            (MouseEvent::ScrollDown(), _) => self.scroll_down(mods, dim),
+            (MouseEvent::ScrollUp(), _) => self.scroll_up(mods, dim),
+            _ => None,
         }
-        if let Some(h_bar) = &self.h_bar {
-            if dim.height > 0 {
-                if pos.row >= dim.height - 1 {
-                    dim = Dim::new(dim.width, 1);
-                    let pos = Pos::new(pos.col, 0);
-                    let act = h_bar.mouse_event(mev, mods, dim, pos);
-                    if act.is_some() {
-                        self.set_state(h_bar.state.get());
-                    }
-                    return act;
-                } else {
-                    dim = Dim::new(dim.width, dim.height - 1);
-                }
-            }
-        }
-        self.wrapped
-            .mouse_event(mev, mods, dim, self.offset.get() + pos)
     }
 }
