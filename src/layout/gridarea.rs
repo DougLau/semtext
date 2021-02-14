@@ -113,7 +113,7 @@ impl<'a> GridArea<'a> {
         bbox: BBox,
         theme: &Theme,
     ) -> Result<Vec<(&'a dyn Widget, BBox)>> {
-        let boxes = self.calculate_cell_boxes(bbox, theme)?;
+        let boxes = self.calculate_cell_boxes(bbox, theme);
         let mut wb = vec![];
         for (widget, bbox) in self.widgets.iter().zip(boxes) {
             wb.push((*widget, bbox));
@@ -122,25 +122,19 @@ impl<'a> GridArea<'a> {
     }
 
     /// Calculate cell bounding boxes for all widgets
-    fn calculate_cell_boxes(
-        &self,
-        bx: BBox,
-        theme: &Theme,
-    ) -> Result<Vec<BBox>> {
+    fn calculate_cell_boxes(&self, bx: BBox, theme: &Theme) -> Vec<BBox> {
         let width_bounds = self.width_bounds(theme);
         let columns = self.grid_columns(&width_bounds[..], bx);
         let height_bounds = self.height_bounds(theme, &columns[..]);
         let rows = self.grid_rows(&height_bounds[..], bx);
-        let cell_boxes: Vec<BBox> = self
-            .grid_boxes
+        self.grid_boxes
             .iter()
             .zip(width_bounds)
             .zip(height_bounds)
             .map(|((gb, wb), hb)| {
                 widget_cell_bbox(bx, *gb, wb, &columns[..], hb, &rows[..])
             })
-            .collect();
-        Ok(cell_boxes)
+            .collect()
     }
 
     /// Calculate the width bounds for all widgets
@@ -359,13 +353,9 @@ fn widget_cell_bbox(
     let col = bx.left() + cols[..gb.left() as usize].iter().sum::<u16>();
     let row = bx.top() + rows[..gb.top() as usize].iter().sum::<u16>();
     let width: u16 = cols[gb.left() as usize..gb.right() as usize].iter().sum();
-    let height: u16 = rows[gb.top() as usize..gb.bottom() as usize].iter().sum();
-    BBox::new(
-        col,
-        row,
-        width.min(wb.maximum()),
-        height.min(hb.maximum()),
-    )
+    let height: u16 =
+        rows[gb.top() as usize..gb.bottom() as usize].iter().sum();
+    BBox::new(col, row, width.min(wb.maximum()), height.min(hb.maximum()))
 }
 
 /// Lay out [Widget]s into a [GridArea]
