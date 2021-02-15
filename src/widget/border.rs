@@ -182,14 +182,14 @@ impl<W: Widget> Widget for Border<W> {
     fn width_bounds(&self, theme: &Theme) -> LengthBound {
         let bs = self.border_style(theme);
         let cols = bs.width();
-        LengthBound::new(cols..) + self.wrapped.width_bounds(theme)
+        LengthBound::new(cols..=cols) + self.wrapped.width_bounds(theme)
     }
 
     /// Get the height bounds
     fn height_bounds(&self, theme: &Theme, width: u16) -> LengthBound {
         let bs = self.border_style(theme);
         let rows = bs.height();
-        LengthBound::new(rows..) + self.wrapped.height_bounds(theme, width)
+        LengthBound::new(rows..=rows) + self.wrapped.height_bounds(theme, width)
     }
 
     /// Draw the widget

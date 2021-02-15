@@ -38,7 +38,7 @@ impl Add for LengthBound {
         let maximum = if self.maximum < u16::MAX && rhs.maximum < u16::MAX {
             self.maximum.saturating_add(rhs.maximum)
         } else {
-            self.maximum.min(rhs.maximum)
+            u16::MAX
         };
         let maximum = maximum.max(minimum);
         LengthBound { minimum, maximum }
