@@ -112,13 +112,13 @@ impl<'a> GridArea<'a> {
         &self,
         bbox: BBox,
         theme: &Theme,
-    ) -> Result<Vec<(&'a dyn Widget, BBox)>> {
+    ) -> Vec<(&'a dyn Widget, BBox)> {
         let boxes = self.calculate_cell_boxes(bbox, theme);
         let mut wb = vec![];
         for (widget, bbox) in self.widgets.iter().zip(boxes) {
             wb.push((*widget, bbox));
         }
-        Ok(wb)
+        wb
     }
 
     /// Calculate cell bounding boxes for all widgets
@@ -420,8 +420,7 @@ mod test {
         let b = Spacer::default();
         let l = grid_area!([a][b])
             .unwrap()
-            .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-            .unwrap();
+            .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 2);
         assert_eq!(l[0].1, BBox::new(0, 0, 80, 12));
         assert_eq!(l[1].1, BBox::new(0, 12, 80, 13));
@@ -435,8 +434,7 @@ mod test {
             [a b]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 2);
         assert_eq!(l[0].1, BBox::new(0, 0, 40, 25));
         assert_eq!(l[1].1, BBox::new(40, 0, 40, 25));
@@ -452,8 +450,7 @@ mod test {
             [a c]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(data_pointer(l[0].0), data_pointer(&a));
         assert_eq!(data_pointer(l[1].0), data_pointer(&b));
         assert_eq!(data_pointer(l[2].0), data_pointer(&c));
@@ -473,8 +470,7 @@ mod test {
             [a a c]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(data_pointer(l[0].0), data_pointer(&a));
         assert_eq!(data_pointer(l[1].0), data_pointer(&b));
         assert_eq!(data_pointer(l[2].0), data_pointer(&c));
@@ -494,8 +490,7 @@ mod test {
             [a a c c]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(data_pointer(l[0].0), data_pointer(&a));
         assert_eq!(data_pointer(l[1].0), data_pointer(&b));
         assert_eq!(data_pointer(l[2].0), data_pointer(&c));
@@ -516,8 +511,7 @@ mod test {
             [a a c c]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(data_pointer(l[0].0), data_pointer(&a));
         assert_eq!(data_pointer(l[1].0), data_pointer(&b));
         assert_eq!(data_pointer(l[2].0), data_pointer(&c));
@@ -532,8 +526,7 @@ mod test {
         let a = Label::new("Label");
         let l = grid_area!([.] [a])
             .unwrap()
-            .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-            .unwrap();
+            .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 1);
         assert_eq!(l[0].1, BBox::new(0, 24, 80, 1));
     }
@@ -545,10 +538,9 @@ mod test {
             [. a]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 1);
-        assert_eq!(l[0].1, BBox::new(40, 0, 40, 1));
+        assert_eq!(l[0].1, BBox::new(40, 0, 40, 5));
     }
 
     #[test]
@@ -559,8 +551,7 @@ mod test {
             [. a]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 1);
         assert_eq!(l[0].1, BBox::new(40, 24, 40, 1));
     }
@@ -574,10 +565,9 @@ mod test {
             [a . b .]
         )
         .unwrap()
-        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default())
-        .unwrap();
+        .widget_boxes(BBox::new(0, 0, 80, 25), &Theme::default());
         assert_eq!(l.len(), 2);
         assert_eq!(l[0].1, BBox::new(0, 23, 20, 2));
-        assert_eq!(l[1].1, BBox::new(40, 23, 20, 1));
+        assert_eq!(l[1].1, BBox::new(40, 23, 20, 2));
     }
 }

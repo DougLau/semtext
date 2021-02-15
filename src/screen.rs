@@ -217,7 +217,7 @@ impl Screen {
 
     /// Render a grid area and wait asynchronously for an action
     pub async fn step(&mut self, area: &GridArea<'_>) -> Result<Action> {
-        let widget_boxes = area.widget_boxes(self.bbox(), &self.theme)?;
+        let widget_boxes = area.widget_boxes(self.bbox(), &self.theme);
         self.draw(&widget_boxes)?;
         loop {
             let ev = (&mut self.ev_stream).await.unwrap()?.into();
