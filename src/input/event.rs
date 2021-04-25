@@ -13,10 +13,13 @@ use crossterm::event::{KeyCode, KeyModifiers, MouseEventKind};
 pub enum FocusEvent {
     /// Offer focus to widget
     Offer,
+
     /// Take focus from widget
     Take,
+
     /// Mouse hover inside widget bounds
     HoverInside,
+
     /// Mouse hover outside widget bounds
     HoverOutside,
 }

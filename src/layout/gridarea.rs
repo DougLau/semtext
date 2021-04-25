@@ -360,7 +360,7 @@ fn widget_cell_bbox(
 
 /// Lay out [Widget]s into a [GridArea]
 ///
-/// This macro is inspired by the concise CSS [grid-template-areas] property.
+/// This macro is inspired by the CSS [grid-template-areas] property.
 ///
 /// ## Arguments
 ///

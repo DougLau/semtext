@@ -1,8 +1,8 @@
 // input/mod.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
-//! Input stuff
+//! Keyboard and mouse input handling
 
 mod action;
 mod event;

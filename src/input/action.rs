@@ -1,24 +1,32 @@
 // action.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2021  Douglas P Lau
 //
 use crate::input::{KeyPress, ModKeys, NavKey};
 use crate::layout::Dim;
 use std::collections::HashMap;
 
-/// Action
+/// Screen actions
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
     /// Terminal resized
     Resize(Dim),
+
     /// Redraw required
     Redraw(),
+
     /// Quit application
     Quit(),
 }
 
-/// Key action mapping
+/// Key / Action mapping
+///
+/// A mapping of [KeyPress] events to [Action]s, used for [Screen] hotkeys.
+///
+/// [Action]: enum.Action.html
+/// [KeyPress]: enum.KeyPress.html
+/// [Screen]: ../struct.Screen.html#method.set_keymap
 pub struct KeyMap {
     /// Mapping of key presses to actions
     map: HashMap<(KeyPress, ModKeys), Action>,

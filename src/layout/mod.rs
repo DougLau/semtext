@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2020-2021  Douglas P Lau
 //
-//! Layouts
+//! User interface layout
 
 mod bbox;
 mod bounds;
