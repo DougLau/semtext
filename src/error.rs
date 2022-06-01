@@ -1,6 +1,6 @@
 // error.rs
 //
-// Copyright (c) 2020  Douglas Lau
+// Copyright (c) 2020-2022  Douglas Lau
 //
 use std::fmt;
 use std::io;
@@ -9,9 +9,6 @@ use std::io;
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum Error {
-    /// Crossterm error
-    Crossterm(crossterm::ErrorKind),
-
     /// A [Glyph] must have a column width of 1 or 2
     ///
     /// [Glyph]: text/struct.Glyph.html
@@ -30,7 +27,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::Crossterm(err) => err.fmt(fmt),
             Error::InvalidGlyphWidth(w) => {
                 write!(fmt, "Invalid glyph width: {}", w)
             }
@@ -45,16 +41,9 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
-            Error::Crossterm(ref err) => Some(err),
             Error::Io(ref err) => Some(err),
             _ => None,
         }
-    }
-}
-
-impl From<crossterm::ErrorKind> for Error {
-    fn from(err: crossterm::ErrorKind) -> Self {
-        Error::Crossterm(err)
     }
 }
 
