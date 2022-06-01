@@ -1,6 +1,6 @@
 // cells.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2022  Douglas P Lau
 //
 use crate::layout::{BBox, Pos};
 use crate::text::{Glyph, TextStyle, Theme};
@@ -58,7 +58,7 @@ impl<'a> Cells<'a> {
             for row in 0..bbox.height() {
                 self.move_to(0, row)?;
                 for _ in 0..fill_width {
-                    glyph.print(&mut self.screen)?;
+                    glyph.print(self.screen)?;
                 }
             }
         }
@@ -67,7 +67,7 @@ impl<'a> Cells<'a> {
 
     /// Get the screen theme
     pub fn theme(&self) -> &Theme {
-        &self.screen.theme()
+        self.screen.theme()
     }
 
     /// Set the text style
@@ -117,11 +117,11 @@ impl<'a> Cells<'a> {
         let width = usize::from(self.width());
         let height = usize::from(self.height());
         for (row, txt) in
-            wrap(&text, width).iter().skip(top).take(height).enumerate()
+            wrap(text, width).iter().skip(top).take(height).enumerate()
         {
             let row = row as u16; // limited to u16 by take(height)
             self.move_to(0, row)?;
-            self.print_str(&txt)?;
+            self.print_str(txt)?;
         }
         Ok(())
     }

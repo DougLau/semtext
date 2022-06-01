@@ -1,6 +1,6 @@
 // glyph.rs
 //
-// Copyright (c) 2020  Douglas P Lau
+// Copyright (c) 2020-2022  Douglas P Lau
 //
 use crate::{Error, Result, Screen};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
@@ -78,7 +78,7 @@ impl Glyph {
     pub fn print(&self, screen: &mut Screen) -> Result<()> {
         match &self.inner {
             GlyphInner::Char(ch) => screen.print_char(*ch)?,
-            GlyphInner::Str(st) => screen.print_str(&st)?,
+            GlyphInner::Str(st) => screen.print_str(st)?,
         }
         Ok(())
     }

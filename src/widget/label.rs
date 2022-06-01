@@ -1,6 +1,6 @@
 // label.rs
 //
-// Copyright (c) 2020-2021  Douglas P Lau
+// Copyright (c) 2020-2022  Douglas P Lau
 //
 use crate::layout::{Cells, LengthBound, Pos};
 use crate::text::Theme;
@@ -40,7 +40,7 @@ impl Widget for Label {
 
     /// Get the height bounds
     fn height_bounds(&self, _theme: &Theme, width: u16) -> LengthBound {
-        let rows = wrap(&self.text, usize::from(width)).iter().count() as u16;
+        let rows = wrap(&self.text, usize::from(width)).len() as u16;
         LengthBound::new(rows..=rows)
     }
 

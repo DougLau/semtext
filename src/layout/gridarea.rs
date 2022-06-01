@@ -1,6 +1,6 @@
 // gridarea.rs
 //
-// Copyright (c) 2020-2021  Douglas P Lau
+// Copyright (c) 2020-2022  Douglas P Lau
 //
 use crate::layout::{BBox, LengthBound};
 use crate::text::Theme;
@@ -153,8 +153,8 @@ impl<'a> GridArea<'a> {
                 if gb.width() == grid_width {
                     let start = gb.left().into();
                     let end = gb.right().into();
-                    let mut bounds = &mut col_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, *wbnd);
+                    let bounds = &mut col_bounds[start..end];
+                    adjust_length_bounds(bounds, *wbnd);
                     done += 1;
                 }
             }
@@ -190,8 +190,8 @@ impl<'a> GridArea<'a> {
                 if gb.height() == grid_height {
                     let start = gb.top().into();
                     let end = gb.bottom().into();
-                    let mut bounds = &mut row_bounds[start..end];
-                    adjust_length_bounds(&mut bounds, *wbnd);
+                    let bounds = &mut row_bounds[start..end];
+                    adjust_length_bounds(bounds, *wbnd);
                     done += 1;
                 }
             }
